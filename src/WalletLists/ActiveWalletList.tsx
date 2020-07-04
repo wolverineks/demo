@@ -37,7 +37,7 @@ const useEdgeCurrencyWallet = ({ account, walletId }: { account: EdgeAccount; wa
   useQuery({
     queryKey: ['wallet', walletId],
     queryFn: () => account.waitForCurrencyWallet(walletId),
-    config: { suspense: true, cacheTime: Infinity, staleTime: Infinity },
+    config: { suspense: true },
   }).data!
 
 const ActiveWalletRow: React.FC<{
@@ -82,16 +82,15 @@ const ActiveWalletRow: React.FC<{
 
 const WalletOptions = ({ account, wallet }: { account: EdgeAccount; wallet: EdgeCurrencyWallet }) => {
   const { execute: changeWalletState, status } = useChangeWalletState(account)
-  const pending = status === 'loading'
   const archiveWallet = () => changeWalletState({ walletId: wallet.id, walletState: { archived: true } })
   const deleteWallet = () => changeWalletState({ walletId: wallet.id, walletState: { deleted: true } })
 
   return (
     <>
-      <Button variant={'danger'} disabled={pending} onClick={deleteWallet}>
+      <Button variant={'danger'} disabled={status === 'loading'} onClick={deleteWallet}>
         Delete
       </Button>
-      <Button variant={'warning'} disabled={pending} onClick={archiveWallet}>
+      <Button variant={'warning'} disabled={status === 'loading'} onClick={archiveWallet}>
         Archive
       </Button>
     </>
@@ -102,7 +101,7 @@ const useEnabledTokens = ({ wallet }: { wallet: EdgeCurrencyWallet }) =>
   useQuery({
     queryKey: ['enabledTokens', wallet.id],
     queryFn: () => wallet.getEnabledTokens(),
-    config: { suspense: true, cacheTime: Infinity, staleTime: Infinity },
+    config: { suspense: true },
   }).data!
 
 const useEnabledTokenInfos = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {

@@ -8,7 +8,7 @@ export const useEdgeContext = () => {
   const context = useQuery({
     queryKey: 'context',
     queryFn: () => makeEdgeContext(contextOptions),
-    config: { cacheTime: Infinity, staleTime: Infinity, suspense: true },
+    config: { suspense: true },
   }).data!
 
   useWatchAll(context)

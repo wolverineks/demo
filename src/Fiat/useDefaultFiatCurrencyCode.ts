@@ -14,7 +14,7 @@ const useReadDefaultFiatCurrencyCode = ({ account }: { account: EdgeAccount }) =
         .getItem(storeId, itemId)
         .then(JSON.parse)
         .catch(() => defaultFiatCurrencyCode),
-    config: { cacheTime: Infinity, staleTime: Infinity, suspense: true },
+    config: { suspense: true },
   })
 
 export const useWriteDefaultFiatCurrencyCode = ({ account }: { account: EdgeAccount }) =>
@@ -36,4 +36,4 @@ export const useWriteDefaultFiatCurrencyCode = ({ account }: { account: EdgeAcco
   )
 
 export const useDefaultFiatCurrencyCode = ({ account }: { account: EdgeAccount }) =>
-  [useReadDefaultFiatCurrencyCode({ account }).data as string, useWriteDefaultFiatCurrencyCode({ account })[0]] as const
+  [useReadDefaultFiatCurrencyCode({ account }).data!, useWriteDefaultFiatCurrencyCode({ account })[0]] as const

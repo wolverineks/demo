@@ -44,7 +44,7 @@ export const useStoreIds = ({ dataStore }: { dataStore: EdgeDataStore }) =>
   useQuery({
     queryKey: ['dataStore', 'storeIds'],
     queryFn: () => dataStore.listStoreIds(),
-    config: { suspense: true, cacheTime: Infinity, staleTime: Infinity },
+    config: { suspense: true },
   }).data!
 
 export const DataStore: React.FC<{
@@ -75,7 +75,7 @@ export const useItemIds = ({ dataStore, storeId }: { dataStore: EdgeDataStore; s
   useQuery({
     queryKey: ['dataStore', storeId],
     queryFn: () => dataStore.listItemIds(storeId),
-    config: { suspense: true, cacheTime: Infinity, staleTime: Infinity },
+    config: { suspense: true },
   }).data!
 
 export const Store: React.FC<{
@@ -86,6 +86,7 @@ export const Store: React.FC<{
   //   queryCache.prefetchQuery({
   //     queryKey: [storeId],
   //     queryFn: () => dataStore.listItemIds(storeId).catch(() => []),
+  // config: { suspense: true }
   //   });
   // }, [dataStore, storeId]);
 
@@ -143,7 +144,7 @@ export const useItem = ({
   useQuery({
     queryKey: ['dataStore', storeId, itemId],
     queryFn: () => dataStore.getItem(storeId, itemId),
-    config: { suspense: true, cacheTime: Infinity, staleTime: Infinity },
+    config: { suspense: true },
   }).data!
 
 export const Item: React.FC<{
@@ -155,7 +156,7 @@ export const Item: React.FC<{
   //   queryCache.prefetchQuery({
   //     queryKey: `${storeId} - ${itemId}`,
   //     queryFn: () => dataStore.getItem(storeId, itemId),
-  //     config: { suspense: true, cacheTime: Infinity, staleTime: Infinity },
+  // config: { suspense: true }
   //   });
   // }, [dataStore, storeId, itemId]);
 

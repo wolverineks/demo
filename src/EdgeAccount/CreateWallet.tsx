@@ -5,11 +5,11 @@ import { Alert, Button, Form, FormControl, FormGroup, FormLabel } from 'react-bo
 
 import { Select } from '../Components/Select'
 import { fiatInfos, useDefaultFiatInfo } from '../Fiat'
-import { useWalletTypes } from '../utils'
+import { getWalletTypes } from '../utils'
 
 export const CreateWallet: React.FC<{ account: EdgeAccount }> = ({ account }) => {
   const defaultFiatInfo = useDefaultFiatInfo({ account })
-  const walletTypes = useWalletTypes(account)
+  const walletTypes = getWalletTypes(account)
   const { execute: createCurrencyWallet, error, status } = useCreateCurrencyWallet(account)
 
   const [type, setType] = React.useState<string>(walletTypes[0].type)

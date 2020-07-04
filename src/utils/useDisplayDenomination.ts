@@ -10,7 +10,7 @@ export const useReadDisplayDenominationMultiplier = ({
   currencyInfo: EdgeCurrencyInfo | EdgeMetaToken
 }) =>
   useQuery({
-    queryKey: ['displayDenominsation', currencyInfo.currencyCode],
+    queryKey: ['displayDenomination', currencyInfo.currencyCode],
     queryFn: () =>
       account.dataStore
         .getItem('displayDenominationMultipliers', currencyInfo.currencyCode)
@@ -34,15 +34,15 @@ export const useWriteDisplayDenominationMultiplier = ({
       ),
     {
       onMutate: (multiplier: string) => {
-        queryCache.cancelQueries(['displayDenominsation', currencyInfo.currencyCode])
-        const previous = queryCache.getQueryData(['displayDenominsation', currencyInfo.currencyCode])
-        queryCache.setQueryData(['displayDenominsation', currencyInfo.currencyCode], multiplier)
-        const rollback = () => queryCache.setQueryData(['displayDenominsation', currencyInfo.currencyCode], previous)
+        queryCache.cancelQueries(['displayDenomination', currencyInfo.currencyCode])
+        const previous = queryCache.getQueryData(['displayDenomination', currencyInfo.currencyCode])
+        queryCache.setQueryData(['displayDenomination', currencyInfo.currencyCode], multiplier)
+        const rollback = () => queryCache.setQueryData(['displayDenomination', currencyInfo.currencyCode], previous)
 
         return rollback
       },
       onError: (_err, _attemptedValue, rollback) => rollback(),
-      onSettled: () => queryCache.invalidateQueries(['displayDenominsation', currencyInfo.currencyCode]),
+      onSettled: () => queryCache.invalidateQueries(['displayDenomination', currencyInfo.currencyCode]),
     },
   )
 

@@ -19,7 +19,7 @@ export const useReadAutoLogout = ({ account }: { account: EdgeAccount }) =>
         .getItem(storeId, itemId)
         .then(JSON.parse)
         .catch(() => defaultAutoLogout),
-    config: { cacheTime: Infinity, staleTime: Infinity, suspense: true },
+    config: { suspense: true },
   })
 
 export const useWriteAutoLogout = ({ account }: { account: EdgeAccount }) =>
@@ -41,4 +41,4 @@ export const useWriteAutoLogout = ({ account }: { account: EdgeAccount }) =>
   )
 
 export const useAutoLogout = ({ account }: { account: EdgeAccount }) =>
-  [useReadAutoLogout({ account }).data as AutoLogoutSetting, useWriteAutoLogout({ account })[0]] as const
+  [useReadAutoLogout({ account }).data!, useWriteAutoLogout({ account })[0]] as const

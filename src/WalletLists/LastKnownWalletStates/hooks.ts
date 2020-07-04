@@ -9,8 +9,8 @@ export const useReadLastKnownWalletState = ({ account, walletId }: { account: Ed
   useQuery({
     queryKey: queryKey(walletId),
     queryFn: () => account.dataStore.getItem(storeId, walletId).then(JSON.parse),
-    config: { suspense: true, cacheTime: Infinity, staleTime: Infinity },
-  }).data as WalletState
+    config: { suspense: true, cacheTime: 0 },
+  }).data!
 
 export const useWriteLastKnownWalletState = ({
   account,
@@ -20,16 +20,15 @@ export const useWriteLastKnownWalletState = ({
   wallet: EdgeCurrencyWallet
 }) => {
   const [update] = useMutation(() => account.dataStore.setItem(storeId, wallet.id, JSON.stringify(wallet)), {
-    onMutate: () => {
-      queryCache.cancelQueries(queryKey(wallet.id))
-      const previous = queryCache.getQueryData(queryKey(wallet.id))
-      queryCache.setQueryData(queryKey(wallet.id), JSON.parse(JSON.stringify(wallet)))
-      const rollback = () => queryCache.setQueryData(queryKey(wallet.id), previous)
-
-      return rollback
-    },
-    onError: (_err, _attemptedValue, rollback) => rollback(),
-    onSettled: () => queryCache.invalidateQueries(queryKey(wallet.id)),
+    // onMutate: () => {
+    //   queryCache.cancelQueries(queryKey(wallet.id))
+    //   const previous = queryCache.getQueryData(queryKey(wallet.id))
+    //   queryCache.setQueryData(queryKey(wallet.id), JSON.parse(JSON.stringify(wallet)))
+    //   const rollback = () => queryCache.setQueryData(queryKey(wallet.id), previous)
+    //   return rollback
+    // },
+    // onError: (_err, _attemptedValue, rollback) => rollback(),
+    // onSettled: () => queryCache.invalidateQueries(queryKey(wallet.id)),
   })
 
   React.useEffect(() => {

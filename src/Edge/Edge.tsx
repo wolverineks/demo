@@ -1,5 +1,6 @@
 import { addEdgeCorePlugins, closeEdge, lockEdgeCorePlugins } from 'edge-core-js'
 import * as React from 'react'
+import { ReactQueryConfigProvider } from 'react-query'
 
 import { plugins } from './plugins'
 import { useEdgeContext } from './useEdgeContext'
@@ -18,7 +19,16 @@ export const useEdge = () => {
 export const Edge: React.FC = ({ children }) => {
   useEdge()
 
-  return <>{children}</>
+  return (
+    <ReactQueryConfigProvider
+      config={{
+        queries: { useErrorBoundary: true, cacheTime: 0, staleTime: Infinity },
+        mutations: { useErrorBoundary: false },
+      }}
+    >
+      {children}
+    </ReactQueryConfigProvider>
+  )
 }
 
 // close: void;

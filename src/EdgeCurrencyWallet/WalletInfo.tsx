@@ -72,7 +72,7 @@ const useEnabledTokens = ({ wallet }: { wallet: EdgeCurrencyWallet }) =>
   useQuery({
     queryKey: ['enabledTokens', wallet.id],
     queryFn: () => wallet.getEnabledTokens(),
-    config: { cacheTime: Infinity, staleTime: Infinity, suspense: true },
+    config: { suspense: true },
   }).data!
 
 const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {

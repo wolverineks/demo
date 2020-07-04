@@ -7,7 +7,7 @@ export const useReadPinLoginEnabled = ({ context, account }: { context: EdgeCont
   useQuery({
     queryKey: queryKey({ account }),
     queryFn: () => context.pinLoginEnabled(account.username),
-    config: { suspense: true, cacheTime: Infinity, staleTime: Infinity },
+    config: { suspense: true },
   })
 
 export const useWritePinLoginEnabled = ({ account }: { account: EdgeAccount }) =>
@@ -25,4 +25,4 @@ export const useWritePinLoginEnabled = ({ account }: { account: EdgeAccount }) =
   })
 
 export const usePinLoginEnabled = ({ context, account }: { context: EdgeContext; account: EdgeAccount }) =>
-  [useReadPinLoginEnabled({ context, account }).data as boolean, useWritePinLoginEnabled({ account })[0]] as const
+  [useReadPinLoginEnabled({ context, account }).data!, useWritePinLoginEnabled({ account })[0]] as const

@@ -7,6 +7,7 @@ import { ReactQueryDevtools } from 'react-query-devtools'
 
 import { useAccount, useSetAccount } from './Auth'
 import { AccountProvider, Login } from './Auth'
+import { Boundary } from './Components/Boundary'
 import { Edge } from './Edge'
 import { AccountInfo } from './EdgeAccount/AccountInfo'
 import { SelectedWalletProvider } from './SelectedWallet'
@@ -51,15 +52,13 @@ export const Inner = () => {
 
 export const App = () => (
   <>
-    <ErrorBoundary fallback={<div>Error...</div>}>
-      <React.Suspense fallback={<div>Loading...</div>}>
-        <Edge>
-          <AccountProvider>
-            <Inner />
-          </AccountProvider>
-        </Edge>
-      </React.Suspense>
-    </ErrorBoundary>
+    <Boundary>
+      <Edge>
+        <AccountProvider>
+          <Inner />
+        </AccountProvider>
+      </Edge>
+    </Boundary>
     <ReactQueryDevtools initialIsOpen={false} />
   </>
 )
