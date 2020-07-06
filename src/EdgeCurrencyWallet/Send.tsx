@@ -1,13 +1,28 @@
 import { EdgeCurrencyWallet, EdgeParsedUri, EdgeSpendInfo } from 'edge-core-js'
-import { useMaxSpendable, useNewTransaction, useWatchAll } from 'edge-react-hooks'
+import { useWatchAll } from 'edge-react-hooks'
 import * as React from 'react'
 import { Alert, Button, Form, FormControl, FormGroup, FormLabel, InputGroup } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
 import QrReader from 'react-qr-reader'
+import { useQuery } from 'react-query'
 
 import { Select } from '../Components/Select'
 import { categories } from '../utils/categories'
 import { getCurrencyCodes } from '../utils/utils'
+
+const useMaxSpendable = ({ wallet, spendInfo }: { wallet: EdgeCurrencyWallet; spendInfo: EdgeSpendInfo }) =>
+  useQuery({
+    queryKey: ['maxSpendable', wallet.id, spendInfo],
+    queryFn: () => wallet.getMaxSpendable(spendInfo),
+    config: { suspense: false, staleTime: Infinity, cacheTime: 0 },
+  })
+
+const useNewTransaction = ({ wallet, spendInfo }: { wallet: EdgeCurrencyWallet; spendInfo: EdgeSpendInfo }) =>
+  useQuery({
+    queryKey: ['transaction', wallet.id, spendInfo],
+    queryFn: () => wallet.makeSpend(spendInfo),
+    config: { suspense: false, staleTime: Infinity, cacheTime: 0 },
+  })
 
 export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   useWatchAll(wallet)
@@ -30,7 +45,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
     [publicAddress, nativeAmount, currencyCode, name, notes, category],
   )
 
-  const { data: maxSpendable } = useMaxSpendable(wallet, { spendInfo })
+  const { data: maxSpendable } = useMaxSpendable({ wallet, spendInfo })
 
   const [scan, setScan] = React.useState(false)
   const onScan = (uri: string) =>
@@ -47,7 +62,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
       })
       .catch((error) => console.log(error))
 
-  const { data: transaction, error } = useNewTransaction(wallet, { spendInfo })
+  const { data: transaction, error } = useNewTransaction({ wallet, spendInfo })
 
   return (
     <div>

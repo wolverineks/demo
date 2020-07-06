@@ -1,14 +1,40 @@
-import { EdgeAccount, EdgeCurrencyWallet } from 'edge-core-js'
-import { useReceiveAddressAndEncodeUri, useWatchAll } from 'edge-react-hooks'
+import { EdgeAccount, EdgeCurrencyCodeOptions, EdgeCurrencyWallet } from 'edge-core-js'
+import { useWatchAll } from 'edge-react-hooks'
 import QRCode from 'qrcode.react'
 import * as React from 'react'
 import { Alert, Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
+import { useQuery } from 'react-query'
 
 import { Select } from '../Components/Select'
 import { useFiatAmount } from '../Fiat'
 import { getCurrencyInfoFromCurrencyCode } from '../utils'
 import { getCurrencyCodes } from '../utils/utils'
+
+const useReceiveAddressAndEncodeUri = ({
+  wallet,
+  nativeAmount,
+  options,
+}: {
+  wallet: EdgeCurrencyWallet
+  nativeAmount: string
+  options?: EdgeCurrencyCodeOptions
+}) =>
+  useQuery({
+    queryKey: ['receiveAddressAndEncodeUri', wallet.id, nativeAmount, options],
+    queryFn: () => {
+      const receiveAddress = wallet.getReceiveAddress({ currencyCode: options?.currencyCode })
+      const encodeUri = receiveAddress.then(({ publicAddress }) =>
+        wallet.encodeUri({
+          publicAddress,
+          nativeAmount: nativeAmount || '0',
+        }),
+      )
+
+      return Promise.all([receiveAddress, encodeUri]).then(([receiveAddress, uri]) => ({ receiveAddress, uri }))
+    },
+    config: { staleTime: Infinity, cacheTime: 0, suspense: false },
+  })
 
 export const Request: React.FC<{
   account: EdgeAccount
@@ -30,10 +56,7 @@ export const Request: React.FC<{
     currencyInfo,
     toCurrencyCode: wallet.fiatCurrencyCode,
   })
-  const { data, error } = useReceiveAddressAndEncodeUri(wallet, {
-    nativeAmount,
-    options: { currencyCode },
-  })
+  const { data, error } = useReceiveAddressAndEncodeUri({ wallet, nativeAmount, options: { currencyCode } })
 
   return (
     <Form>

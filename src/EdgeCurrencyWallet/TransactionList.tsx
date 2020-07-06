@@ -1,7 +1,8 @@
-import { EdgeAccount, EdgeCurrencyWallet, EdgeTransaction } from 'edge-core-js'
-import { useTransactionCount, useTransactions, useWatchAll } from 'edge-react-hooks'
+import { EdgeAccount, EdgeCurrencyWallet, EdgeGetTransactionsOptions, EdgeTransaction } from 'edge-core-js'
+import { useWatchAll } from 'edge-react-hooks'
 import * as React from 'react'
 import { Button, Form, ListGroup } from 'react-bootstrap'
+import { useQuery } from 'react-query'
 
 import { DisplayAmount } from '../Components/DisplayAmount'
 import { Select } from '../Components/Select'
@@ -9,6 +10,26 @@ import { getCurrencyCodes, getCurrencyInfoFromCurrencyCode } from '../utils'
 
 const initialTransactionCount = 10
 const transactionCounts = [1, 5, 10, 15, 20, 25]
+
+const useTransactions = ({ wallet, options }: { wallet: EdgeCurrencyWallet; options: EdgeGetTransactionsOptions }) =>
+  useQuery({
+    queryKey: ['transactions', wallet.id, options],
+    queryFn: () => wallet.getTransactions(options),
+    config: { suspense: false, staleTime: Infinity, cacheTime: 0 },
+  })
+
+const useTransactionCount = ({
+  wallet,
+  options,
+}: {
+  wallet: EdgeCurrencyWallet
+  options: EdgeGetTransactionsOptions
+}) =>
+  useQuery({
+    queryKey: ['transactionCount', wallet.id, options],
+    queryFn: () => wallet.getNumTransactions(options),
+    config: { suspense: false, staleTime: Infinity, cacheTime: 0 },
+  })
 
 export const TransactionList: React.FC<{
   account: EdgeAccount
@@ -18,8 +39,8 @@ export const TransactionList: React.FC<{
   const [currencyCode, setCurrencyCode] = React.useState<string>(wallet.currencyInfo.currencyCode)
   const [startEntries, setStartEntries] = React.useState<number>(initialTransactionCount)
   const options = React.useMemo(() => ({ currencyCode, startEntries }), [currencyCode, startEntries])
-  const { data: transactions, status } = useTransactions(wallet, { options })
-  const { data: transactionCount } = useTransactionCount(wallet, { options })
+  const { data: transactions, status } = useTransactions({ wallet, options })
+  const { data: transactionCount } = useTransactionCount({ wallet, options })
   const currencyCodes = getCurrencyCodes(wallet)
 
   return (
