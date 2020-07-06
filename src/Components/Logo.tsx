@@ -2,9 +2,11 @@ import { EdgeAccount } from 'edge-core-js'
 import * as React from 'react'
 import { Image } from 'react-bootstrap'
 
+import { useAccount } from '../Auth'
 import { getCurrencyInfoFromWalletType } from '../utils'
 
-export const Logo: React.FC<{ walletType: string; account: EdgeAccount }> = ({ walletType, account }) => {
+export const Logo: React.FC<{ walletType: string }> = ({ walletType }) => {
+  const account = useAccount()
   const logo = getLogo({ account, walletType })
 
   return <Image src={logo} />

@@ -1,19 +1,19 @@
-import { EdgeAccount, EdgeCurrencyInfo, EdgeDenomination, EdgeMetaToken } from 'edge-core-js'
-import { useWatchAll } from 'edge-react-hooks'
+import { EdgeCurrencyInfo, EdgeDenomination, EdgeMetaToken } from 'edge-core-js'
 import * as React from 'react'
 import { Image, ListGroup, ListGroupItem } from 'react-bootstrap'
 
+import { useAccount } from '../Auth'
 import { getActiveCurrencyInfos, useDisplayDenomination } from '../utils'
 
-export const Currencies = ({ account }: { account: EdgeAccount }) => {
-  useWatchAll(account)
+export const Currencies = () => {
+  const account = useAccount()
   const currencyInfos = getActiveCurrencyInfos(account)
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       {currencyInfos.map((currencyInfo) => (
         <React.Suspense fallback={<div>Currency loading...</div>} key={currencyInfo.currencyCode}>
-          <CurrencySetting currencyInfo={currencyInfo} account={account} />
+          <CurrencySetting currencyInfo={currencyInfo} />
         </React.Suspense>
       ))}
     </ListGroup>
@@ -21,9 +21,9 @@ export const Currencies = ({ account }: { account: EdgeAccount }) => {
 }
 
 const CurrencySetting: React.FC<{
-  account: EdgeAccount
   currencyInfo: EdgeCurrencyInfo
-}> = ({ account, currencyInfo }) => {
+}> = ({ currencyInfo }) => {
+  const account = useAccount()
   const { displayName, denominations, symbolImage, currencyCode, metaTokens } = currencyInfo
   const [denomination, write] = useDisplayDenomination({
     account,
@@ -38,16 +38,16 @@ const CurrencySetting: React.FC<{
       </ListGroupItem>
       <Denominations denominations={denominations} onSelect={write} selectedDenomination={denomination} />
       {metaTokens.map((metaToken) => (
-        <TokenSetting key={metaToken.currencyCode} account={account} tokenInfo={metaToken} />
+        <TokenSetting key={metaToken.currencyCode} tokenInfo={metaToken} />
       ))}
     </ListGroup>
   )
 }
 
 const TokenSetting: React.FC<{
-  account: EdgeAccount
   tokenInfo: EdgeMetaToken
-}> = ({ account, tokenInfo }) => {
+}> = ({ tokenInfo }) => {
+  const account = useAccount()
   const { currencyName, currencyCode, denominations, symbolImage } = tokenInfo
   const [denomination, write] = useDisplayDenomination({
     account,

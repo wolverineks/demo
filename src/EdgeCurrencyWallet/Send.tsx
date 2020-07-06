@@ -4,25 +4,10 @@ import * as React from 'react'
 import { Alert, Button, Form, FormControl, FormGroup, FormLabel, InputGroup } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
 import QrReader from 'react-qr-reader'
-import { useQuery } from 'react-query'
 
 import { Select } from '../Components/Select'
-import { categories } from '../utils/categories'
-import { getCurrencyCodes } from '../utils/utils'
-
-const useMaxSpendable = ({ wallet, spendInfo }: { wallet: EdgeCurrencyWallet; spendInfo: EdgeSpendInfo }) =>
-  useQuery({
-    queryKey: ['maxSpendable', wallet.id, spendInfo],
-    queryFn: () => wallet.getMaxSpendable(spendInfo),
-    config: { suspense: false, staleTime: Infinity, cacheTime: 0 },
-  })
-
-const useNewTransaction = ({ wallet, spendInfo }: { wallet: EdgeCurrencyWallet; spendInfo: EdgeSpendInfo }) =>
-  useQuery({
-    queryKey: ['transaction', wallet.id, spendInfo],
-    queryFn: () => wallet.makeSpend(spendInfo),
-    config: { suspense: false, staleTime: Infinity, cacheTime: 0 },
-  })
+import { useMaxSpendable, useNewTransaction } from '../hooks'
+import { categories, getCurrencyCodes } from '../utils'
 
 export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   useWatchAll(wallet)

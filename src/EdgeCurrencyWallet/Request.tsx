@@ -1,4 +1,4 @@
-import { EdgeAccount, EdgeCurrencyCodeOptions, EdgeCurrencyWallet } from 'edge-core-js'
+import { EdgeCurrencyCodeOptions, EdgeCurrencyWallet } from 'edge-core-js'
 import { useWatchAll } from 'edge-react-hooks'
 import QRCode from 'qrcode.react'
 import * as React from 'react'
@@ -6,6 +6,7 @@ import { Alert, Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
 import { useQuery } from 'react-query'
 
+import { useAccount } from '../Auth'
 import { Select } from '../Components/Select'
 import { useFiatAmount } from '../Fiat'
 import { getCurrencyInfoFromCurrencyCode } from '../utils'
@@ -37,10 +38,9 @@ const useReceiveAddressAndEncodeUri = ({
   })
 
 export const Request: React.FC<{
-  account: EdgeAccount
   wallet: EdgeCurrencyWallet
-}> = ({ account, wallet }) => {
-  useWatchAll(account)
+}> = ({ wallet }) => {
+  const account = useAccount()
   useWatchAll(wallet)
 
   const currencyCodes = getCurrencyCodes(wallet)

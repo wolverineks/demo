@@ -1,8 +1,7 @@
-import { EdgeAccount } from 'edge-core-js'
-import { useWatchAll } from 'edge-react-hooks'
 import * as React from 'react'
 import { Tab, Tabs } from 'react-bootstrap'
 
+import { useAccount } from '../Auth'
 import { Boundary } from '../Components/Boundary'
 import { WalletInfo } from '../EdgeCurrencyWallet/WalletInfo'
 import { useSelectWallet, useSelectedWallet } from '../SelectedWallet'
@@ -11,11 +10,10 @@ import { Storage } from '../Storage'
 import { ActiveWalletList, ArchivedWalletList, DeletedWalletList } from '../WalletLists/'
 import { CreateWallet } from './CreateWallet'
 
-export const AccountInfo = ({ account }: { account: EdgeAccount }) => {
-  useWatchAll(account)
-
+export const AccountInfo = () => {
+  const account = useAccount()
   const [tab, setTab] = React.useState('wallets')
-  const selectedWallet = useSelectedWallet({ account })
+  const selectedWallet = useSelectedWallet()
   const selectWallet = useSelectWallet()
 
   return (
@@ -31,7 +29,6 @@ export const AccountInfo = ({ account }: { account: EdgeAccount }) => {
           <Tab eventKey={'active'} title={'Active'}>
             <Boundary>
               <ActiveWalletList
-                account={account}
                 onSelect={(wallet) => {
                   selectWallet(wallet)
                   setTab('wallet')
@@ -42,39 +39,37 @@ export const AccountInfo = ({ account }: { account: EdgeAccount }) => {
 
           <Tab eventKey={'archived'} title={'Archived'}>
             <Boundary>
-              <ArchivedWalletList account={account} />
+              <ArchivedWalletList />
             </Boundary>
           </Tab>
 
           <Tab eventKey={'deleted'} title={'Deleted'}>
             <Boundary>
-              <DeletedWalletList account={account} />
+              <DeletedWalletList />
             </Boundary>
           </Tab>
 
           <Tab eventKey={'create'} title={'Create'}>
             <Boundary>
-              <CreateWallet account={account} key={account.activeWalletIds.length} />
+              <CreateWallet key={account.activeWalletIds.length} />
             </Boundary>
           </Tab>
         </Tabs>
       </Tab>
 
       <Tab eventKey={'wallet'} title={'Wallet'}>
-        <Boundary>
-          {selectedWallet && <WalletInfo key={selectedWallet.id} account={account} wallet={selectedWallet} />}
-        </Boundary>
+        <Boundary>{selectedWallet && <WalletInfo key={selectedWallet.id} wallet={selectedWallet} />}</Boundary>
       </Tab>
 
       <Tab eventKey={'storage'} title={'Storage'}>
         <Boundary>
-          <Storage account={account} />
+          <Storage />
         </Boundary>
       </Tab>
 
       <Tab eventKey={'settings'} title={'Settings'}>
         <Boundary>
-          <Settings account={account} />
+          <Settings />
         </Boundary>
       </Tab>
     </Tabs>

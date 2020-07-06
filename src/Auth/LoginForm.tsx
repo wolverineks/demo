@@ -5,7 +5,7 @@ import { Alert, Button, Form, FormGroup } from 'react-bootstrap'
 import { useEdgeContext } from '../Edge'
 import { useSetAccount } from './AccountProvider'
 
-export const LoginForm: React.FC = () => {
+export const LoginForm: React.FC<{ onLogin: () => any }> = ({ onLogin }) => {
   const context = useEdgeContext()
 
   const setAccount = useSetAccount()
@@ -24,7 +24,7 @@ export const LoginForm: React.FC = () => {
   }
 
   const onSubmit = () => {
-    loginWithPassword({ username, password }).then(setAccount)
+    loginWithPassword({ username, password }).then(setAccount).finally(onLogin)
   }
 
   return (

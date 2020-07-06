@@ -2,7 +2,7 @@ import { EdgeAccount, EdgeCurrencyWallet } from 'edge-core-js'
 import * as React from 'react'
 import { useMutation, useQuery } from 'react-query'
 
-import { optimisticMutationOptions } from '../../utils'
+// import { optimisticMutationOptions } from '../../utils'
 
 const queryKey = (id: string) => ['lastKnownWalletState', id] as const
 const storeId = 'lastKnownWalletStates'

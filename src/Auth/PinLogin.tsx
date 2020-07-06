@@ -9,7 +9,7 @@ import { useTimeout } from '../utils/useTimeout'
 import { useSetAccount } from './AccountProvider'
 import { getAccountsWithPinLogin } from './getAccountsWithPinLogin'
 
-export const PinLogin: React.FC = () => {
+export const PinLogin: React.FC<{ onLogin: () => any }> = ({ onLogin }) => {
   const context = useEdgeContext()
   const accountsWithPinLogin = getAccountsWithPinLogin({ context })
 
@@ -18,13 +18,15 @@ export const PinLogin: React.FC = () => {
       {accountsWithPinLogin.length <= 0 ? (
         <Card.Text>------</Card.Text>
       ) : (
-        accountsWithPinLogin.map(({ username }) => <LocalUserRow username={username} key={username} />)
+        accountsWithPinLogin.map(({ username }) => (
+          <LocalUserRow username={username} key={username} onLogin={onLogin} />
+        ))
       )}
     </ListGroup>
   )
 }
 
-const LocalUserRow: React.FC<{ username: string }> = ({ username }) => {
+const LocalUserRow: React.FC<{ username: string; onLogin: () => any }> = ({ username, onLogin }) => {
   const context = useEdgeContext()
   const [pin, setPin] = React.useState('')
   const deleteLocalAccount = useDeleteLocalAccount(context)
@@ -37,7 +39,7 @@ const LocalUserRow: React.FC<{ username: string }> = ({ username }) => {
     deleteLocalAccount.error && timeout(deleteLocalAccount.reset, 2500)
   }, [deleteLocalAccount.error, deleteLocalAccount.reset, timeout])
 
-  const handleLogin = () => loginWithPin.execute({ username, pin }).then(setAccount)
+  const handleLogin = () => loginWithPin.execute({ username, pin }).then(setAccount).finally(onLogin)
 
   const handleDeleteLocalAccount = () => deleteLocalAccount.execute({ username })
 

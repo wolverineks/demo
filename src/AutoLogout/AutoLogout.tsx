@@ -1,12 +1,12 @@
-import { EdgeAccount } from 'edge-core-js'
 import * as React from 'react'
 import { Form, FormControl, FormGroup, FormLabel, ListGroup, ListGroupItem } from 'react-bootstrap'
 import IdleTimer from 'react-idle-timer'
 
-import { useSetAccount } from '../Auth'
+import { useAccount, useSetAccount } from '../Auth'
 import { useAutoLogout } from './useAutoLogout'
 
-export const AutoLogout = ({ account }: { account: EdgeAccount }) => {
+export const AutoLogout = () => {
+  const account = useAccount()
   const [{ enabled, delay }, write] = useAutoLogout({ account })
   const setAccount = useSetAccount()
 

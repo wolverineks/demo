@@ -1,6 +1,7 @@
-import { EdgeAccount, EdgeCurrencyWallet } from 'edge-core-js'
-import { useWatchAll } from 'edge-react-hooks'
+import { EdgeCurrencyWallet } from 'edge-core-js'
 import * as React from 'react'
+
+import { useAccount } from '../Auth'
 
 const SelectedWalletContext = React.createContext<EdgeCurrencyWallet | undefined>(undefined)
 const SelectWalletContext = React.createContext<(wallet: EdgeCurrencyWallet) => undefined>(() => undefined)
@@ -18,8 +19,8 @@ export const SelectedWalletProvider: React.FC = ({ children }) => {
 }
 
 export const useSelectWallet = () => React.useContext(SelectWalletContext)
-export const useSelectedWallet = ({ account }: { account: EdgeAccount }) => {
-  useWatchAll(account)
+export const useSelectedWallet = () => {
+  const account = useAccount()
   const selectedWallet = React.useContext(SelectedWalletContext)
   const selectWallet = useSelectWallet()
   const suspend = () => {

@@ -1,45 +1,26 @@
-import { EdgeAccount, EdgeCurrencyWallet, EdgeGetTransactionsOptions, EdgeTransaction } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeTransaction } from 'edge-core-js'
 import { useWatchAll } from 'edge-react-hooks'
 import * as React from 'react'
 import { Button, Form, ListGroup } from 'react-bootstrap'
-import { useQuery } from 'react-query'
 
 import { DisplayAmount } from '../Components/DisplayAmount'
 import { Select } from '../Components/Select'
+import { usePrevious, useTransactionCount, useTransactions } from '../hooks'
 import { getCurrencyCodes, getCurrencyInfoFromCurrencyCode } from '../utils'
 
 const initialTransactionCount = 10
 const transactionCounts = [1, 5, 10, 15, 20, 25]
 
-const useTransactions = ({ wallet, options }: { wallet: EdgeCurrencyWallet; options: EdgeGetTransactionsOptions }) =>
-  useQuery({
-    queryKey: ['transactions', wallet.id, options],
-    queryFn: () => wallet.getTransactions(options),
-    config: { suspense: false, staleTime: Infinity, cacheTime: 0 },
-  })
-
-const useTransactionCount = ({
-  wallet,
-  options,
-}: {
-  wallet: EdgeCurrencyWallet
-  options: EdgeGetTransactionsOptions
-}) =>
-  useQuery({
-    queryKey: ['transactionCount', wallet.id, options],
-    queryFn: () => wallet.getNumTransactions(options),
-    config: { suspense: false, staleTime: Infinity, cacheTime: 0 },
-  })
-
 export const TransactionList: React.FC<{
-  account: EdgeAccount
   wallet: EdgeCurrencyWallet
-}> = ({ account, wallet }) => {
+}> = ({ wallet }) => {
   useWatchAll(wallet)
   const [currencyCode, setCurrencyCode] = React.useState<string>(wallet.currencyInfo.currencyCode)
   const [startEntries, setStartEntries] = React.useState<number>(initialTransactionCount)
   const options = React.useMemo(() => ({ currencyCode, startEntries }), [currencyCode, startEntries])
-  const { data: transactions, status } = useTransactions({ wallet, options })
+  const { data, status } = useTransactions({ wallet, options })
+  const previousTransactions = usePrevious<EdgeTransaction[]>({ data, initialData: [] })
+  const transactions = data || previousTransactions
   const { data: transactionCount } = useTransactionCount({ wallet, options })
   const currencyCodes = getCurrencyCodes(wallet)
 
@@ -59,7 +40,7 @@ export const TransactionList: React.FC<{
 
         <Select
           title={'# of transactions'}
-          options={transactionCount ? [...transactionCounts, transactionCount] : transactionCounts}
+          options={transactionCount ? Array.from(new Set([...transactionCounts, transactionCount])) : transactionCounts}
           renderOption={(num: number) => (
             <option key={num} value={num}>
               {num}
@@ -86,20 +67,18 @@ export const TransactionList: React.FC<{
         </Button>
         {status === 'loading' && <div>Loading transactions...</div>}
         {transactionCount !== undefined && transactionCount <= 0 && <div>No Transactions</div>}
-        {transactions &&
-          transactions.map((transaction) => (
-            <TransactionListRow account={account} wallet={wallet} transaction={transaction} key={transaction.txid} />
-          ))}
+        {transactions.map((transaction) => (
+          <TransactionListRow wallet={wallet} transaction={transaction} key={transaction.txid} />
+        ))}
       </ListGroup>
     </ListGroup>
   )
 }
 
 const TransactionListRow: React.FC<{
-  account: EdgeAccount
   wallet: EdgeCurrencyWallet
   transaction: EdgeTransaction
-}> = ({ account, wallet, transaction }) => {
+}> = ({ wallet, transaction }) => {
   const currencyInfo = getCurrencyInfoFromCurrencyCode({
     wallet,
     currencyCode: transaction.currencyCode,
@@ -108,8 +87,7 @@ const TransactionListRow: React.FC<{
   return (
     <ListGroup.Item id={transaction.txid} variant={transaction.nativeAmount.startsWith('-') ? 'danger' : 'info'}>
       <span>
-        {transaction.date}:{' '}
-        <DisplayAmount account={account} nativeAmount={transaction.nativeAmount} currencyInfo={currencyInfo} />
+        {transaction.date}: <DisplayAmount nativeAmount={transaction.nativeAmount} currencyInfo={currencyInfo} />
       </span>
 
       {transaction.metadata && (

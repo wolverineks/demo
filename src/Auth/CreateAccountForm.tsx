@@ -7,7 +7,7 @@ import { useSetAccount } from './AccountProvider'
 
 const onChange = (cb: (value: string) => any) => (event: any) => cb(event.currentTarget.value)
 
-export const CreateAccountForm: React.FC = () => {
+export const CreateAccountForm: React.FC<{ onLogin: () => any }> = ({ onLogin }) => {
   const context = useEdgeContext()
   const setAccount = useSetAccount()
 
@@ -17,7 +17,7 @@ export const CreateAccountForm: React.FC = () => {
   const [password, setPassword] = React.useState('')
   const [pin, setPin] = React.useState('')
 
-  const handleCreate = () => createAccount({ username, password, pin }).then(setAccount)
+  const handleCreate = () => createAccount({ username, password, pin }).then(setAccount).finally(onLogin)
 
   return (
     <Form>

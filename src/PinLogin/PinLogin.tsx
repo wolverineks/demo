@@ -1,11 +1,12 @@
-import { EdgeAccount } from 'edge-core-js'
 import * as React from 'react'
 import { Form, FormGroup, ListGroup, ListGroupItem } from 'react-bootstrap'
 
+import { useAccount } from '../Auth'
 import { useEdgeContext } from '../Edge'
 import { usePinLoginEnabled } from './usePinLoginEnabled'
 
-export const PinLogin = ({ account }: { account: EdgeAccount }) => {
+export const PinLogin = () => {
+  const account = useAccount()
   const context = useEdgeContext()
   const [enabled, write] = usePinLoginEnabled({ context, account })
 

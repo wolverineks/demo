@@ -1,24 +1,26 @@
-import { EdgeAccount } from 'edge-core-js'
-import { useChangeWalletState, useWatchAll } from 'edge-react-hooks'
+import { useChangeWalletState } from 'edge-react-hooks'
 import * as React from 'react'
 import { Button, ListGroup } from 'react-bootstrap'
 
+import { useAccount } from '../Auth'
 import { Boundary } from '../Components/Boundary'
 import { DisplayAmount } from '../Components/DisplayAmount'
 import { Logo } from '../Components/Logo'
 import { FiatAmount } from '../Fiat'
 import { getBalance, getDeletedWalletInfos } from '../utils'
+import { FallbackRender } from './FallbackRender'
 import { WalletState, useReadLastKnownWalletState } from './LastKnownWalletStates'
 
-export const DeletedWalletList: React.FC<{ account: EdgeAccount }> = ({ account }) => {
-  useWatchAll(account)
+export const DeletedWalletList: React.FC = () => {
+  const account = useAccount()
   const deletedWalletInfos = getDeletedWalletInfos({ account })
 
   return (
     <ListGroup variant={'flush'}>
       {deletedWalletInfos.map((walletInfo) => (
-        <Boundary key={walletInfo.id}>
-          <WalletRow account={account} walletId={walletInfo.id} />
+        // eslint-disable-next-line react/display-name
+        <Boundary key={walletInfo.id} error={{ fallbackRender: () => <FallbackRender walletId={walletInfo.id} /> }}>
+          <WalletRow walletId={walletInfo.id} />
         </Boundary>
       ))}
     </ListGroup>
@@ -26,10 +28,9 @@ export const DeletedWalletList: React.FC<{ account: EdgeAccount }> = ({ account 
 }
 
 const WalletRow: React.FC<{
-  account: EdgeAccount
   walletId: string
-}> = ({ account, walletId }) => {
-  useWatchAll(account)
+}> = ({ walletId }) => {
+  const account = useAccount()
   const walletState = useReadLastKnownWalletState({ account, walletId })
   const balance = getBalance({ wallet: walletState, currencyCode: walletState.currencyInfo.currencyCode })
 
@@ -37,13 +38,12 @@ const WalletRow: React.FC<{
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       <ListGroup.Item>
         <span className={'float-left'}>
-          <Logo account={account} walletType={walletState.type} /> {walletState.name}{' '}
+          <Logo walletType={walletState.type} /> {walletState.name}{' '}
           <Boundary>
-            <DisplayAmount account={account} nativeAmount={balance} currencyInfo={walletState.currencyInfo} />
+            <DisplayAmount nativeAmount={balance} currencyInfo={walletState.currencyInfo} />
           </Boundary>{' '}
           -{' '}
           <FiatAmount
-            account={account}
             currencyInfo={walletState.currencyInfo}
             toCurrencyCode={walletState.fiatCurrencyCode}
             nativeAmount={balance}
@@ -51,14 +51,15 @@ const WalletRow: React.FC<{
         </span>
 
         <span className={'float-right'}>
-          <WalletOptions account={account} walletState={walletState} />
+          <WalletOptions walletState={walletState} />
         </span>
       </ListGroup.Item>
     </ListGroup>
   )
 }
 
-const WalletOptions = ({ account, walletState }: { account: EdgeAccount; walletState: WalletState }) => {
+const WalletOptions = ({ walletState }: { walletState: WalletState }) => {
+  const account = useAccount()
   const { execute: changeWalletState, error, status } = useChangeWalletState(account)
   const activateWallet = () =>
     changeWalletState({

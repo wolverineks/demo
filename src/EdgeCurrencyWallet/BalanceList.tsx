@@ -1,4 +1,4 @@
-import { EdgeAccount, EdgeCurrencyInfo, EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
+import { EdgeCurrencyInfo, EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
 import { useEnabledTokens, useWatchAll } from 'edge-react-hooks'
 import * as React from 'react'
 import { Card, Image, ListGroup } from 'react-bootstrap'
@@ -8,10 +8,8 @@ import { FiatAmount } from '../Fiat'
 
 export const BalanceList: React.FC<{
   wallet: EdgeCurrencyWallet
-  account: EdgeAccount
-}> = ({ wallet, account }) => {
+}> = ({ wallet }) => {
   useWatchAll(wallet)
-  useWatchAll(account)
 
   const enabledTokens = useEnabledTokens(wallet)
 
@@ -26,7 +24,6 @@ export const BalanceList: React.FC<{
         <ListGroup.Item>{wallet.name}</ListGroup.Item>
         <ListGroup.Item>
           <Balance
-            account={account}
             wallet={wallet}
             currencyInfo={wallet.currencyInfo}
             nativeAmount={wallet.balances[wallet.currencyInfo.currencyCode]}
@@ -37,7 +34,6 @@ export const BalanceList: React.FC<{
           wallet.balances[tokenInfo.currencyCode] ? (
             <ListGroup.Item key={tokenInfo.currencyCode}>
               <Balance
-                account={account}
                 wallet={wallet}
                 currencyInfo={tokenInfo}
                 nativeAmount={wallet.balances[tokenInfo.currencyCode]}
@@ -51,21 +47,13 @@ export const BalanceList: React.FC<{
 }
 
 const Balance: React.FC<{
-  account: EdgeAccount
   wallet: EdgeCurrencyWallet
   currencyInfo: EdgeCurrencyInfo | EdgeMetaToken
   nativeAmount: string
-}> = ({ currencyInfo, nativeAmount = '0', account, wallet }) => {
-  return (
-    <div>
-      <Image src={currencyInfo.symbolImage} />
-      <DisplayAmount account={account} currencyInfo={currencyInfo} nativeAmount={nativeAmount} /> -{' '}
-      <FiatAmount
-        account={account}
-        currencyInfo={currencyInfo}
-        toCurrencyCode={wallet.fiatCurrencyCode}
-        nativeAmount={nativeAmount}
-      />
-    </div>
-  )
-}
+}> = ({ currencyInfo, nativeAmount = '0', wallet }) => (
+  <div>
+    <Image src={currencyInfo.symbolImage} />
+    <DisplayAmount currencyInfo={currencyInfo} nativeAmount={nativeAmount} /> -{' '}
+    <FiatAmount currencyInfo={currencyInfo} toCurrencyCode={wallet.fiatCurrencyCode} nativeAmount={nativeAmount} />
+  </div>
+)

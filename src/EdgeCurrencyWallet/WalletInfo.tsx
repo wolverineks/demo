@@ -1,4 +1,4 @@
-import { EdgeAccount, EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
 import {
   useDisableTokens,
   useEnableTokens,
@@ -31,11 +31,9 @@ import { Send } from './Send'
 import { TransactionList } from './TransactionList'
 
 export const WalletInfo: React.FC<{
-  account: EdgeAccount
   wallet: EdgeCurrencyWallet
-}> = ({ account, wallet }) => {
+}> = ({ wallet }) => {
   useWatchAll(wallet)
-  useWatchAll(account)
   useOnNewTransactions(
     wallet,
     (transactions) => transactions && alert(transactions.length > 1 ? 'New Transactions' : 'New Transaction'),
@@ -44,8 +42,8 @@ export const WalletInfo: React.FC<{
   return (
     <Tabs variant={'pills'} id={'walletTabs'} defaultActiveKey={'balance'}>
       <Tab eventKey={'balance'} title={'Balance'}>
-        <BalanceList wallet={wallet} account={account} />
-        <TransactionList key={wallet.id} account={account} wallet={wallet} />
+        <BalanceList wallet={wallet} />
+        <TransactionList key={wallet.id} wallet={wallet} />
       </Tab>
 
       <Tab eventKey={'send'} title={'Send'}>
@@ -53,7 +51,7 @@ export const WalletInfo: React.FC<{
       </Tab>
 
       <Tab eventKey={'request'} title={'Request'}>
-        <Request account={account} wallet={wallet} />
+        <Request wallet={wallet} />
       </Tab>
 
       <Tab eventKey={'storage'} title={'Storage'}>

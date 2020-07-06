@@ -36,15 +36,9 @@ export const Inner = () => {
         </Navbar.Collapse>
       </Navbar>
 
-      {!account || !account.loggedIn ? (
-        <Login />
-      ) : (
-        <SelectedWalletProvider>
-          <Boundary>
-            <AccountInfo account={account} key={account.id} />
-          </Boundary>
-        </SelectedWalletProvider>
-      )}
+      <SelectedWalletProvider>
+        <AccountInfo />
+      </SelectedWalletProvider>
     </Container>
   )
 }
@@ -54,7 +48,18 @@ export const App = () => (
     <Boundary>
       <Edge>
         <AccountProvider>
-          <Inner />
+          <Boundary
+            error={{
+              // eslint-disable-next-line react/display-name
+              fallbackRender: ({ resetErrorBoundary }) => (
+                <Container style={{ top: '100px' }}>
+                  <Login onLogin={resetErrorBoundary} />
+                </Container>
+              ),
+            }}
+          >
+            <Inner />
+          </Boundary>
         </AccountProvider>
       </Edge>
     </Boundary>

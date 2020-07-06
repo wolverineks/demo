@@ -1,13 +1,14 @@
-import { EdgeAccount } from 'edge-core-js'
 import * as React from 'react'
 import { Form, FormGroup, ListGroup, ListGroupItem } from 'react-bootstrap'
 
+import { useAccount } from '../Auth'
 import { Select } from '../Components/Select'
 import { FiatInfo, fiatInfos } from './fiatInfos'
 import { useDefaultFiatCurrencyCode } from './useDefaultFiatCurrencyCode'
 import { useDefaultFiatInfo } from './useDefaultFiatInfo'
 
-export const DefaultFiat = ({ account }: { account: EdgeAccount }) => {
+export const DefaultFiat = () => {
+  const account = useAccount()
   const [currencyCode, write] = useDefaultFiatCurrencyCode({
     account,
   })

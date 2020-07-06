@@ -1,27 +1,25 @@
-import { EdgeAccount, EdgeCurrencyWallet } from 'edge-core-js'
-import { useWatchAll } from 'edge-react-hooks'
+import { EdgeCurrencyWallet } from 'edge-core-js'
 import * as React from 'react'
 
+import { useAccount } from '../../Auth'
 import { useWriteLastKnownWalletState } from './useLastKnownWalletState'
 
-export const LastKnownWalletStates: React.FC<{
-  account: EdgeAccount
-}> = ({ account }) => {
-  useWatchAll(account)
+export const LastKnownWalletStates: React.FC = () => {
+  const account = useAccount()
 
   return (
     <>
       {Object.values(account.currencyWallets).map((wallet) => (
-        <LastKnownWalletState key={wallet.id} account={account} wallet={wallet} />
+        <LastKnownWalletState key={wallet.id} wallet={wallet} />
       ))}
     </>
   )
 }
 
 const LastKnownWalletState: React.FC<{
-  account: EdgeAccount
   wallet: EdgeCurrencyWallet
-}> = ({ account, wallet }) => {
+}> = ({ wallet }) => {
+  const account = useAccount()
   useWriteLastKnownWalletState({ account, wallet })
 
   return null
