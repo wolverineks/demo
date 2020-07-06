@@ -1,5 +1,7 @@
 import { EdgeAccount, EdgeContext } from 'edge-core-js'
-import { queryCache, useMutation, useQuery } from 'react-query'
+import { useMutation, useQuery } from 'react-query'
+
+import { optimisticMutationOptions } from '../utils'
 
 const queryKey = ({ account }: { account: EdgeAccount }) => ['pinLoginEnabled', account.username] as const // FIXME
 
@@ -11,18 +13,10 @@ export const useReadPinLoginEnabled = ({ context, account }: { context: EdgeCont
   })
 
 export const useWritePinLoginEnabled = ({ account }: { account: EdgeAccount }) =>
-  useMutation((enabled: boolean) => account.changePin({ enableLogin: enabled }), {
-    onMutate: (enabled: boolean) => {
-      queryCache.cancelQueries(queryKey({ account }))
-      const previous = queryCache.getQueryData(queryKey({ account }))
-      queryCache.setQueryData(queryKey({ account }), enabled)
-      const rollback = () => queryCache.setQueryData(queryKey({ account }), previous)
-
-      return rollback
-    },
-    onError: (_err, _attemptedValue, rollback) => rollback(),
-    onSettled: () => queryCache.invalidateQueries(queryKey({ account })),
-  })
+  useMutation(
+    (enabled: boolean) => account.changePin({ enableLogin: enabled }),
+    optimisticMutationOptions(queryKey({ account })),
+  )
 
 export const usePinLoginEnabled = ({ context, account }: { context: EdgeContext; account: EdgeAccount }) =>
   [useReadPinLoginEnabled({ context, account }).data!, useWritePinLoginEnabled({ account })[0]] as const

@@ -1,6 +1,8 @@
-import { useDeleteLocalAccount, useLoginMessages, useLoginWithPin } from 'edge-react-hooks'
+import { EdgeContext } from 'edge-core-js'
+import { useDeleteLocalAccount, useLoginWithPin } from 'edge-react-hooks'
 import * as React from 'react'
 import { Alert, Button, Card, Col, Form, FormControl, FormLabel, ListGroup } from 'react-bootstrap'
+import { useQuery } from 'react-query'
 
 import { useEdgeContext } from '../Edge'
 import { useTimeout } from '../utils/useTimeout'
@@ -87,28 +89,21 @@ const LocalUserRow: React.FC<{ username: string }> = ({ username }) => {
   )
 }
 
+const useLoginMessages = ({ context, username }: { context: EdgeContext; username: string }) =>
+  useQuery({
+    queryKey: ['loginMessages', username],
+    queryFn: () => context.fetchLoginMessages().then((loginMessages) => loginMessages[username] || []),
+    config: { suspense: true, cacheTime: 0, staleTime: Infinity },
+  }).data!
+
 const LoginMessages: React.FC<{ username: string }> = ({ username }) => {
   const context = useEdgeContext()
-  const loginMessages = useLoginMessages(context, { username })
+  const { otpResetPending, recovery2Corrupt } = useLoginMessages({ context, username })
 
-  return loginMessages.status === 'success' ? (
+  return (
     <ListGroup key={username}>
-      {Object.keys(loginMessages).length <= 0 ? (
-        <ListGroup.Item>No messages</ListGroup.Item>
-      ) : (
-        <>
-          <ListGroup.Item>otpResetPending: {loginMessages.data.otpResetPending.toString()}</ListGroup.Item>
-          <ListGroup.Item>recovery2Corrupt: {loginMessages.data.recovery2Corrupt.toString()}</ListGroup.Item>
-        </>
-      )}
-    </ListGroup>
-  ) : loginMessages.status === 'error' ? (
-    <ListGroup key={username}>
-      <ListGroup.Item>{loginMessages.error.message}</ListGroup.Item>
-    </ListGroup>
-  ) : (
-    <ListGroup key={username}>
-      <ListGroup.Item>Loading...</ListGroup.Item>
+      <ListGroup.Item>otpResetPending: {otpResetPending.toString()}</ListGroup.Item>
+      <ListGroup.Item>recovery2Corrupt: {recovery2Corrupt.toString()}</ListGroup.Item>
     </ListGroup>
   )
 }

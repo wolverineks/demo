@@ -7,42 +7,6 @@ import Json from 'react-json-pretty'
 export const fileName = (path: string) => (path.match(/\w*.\w+$/) || [])[0] || '/'
 export const folderName = (path: string) => (path.match(/\w+$/) || [])[0] || '/'
 
-const ToggleRow: React.FC<{
-  title: string
-  onDelete: () => any
-  onOpen: () => any
-}> = ({ children, title, onDelete, onOpen }) => {
-  const [showContents, setShowContents] = React.useState(false)
-
-  return (
-    <div>
-      <Button
-        onClick={(event: any) => {
-          event.stopPropagation()
-          !showContents && onOpen()
-          setShowContents((x) => !x)
-        }}
-      >
-        {showContents ? '-' : '+'}
-      </Button>
-      {title}
-      {
-        <Button
-          className={'float-right'}
-          variant={'danger'}
-          onClick={(event: React.MouseEvent) => {
-            event.preventDefault()
-            onDelete()
-          }}
-        >
-          Delete
-        </Button>
-      }
-      {showContents && children}
-    </div>
-  )
-}
-
 export const Disklet: React.FC<{
   disklet: DiskletType
   path?: string
@@ -114,3 +78,39 @@ export const File: React.FC<{ disklet: DiskletType; path: string }> = ({ disklet
 }
 
 const FileContents: React.FC<{ file: Record<string, any> }> = ({ file }) => <Json data={file} />
+
+const ToggleRow: React.FC<{
+  title: string
+  onDelete: () => any
+  onOpen: () => any
+}> = ({ children, title, onDelete, onOpen }) => {
+  const [showContents, setShowContents] = React.useState(false)
+
+  return (
+    <div>
+      <Button
+        onClick={(event: any) => {
+          event.stopPropagation()
+          !showContents && onOpen()
+          setShowContents((x) => !x)
+        }}
+      >
+        {showContents ? '-' : '+'}
+      </Button>
+      {title}
+      {
+        <Button
+          className={'float-right'}
+          variant={'danger'}
+          onClick={(event: React.MouseEvent) => {
+            event.preventDefault()
+            onDelete()
+          }}
+        >
+          Delete
+        </Button>
+      }
+      {showContents && children}
+    </div>
+  )
+}

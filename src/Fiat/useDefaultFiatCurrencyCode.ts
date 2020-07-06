@@ -1,5 +1,7 @@
 import { EdgeAccount } from 'edge-core-js'
-import { queryCache, useMutation, useQuery } from 'react-query'
+import { useMutation, useQuery } from 'react-query'
+
+import { optimisticMutationOptions } from '../utils'
 
 const queryKey = 'defaultFiatCurrencyCode'
 const storeId = 'defaultFiatCurrencyCode'
@@ -13,26 +15,14 @@ const useReadDefaultFiatCurrencyCode = ({ account }: { account: EdgeAccount }) =
       account.dataStore
         .getItem(storeId, itemId)
         .then(JSON.parse)
-        .catch(() => defaultFiatCurrencyCode),
+        .catch(() => defaultFiatCurrencyCode) as Promise<string>,
     config: { suspense: true },
   })
 
 export const useWriteDefaultFiatCurrencyCode = ({ account }: { account: EdgeAccount }) =>
   useMutation(
-    (currencyCode: string) =>
-      account.dataStore.setItem(storeId, itemId, JSON.stringify(currencyCode)).catch(() => defaultFiatCurrencyCode),
-    {
-      onMutate: (currencyCode: string) => {
-        queryCache.cancelQueries(queryKey)
-        const previous = queryCache.getQueryData(queryKey)
-        queryCache.setQueryData(queryKey, currencyCode)
-        const rollback = () => queryCache.setQueryData(queryKey, previous)
-
-        return rollback
-      },
-      onError: (_err, _attemptedValue, rollback) => rollback(),
-      onSettled: () => queryCache.invalidateQueries(queryKey),
-    },
+    (currencyCode: string) => account.dataStore.setItem(storeId, itemId, JSON.stringify(currencyCode)),
+    optimisticMutationOptions<string>(queryKey),
   )
 
 export const useDefaultFiatCurrencyCode = ({ account }: { account: EdgeAccount }) =>

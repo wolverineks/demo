@@ -4,7 +4,7 @@ import * as React from 'react'
 import { Alert, Button, Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
 
 import { Select } from '../Components/Select'
-import { fiatInfos, useDefaultFiatInfo } from '../Fiat'
+import { FiatInfo, fiatInfos, useDefaultFiatInfo } from '../Fiat'
 import { getWalletTypes } from '../utils'
 
 export const CreateWallet: React.FC<{ account: EdgeAccount }> = ({ account }) => {
@@ -47,14 +47,7 @@ export const CreateWallet: React.FC<{ account: EdgeAccount }> = ({ account }) =>
         disabled={status === 'loading'}
         defaultValue={defaultFiatInfo.isoCurrencyCode}
         onSelect={(event) => setFiatCurrencyCode(event.currentTarget.value)}
-        options={
-          defaultFiatInfo
-            ? [
-                defaultFiatInfo,
-                ...fiatInfos.filter(({ currencyCode }) => currencyCode !== defaultFiatInfo.currencyCode),
-              ]
-            : fiatInfos
-        }
+        options={displayFiatInfos(defaultFiatInfo)}
         renderOption={({ isoCurrencyCode, currencyCode, symbol }) => (
           <option value={isoCurrencyCode} key={isoCurrencyCode}>
             {symbol} - {currencyCode}
@@ -69,3 +62,6 @@ export const CreateWallet: React.FC<{ account: EdgeAccount }> = ({ account }) =>
     </Form>
   )
 }
+
+const displayFiatInfos = (fiatInfo?: FiatInfo) =>
+  fiatInfo ? [fiatInfo, ...fiatInfos.filter(({ currencyCode }) => currencyCode !== fiatInfo.currencyCode)] : fiatInfos

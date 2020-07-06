@@ -1,2 +1,2 @@
 export * from './LastKnownWalletStates'
-export * from './hooks'
+export * from './useLastKnownWalletState'

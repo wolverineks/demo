@@ -2,7 +2,7 @@ import { EdgeAccount, EdgeCurrencyWallet } from 'edge-core-js'
 import { useWatchAll } from 'edge-react-hooks'
 import * as React from 'react'
 
-import { useWriteLastKnownWalletState } from './hooks'
+import { useWriteLastKnownWalletState } from './useLastKnownWalletState'
 
 export const LastKnownWalletStates: React.FC<{
   account: EdgeAccount

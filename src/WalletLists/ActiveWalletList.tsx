@@ -9,6 +9,7 @@ import { DisplayAmount } from '../Components/DisplayAmount'
 import { Logo } from '../Components/Logo'
 import { FiatAmount } from '../Fiat'
 import { useSelectedWallet } from '../SelectedWallet'
+import { getBalance } from '../utils'
 
 export const ActiveWalletList: React.FC<{
   account: EdgeAccount
@@ -50,7 +51,7 @@ const ActiveWalletRow: React.FC<{
   useWatchAll(account)
   useWatchAll(wallet)
 
-  const balance = wallet.balances[wallet.currencyInfo.currencyCode]
+  const balance = getBalance({ wallet, currencyCode: wallet.currencyInfo.currencyCode })
 
   useOnNewTransactions(wallet, (transactions) =>
     alert(`${wallet.name} - ${transactions.length > 1 ? 'New Transactions' : 'New Transaction'}`),

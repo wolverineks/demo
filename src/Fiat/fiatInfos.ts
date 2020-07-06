@@ -1,4 +1,5 @@
-export const fiatInfos = [
+export type FiatInfo = { currencyCode: string; isoCurrencyCode: string; symbol: string }
+export const fiatInfos: FiatInfo[] = [
   { currencyCode: 'AED', isoCurrencyCode: 'iso:AED', symbol: 'Ø¯.Ø¥' },
   { currencyCode: 'AFN', isoCurrencyCode: 'iso:AFN', symbol: 'Ø' },
   { currencyCode: 'ALL', isoCurrencyCode: 'iso:ALL', symbol: 'L' },

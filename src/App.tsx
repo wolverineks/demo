@@ -2,7 +2,6 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 
 import * as React from 'react'
 import { Button, Container, Navbar } from 'react-bootstrap'
-import { ErrorBoundary } from 'react-error-boundary'
 import { ReactQueryDevtools } from 'react-query-devtools'
 
 import { useAccount, useSetAccount } from './Auth'
@@ -41,9 +40,9 @@ export const Inner = () => {
         <Login />
       ) : (
         <SelectedWalletProvider>
-          <React.Suspense fallback={<div>Loading AccountInfo...</div>}>
+          <Boundary>
             <AccountInfo account={account} key={account.id} />
-          </React.Suspense>
+          </Boundary>
         </SelectedWalletProvider>
       )}
     </Container>

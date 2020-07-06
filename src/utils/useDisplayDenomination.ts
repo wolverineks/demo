@@ -1,6 +1,10 @@
 import { EdgeAccount, EdgeCurrencyInfo, EdgeDenomination, EdgeMetaToken } from 'edge-core-js'
 import * as React from 'react'
-import { queryCache, useMutation, useQuery } from 'react-query'
+import { useMutation, useQuery } from 'react-query'
+
+import { optimisticMutationOptions } from './optimisticMutationOptions'
+
+const queryKey = (currencyCode: string) => ['displayDenominationMultiplier', currencyCode] as const
 
 export const useReadDisplayDenominationMultiplier = ({
   account,
@@ -10,10 +14,10 @@ export const useReadDisplayDenominationMultiplier = ({
   currencyInfo: EdgeCurrencyInfo | EdgeMetaToken
 }) =>
   useQuery({
-    queryKey: ['displayDenomination', currencyInfo.currencyCode],
+    queryKey: queryKey(currencyInfo.currencyCode),
     queryFn: () =>
       account.dataStore
-        .getItem('displayDenominationMultipliers', currencyInfo.currencyCode)
+        .getItem('displayDenominationMultiplier', currencyInfo.currencyCode)
         .catch(() => currencyInfo.denominations[0]),
     config: { suspense: true },
   })
@@ -28,22 +32,11 @@ export const useWriteDisplayDenominationMultiplier = ({
   useMutation(
     (displayDenominationMultiplier: string) =>
       account.dataStore.setItem(
-        'displayDenominationMultipliers',
+        'displayDenominationMultiplier',
         currencyInfo.currencyCode,
         displayDenominationMultiplier,
       ),
-    {
-      onMutate: (multiplier: string) => {
-        queryCache.cancelQueries(['displayDenomination', currencyInfo.currencyCode])
-        const previous = queryCache.getQueryData(['displayDenomination', currencyInfo.currencyCode])
-        queryCache.setQueryData(['displayDenomination', currencyInfo.currencyCode], multiplier)
-        const rollback = () => queryCache.setQueryData(['displayDenomination', currencyInfo.currencyCode], previous)
-
-        return rollback
-      },
-      onError: (_err, _attemptedValue, rollback) => rollback(),
-      onSettled: () => queryCache.invalidateQueries(['displayDenomination', currencyInfo.currencyCode]),
-    },
+    optimisticMutationOptions(queryKey(currencyInfo.currencyCode)),
   )
 
 export const useDisplayDenominationMultiplier = ({

@@ -20,7 +20,7 @@ export const Select = ({
   return (
     <FormGroup>
       <FormLabel>{title}</FormLabel>
-      <FormControl as="select" id={'type'} disabled={disabled} onChange={onSelect} defaultValue={defaultValue}>
+      <FormControl as="select" id={title} disabled={disabled} onChange={onSelect} defaultValue={defaultValue}>
         {options.map(renderOption)}
       </FormControl>
     </FormGroup>

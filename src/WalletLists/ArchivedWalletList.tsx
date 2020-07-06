@@ -7,7 +7,7 @@ import { Boundary } from '../Components/Boundary'
 import { DisplayAmount } from '../Components/DisplayAmount'
 import { Logo } from '../Components/Logo'
 import { FiatAmount } from '../Fiat'
-import { getArchivedWalletInfos } from '../utils'
+import { getArchivedWalletInfos, getBalance } from '../utils'
 import { LastKnownWalletStates, useReadLastKnownWalletState } from './LastKnownWalletStates'
 
 export const ArchivedWalletList: React.FC<{ account: EdgeAccount }> = ({ account }) => {
@@ -34,7 +34,7 @@ const WalletRow: React.FC<{
 }> = ({ account, walletId }) => {
   useWatchAll(account)
   const walletState = useReadLastKnownWalletState({ account, walletId })
-  const balance = walletState.balances[walletState.currencyInfo.currencyCode]
+  const balance = getBalance({ wallet: walletState, currencyCode: walletState.currencyInfo.currencyCode })
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
