@@ -2,8 +2,9 @@ import { EdgeCurrencyInfo, EdgeDenomination, EdgeMetaToken } from 'edge-core-js'
 import * as React from 'react'
 import { Image, ListGroup, ListGroupItem } from 'react-bootstrap'
 
-import { useAccount } from '../Auth'
-import { getActiveCurrencyInfos, useDisplayDenomination } from '../utils'
+import { useAccount } from '../auth'
+import { useDisplayDenomination } from '../hooks'
+import { getActiveCurrencyInfos } from '../utils'
 
 export const Currencies = () => {
   const account = useAccount()

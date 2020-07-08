@@ -1,21 +1,13 @@
 import { EdgeCurrencyInfo, EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
-import { useEnabledTokens, useWatchAll } from 'edge-react-hooks'
 import * as React from 'react'
 import { Card, Image, ListGroup } from 'react-bootstrap'
 
-import { DisplayAmount } from '../Components/DisplayAmount'
+import { DisplayAmount } from '../components'
 import { FiatAmount } from '../Fiat'
+import { useSelectedWallet } from '../SelectedWallet'
 
-export const BalanceList: React.FC<{
-  wallet: EdgeCurrencyWallet
-}> = ({ wallet }) => {
-  useWatchAll(wallet)
-
-  const enabledTokens = useEnabledTokens(wallet)
-
-  if (enabledTokens.error) return <div>Error: {enabledTokens.error.message}</div>
-  if (!enabledTokens.data) return <div>Loading...</div>
-
+export const BalanceList: React.FC = () => {
+  const wallet = useSelectedWallet()
   const tokenInfos = wallet.currencyInfo.metaTokens
 
   return (

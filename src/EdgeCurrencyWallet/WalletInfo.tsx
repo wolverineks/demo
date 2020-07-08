@@ -1,11 +1,10 @@
-import { EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
+import { EdgeMetaToken } from 'edge-core-js'
 import {
   useDisableTokens,
   useEnableTokens,
   useOnNewTransactions,
   useRenameWallet,
   useSetFiatCurrencyCode,
-  useWatchAll,
 } from 'edge-react-hooks'
 import * as React from 'react'
 import {
@@ -21,19 +20,18 @@ import {
   Tab,
   Tabs,
 } from 'react-bootstrap'
-import { useQuery } from 'react-query'
 
 import { fiatInfos } from '../Fiat'
+import { useEnabledTokens } from '../hooks'
+import { useSelectedWallet } from '../SelectedWallet'
 import { Disklet } from '../Storage/Disklet'
 import { BalanceList } from './BalanceList'
 import { Request } from './Request'
 import { Send } from './Send'
 import { TransactionList } from './TransactionList'
 
-export const WalletInfo: React.FC<{
-  wallet: EdgeCurrencyWallet
-}> = ({ wallet }) => {
-  useWatchAll(wallet)
+export const WalletInfo: React.FC = () => {
+  const wallet = useSelectedWallet()
   useOnNewTransactions(
     wallet,
     (transactions) => transactions && alert(transactions.length > 1 ? 'New Transactions' : 'New Transaction'),
@@ -42,16 +40,16 @@ export const WalletInfo: React.FC<{
   return (
     <Tabs variant={'pills'} id={'walletTabs'} defaultActiveKey={'balance'}>
       <Tab eventKey={'balance'} title={'Balance'}>
-        <BalanceList wallet={wallet} />
-        <TransactionList key={wallet.id} wallet={wallet} />
+        <BalanceList />
+        <TransactionList key={wallet.id} />
       </Tab>
 
       <Tab eventKey={'send'} title={'Send'}>
-        <Send wallet={wallet} />
+        <Send key={wallet.id} />
       </Tab>
 
       <Tab eventKey={'request'} title={'Request'}>
-        <Request wallet={wallet} />
+        <Request key={wallet.id} />
       </Tab>
 
       <Tab eventKey={'storage'} title={'Storage'}>
@@ -60,21 +58,14 @@ export const WalletInfo: React.FC<{
       </Tab>
 
       <Tab eventKey={'settings'} title={'Settings'}>
-        <Settings wallet={wallet} />
+        <Settings />
       </Tab>
     </Tabs>
   )
 }
 
-const useEnabledTokens = ({ wallet }: { wallet: EdgeCurrencyWallet }) =>
-  useQuery({
-    queryKey: ['enabledTokens', wallet.id],
-    queryFn: () => wallet.getEnabledTokens(),
-    config: { suspense: true },
-  }).data!
-
-const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
-  useWatchAll(wallet)
+const Tokens: React.FC = () => {
+  const wallet = useSelectedWallet()
 
   const availableTokens = wallet.currencyInfo.metaTokens
   const enabledTokens = useEnabledTokens({ wallet })
@@ -115,8 +106,8 @@ const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   )
 }
 
-const RenameWallet: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
-  useWatchAll(wallet)
+const RenameWallet: React.FC = () => {
+  const wallet = useSelectedWallet()
   const [walletName, setWalletName] = React.useState<string>(wallet.name || '')
   const { execute, status } = useRenameWallet(wallet)
 
@@ -131,8 +122,8 @@ const RenameWallet: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   )
 }
 
-const SetFiatCurrencyCode: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
-  useWatchAll(wallet)
+const SetFiatCurrencyCode: React.FC = () => {
+  const wallet = useSelectedWallet()
   const [fiatCurrencyCode, setFiatCurrencyCode] = React.useState(wallet.fiatCurrencyCode)
   const { execute, status, error } = useSetFiatCurrencyCode(wallet)
 
@@ -161,17 +152,17 @@ const SetFiatCurrencyCode: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet 
   )
 }
 
-const WalletOptions = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
+const WalletOptions = () => {
   return (
     <Form>
-      <RenameWallet wallet={wallet} />
-      <SetFiatCurrencyCode wallet={wallet} />
+      <RenameWallet />
+      <SetFiatCurrencyCode />
     </Form>
   )
 }
 
-const DisplayKeys = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
-  useWatchAll(wallet)
+const DisplayKeys = () => {
+  const wallet = useSelectedWallet()
 
   const [showPrivateSeed, setShowPrivateSeed] = React.useState(false)
   const [showPublicSeed, setShowPublicSeed] = React.useState(false)
@@ -193,12 +184,12 @@ const DisplayKeys = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
   )
 }
 
-const Settings: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
+const Settings: React.FC = () => {
   return (
     <>
-      <WalletOptions wallet={wallet} />
-      <DisplayKeys wallet={wallet} />
-      <Tokens wallet={wallet} />
+      <WalletOptions />
+      <DisplayKeys />
+      <Tokens />
     </>
   )
 }

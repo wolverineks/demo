@@ -2,8 +2,8 @@ import * as React from 'react'
 import { Form, FormControl, FormGroup, FormLabel, ListGroup, ListGroupItem } from 'react-bootstrap'
 import IdleTimer from 'react-idle-timer'
 
-import { useAccount, useSetAccount } from '../Auth'
-import { useAutoLogout } from './useAutoLogout'
+import { useAccount, useSetAccount } from '../auth'
+import { useAutoLogout } from '../hooks'
 
 export const AutoLogout = () => {
   const account = useAccount()

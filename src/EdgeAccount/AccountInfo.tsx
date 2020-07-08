@@ -1,20 +1,40 @@
 import * as React from 'react'
 import { Tab, Tabs } from 'react-bootstrap'
 
-import { useAccount } from '../Auth'
-import { Boundary } from '../Components/Boundary'
+import { useAccount } from '../auth'
+import { Boundary } from '../components'
 import { WalletInfo } from '../EdgeCurrencyWallet/WalletInfo'
-import { useSelectWallet, useSelectedWallet } from '../SelectedWallet'
+import { fallbackRender, useSelectWallet } from '../SelectedWallet'
 import { Settings } from '../Settings/Settings'
 import { Storage } from '../Storage'
 import { ActiveWalletList, ArchivedWalletList, DeletedWalletList } from '../WalletLists/'
 import { CreateWallet } from './CreateWallet'
 
+export const onRender = (
+  id: string, // the "id" prop of the Profiler tree that has just committed
+  _phase: 'mount' | 'update', // either "mount" (if the tree just mounted) or "update" (if it re-rendered)
+  actualDuration: number, // time spent rendering the committed update
+  baseDuration: number, // estimated time to render the entire subtree without memoization
+  _startTime: number, // when React began rendering this update
+  _commitTime: number, // when React committed this update
+  _interactions: any, // the Set of interactions belonging to this update
+) => {
+  console.log('profile', id, { actualDuration, baseDuration })
+}
+
 export const AccountInfo = () => {
   const account = useAccount()
   const [tab, setTab] = React.useState('wallets')
-  const selectedWallet = useSelectedWallet()
   const selectWallet = useSelectWallet()
+
+  console.log(
+    'qwe',
+    'activeWallets',
+    'ids',
+    account.activeWalletIds.length,
+    'wallets',
+    Object.keys(account.currencyWallets).length,
+  )
 
   return (
     <Tabs
@@ -27,10 +47,10 @@ export const AccountInfo = () => {
       <Tab eventKey={'wallets'} title={'Wallets'}>
         <Tabs variant={'pills'} id={'walletLists'} defaultActiveKey={'active'} transition={false}>
           <Tab eventKey={'active'} title={'Active'}>
-            <Boundary>
+            <Boundary error={{ fallbackRender }}>
               <ActiveWalletList
-                onSelect={(wallet) => {
-                  selectWallet(wallet)
+                onSelect={(walletId: string) => {
+                  selectWallet(walletId)
                   setTab('wallet')
                 }}
               />
@@ -58,7 +78,9 @@ export const AccountInfo = () => {
       </Tab>
 
       <Tab eventKey={'wallet'} title={'Wallet'}>
-        <Boundary>{selectedWallet && <WalletInfo key={selectedWallet.id} wallet={selectedWallet} />}</Boundary>
+        <Boundary error={{ fallbackRender }}>
+          <WalletInfo />
+        </Boundary>
       </Tab>
 
       <Tab eventKey={'storage'} title={'Storage'}>

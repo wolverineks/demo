@@ -1,8 +1,8 @@
 import { EdgeCurrencyInfo, EdgeMetaToken } from 'edge-core-js'
 import * as React from 'react'
 
-import { useAccount } from '../Auth'
-import { useDisplayDenomination } from '../utils/useDisplayDenomination'
+import { useAccount } from '../auth'
+import { useDisplayDenomination } from '../hooks'
 import { nativeToDenomination } from '../utils/utils'
 
 export const DisplayAmount = ({

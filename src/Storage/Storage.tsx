@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import { useAccount } from '../Auth'
+import { useAccount } from '../auth'
 import { DataStore } from './DataStore'
 import { Disklet } from './Disklet'
 

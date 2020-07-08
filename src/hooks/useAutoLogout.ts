@@ -1,7 +1,7 @@
 import { EdgeAccount } from 'edge-core-js'
 import { useMutation, useQuery } from 'react-query'
 
-import { optimisticMutationOptions } from '../utils'
+import { optimisticMutationOptions } from '../hooks'
 
 const queryKey = 'autoLogout'
 const storeId = 'autoLogout'
@@ -21,7 +21,7 @@ export const useReadAutoLogout = ({ account }: { account: EdgeAccount }) =>
         .getItem(storeId, itemId)
         .then(JSON.parse)
         .catch(() => defaultAutoLogout) as Promise<AutoLogoutSetting>,
-    config: { suspense: true },
+    config: { suspense: true, cacheTime: 0, staleTime: Infinity },
   })
 
 export const useWriteAutoLogout = ({ account }: { account: EdgeAccount }) =>

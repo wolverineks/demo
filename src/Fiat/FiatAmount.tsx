@@ -1,9 +1,9 @@
 import { EdgeCurrencyInfo, EdgeMetaToken } from 'edge-core-js'
 import * as React from 'react'
 
-import { useAccount } from '../Auth'
+import { useAccount } from '../auth'
+import { useFiatAmount } from '../hooks/useFiatAmount'
 import { getFiatInfo } from './getFiatInfo'
-import { useFiatAmount } from './useFiatAmount'
 
 export const FiatAmount = ({
   currencyInfo,

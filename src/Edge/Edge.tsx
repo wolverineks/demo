@@ -19,10 +19,18 @@ export const useEdge = () => {
 export const Edge: React.FC = ({ children }) => {
   useEdge()
 
+  console.log('qwe', 'Edge')
+
   return (
     <ReactQueryConfigProvider
       config={{
-        queries: { useErrorBoundary: true, cacheTime: 0, staleTime: Infinity },
+        queries: {
+          useErrorBoundary: true,
+          cacheTime: 0,
+          staleTime: Infinity,
+          retry: false,
+          refetchOnWindowFocus: false,
+        },
         mutations: { useErrorBoundary: false },
       }}
     >

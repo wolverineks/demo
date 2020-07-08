@@ -1,13 +1,12 @@
-import { EdgeContext } from 'edge-core-js'
 import { useDeleteLocalAccount, useLoginWithPin } from 'edge-react-hooks'
 import * as React from 'react'
 import { Alert, Button, Card, Col, Form, FormControl, FormLabel, ListGroup } from 'react-bootstrap'
-import { useQuery } from 'react-query'
 
 import { useEdgeContext } from '../Edge'
-import { useTimeout } from '../utils/useTimeout'
+import { useLoginMessages, useTimeout } from '../hooks'
+import { getAccountsWithPinLogin } from '../utils'
+// eslint-disable-next-line import/no-unresolved
 import { useSetAccount } from './AccountProvider'
-import { getAccountsWithPinLogin } from './getAccountsWithPinLogin'
 
 export const PinLogin: React.FC<{ onLogin: () => any }> = ({ onLogin }) => {
   const context = useEdgeContext()
@@ -19,7 +18,9 @@ export const PinLogin: React.FC<{ onLogin: () => any }> = ({ onLogin }) => {
         <Card.Text>------</Card.Text>
       ) : (
         accountsWithPinLogin.map(({ username }) => (
+          // <Boundary key={username}>
           <LocalUserRow username={username} key={username} onLogin={onLogin} />
+          // </Boundary>
         ))
       )}
     </ListGroup>
@@ -39,7 +40,12 @@ const LocalUserRow: React.FC<{ username: string; onLogin: () => any }> = ({ user
     deleteLocalAccount.error && timeout(deleteLocalAccount.reset, 2500)
   }, [deleteLocalAccount.error, deleteLocalAccount.reset, timeout])
 
-  const handleLogin = () => loginWithPin.execute({ username, pin }).then(setAccount).finally(onLogin)
+  const handleLogin = () => {
+    loginWithPin.execute({ username, pin }).then((account) => {
+      setAccount(account)
+      onLogin()
+    })
+  }
 
   const handleDeleteLocalAccount = () => deleteLocalAccount.execute({ username })
 
@@ -90,13 +96,6 @@ const LocalUserRow: React.FC<{ username: string; onLogin: () => any }> = ({ user
     </ListGroup.Item>
   )
 }
-
-const useLoginMessages = ({ context, username }: { context: EdgeContext; username: string }) =>
-  useQuery({
-    queryKey: ['loginMessages', username],
-    queryFn: () => context.fetchLoginMessages().then((loginMessages) => loginMessages[username] || []),
-    config: { suspense: true, cacheTime: 0, staleTime: Infinity },
-  }).data!
 
 const LoginMessages: React.FC<{ username: string }> = ({ username }) => {
   const context = useEdgeContext()

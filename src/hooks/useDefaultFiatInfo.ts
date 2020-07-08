@@ -1,6 +1,6 @@
 import { EdgeAccount } from 'edge-core-js'
 
-import { getFiatInfo } from './getFiatInfo'
+import { getFiatInfo } from '../Fiat/getFiatInfo'
 import { useDefaultFiatCurrencyCode } from './useDefaultFiatCurrencyCode'
 
 export const useDefaultFiatInfo = ({ account }: { account: EdgeAccount }) => {

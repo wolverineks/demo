@@ -1,9 +1,9 @@
 import * as React from 'react'
 import { Form, FormGroup, ListGroup, ListGroupItem } from 'react-bootstrap'
 
-import { useAccount } from '../Auth'
+import { useAccount } from '../auth'
 import { useEdgeContext } from '../Edge'
-import { usePinLoginEnabled } from './usePinLoginEnabled'
+import { usePinLoginEnabled } from '../hooks'
 
 export const PinLogin = () => {
   const account = useAccount()

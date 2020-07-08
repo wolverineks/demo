@@ -1,16 +1,16 @@
-import { EdgeCurrencyWallet, EdgeParsedUri, EdgeSpendInfo } from 'edge-core-js'
-import { useWatchAll } from 'edge-react-hooks'
+import { EdgeParsedUri, EdgeSpendInfo } from 'edge-core-js'
 import * as React from 'react'
 import { Alert, Button, Form, FormControl, FormGroup, FormLabel, InputGroup } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
 import QrReader from 'react-qr-reader'
 
-import { Select } from '../Components/Select'
+import { Select } from '../components'
 import { useMaxSpendable, useNewTransaction } from '../hooks'
+import { useSelectedWallet } from '../SelectedWallet'
 import { categories, getCurrencyCodes } from '../utils'
 
-export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
-  useWatchAll(wallet)
+export const Send: React.FC = () => {
+  const wallet = useSelectedWallet()
 
   const currencyCodes = getCurrencyCodes(wallet)
   const [parsedUri, setParsedUri] = React.useState<EdgeParsedUri>()
@@ -45,7 +45,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
         setNotes(parsedUri.metadata?.notes || '')
         setCategory(parsedUri.metadata?.category || '')
       })
-      .catch((error) => console.log(error))
+      .catch((error: Error) => console.log(error))
 
   const { data: transaction, error } = useNewTransaction({ wallet, spendInfo })
 

@@ -1,47 +1,18 @@
-import { EdgeCurrencyCodeOptions, EdgeCurrencyWallet } from 'edge-core-js'
-import { useWatchAll } from 'edge-react-hooks'
 import QRCode from 'qrcode.react'
 import * as React from 'react'
 import { Alert, Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
-import { useQuery } from 'react-query'
 
-import { useAccount } from '../Auth'
-import { Select } from '../Components/Select'
-import { useFiatAmount } from '../Fiat'
-import { getCurrencyInfoFromCurrencyCode } from '../utils'
-import { getCurrencyCodes } from '../utils/utils'
+import { useAccount } from '../auth'
+import { Select } from '../components'
+import { useFiatAmount } from '../hooks'
+import { useReceiveAddressAndEncodeUri } from '../hooks'
+import { useSelectedWallet } from '../SelectedWallet'
+import { getCurrencyCodes, getCurrencyInfoFromCurrencyCode } from '../utils'
 
-const useReceiveAddressAndEncodeUri = ({
-  wallet,
-  nativeAmount,
-  options,
-}: {
-  wallet: EdgeCurrencyWallet
-  nativeAmount: string
-  options?: EdgeCurrencyCodeOptions
-}) =>
-  useQuery({
-    queryKey: ['receiveAddressAndEncodeUri', wallet.id, nativeAmount, options],
-    queryFn: () => {
-      const receiveAddress = wallet.getReceiveAddress({ currencyCode: options?.currencyCode })
-      const encodeUri = receiveAddress.then(({ publicAddress }) =>
-        wallet.encodeUri({
-          publicAddress,
-          nativeAmount: nativeAmount || '0',
-        }),
-      )
-
-      return Promise.all([receiveAddress, encodeUri]).then(([receiveAddress, uri]) => ({ receiveAddress, uri }))
-    },
-    config: { staleTime: Infinity, cacheTime: 0, suspense: false },
-  })
-
-export const Request: React.FC<{
-  wallet: EdgeCurrencyWallet
-}> = ({ wallet }) => {
+export const Request: React.FC = () => {
   const account = useAccount()
-  useWatchAll(wallet)
+  const wallet = useSelectedWallet()
 
   const currencyCodes = getCurrencyCodes(wallet)
   const [nativeAmount, setNativeAmount] = React.useState('')
@@ -50,6 +21,7 @@ export const Request: React.FC<{
     wallet,
     currencyCode,
   })
+
   const fiatAmount = useFiatAmount({
     account,
     nativeAmount,

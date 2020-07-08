@@ -1,8 +1,8 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
 import * as React from 'react'
 
-import { useAccount } from '../../Auth'
-import { useWriteLastKnownWalletState } from './useLastKnownWalletState'
+import { useAccount } from '../auth'
+import { useWriteLastKnownWalletState } from '../hooks'
 
 export const LastKnownWalletStates: React.FC = () => {
   const account = useAccount()
@@ -16,9 +16,7 @@ export const LastKnownWalletStates: React.FC = () => {
   )
 }
 
-const LastKnownWalletState: React.FC<{
-  wallet: EdgeCurrencyWallet
-}> = ({ wallet }) => {
+const LastKnownWalletState: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const account = useAccount()
   useWriteLastKnownWalletState({ account, wallet })
 

@@ -5,14 +5,14 @@ export const useStoreIds = ({ dataStore }: { dataStore: EdgeDataStore }) =>
   useQuery({
     queryKey: ['dataStore', 'storeIds'],
     queryFn: () => dataStore.listStoreIds(),
-    config: { suspense: true, cacheTime: 0 },
+    config: { suspense: true, cacheTime: 0, staleTime: Infinity },
   }).data!
 
 export const useItemIds = ({ dataStore, storeId }: { dataStore: EdgeDataStore; storeId: string }) =>
   useQuery({
     queryKey: ['dataStore', storeId],
     queryFn: () => dataStore.listItemIds(storeId),
-    config: { suspense: true, cacheTime: 0 },
+    config: { suspense: true, cacheTime: 0, staleTime: Infinity },
   }).data!
 
 export const useItem = ({
@@ -26,8 +26,8 @@ export const useItem = ({
 }) =>
   useQuery({
     queryKey: [storeId, itemId],
-    queryFn: () => dataStore.getItem(storeId, itemId),
-    config: { suspense: true, cacheTime: 0 },
+    queryFn: () => dataStore.getItem(storeId, itemId).then(JSON.parse),
+    config: { suspense: true, cacheTime: 0, staleTime: Infinity },
   }).data!
 
 export const usePrefetchStoreIds = ({ dataStore }: { dataStore: EdgeDataStore }) =>
@@ -55,6 +55,6 @@ export const usePrefetchItem = ({
 }) =>
   useQuery({
     queryKey: [storeId, itemId],
-    queryFn: () => dataStore.getItem(storeId, itemId),
+    queryFn: () => dataStore.getItem(storeId, itemId).then(JSON.parse),
     config: { suspense: false, cacheTime: 0 },
   })

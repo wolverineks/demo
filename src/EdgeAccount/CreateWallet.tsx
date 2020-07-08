@@ -2,9 +2,10 @@ import { useCreateCurrencyWallet } from 'edge-react-hooks'
 import * as React from 'react'
 import { Alert, Button, Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
 
-import { useAccount } from '../Auth'
-import { Select } from '../Components/Select'
-import { FiatInfo, fiatInfos, useDefaultFiatInfo } from '../Fiat'
+import { useAccount } from '../auth'
+import { Select } from '../components'
+import { FiatInfo, fiatInfos } from '../Fiat'
+import { useDefaultFiatInfo } from '../hooks'
 import { getWalletTypes } from '../utils'
 
 export const CreateWallet: React.FC = () => {

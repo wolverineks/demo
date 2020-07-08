@@ -1,11 +1,10 @@
 import * as React from 'react'
 import { Form, FormGroup, ListGroup, ListGroupItem } from 'react-bootstrap'
 
-import { useAccount } from '../Auth'
-import { Select } from '../Components/Select'
+import { useAccount } from '../auth'
+import { Select } from '../components'
+import { useDefaultFiatCurrencyCode, useDefaultFiatInfo } from '../hooks'
 import { FiatInfo, fiatInfos } from './fiatInfos'
-import { useDefaultFiatCurrencyCode } from './useDefaultFiatCurrencyCode'
-import { useDefaultFiatInfo } from './useDefaultFiatInfo'
 
 export const DefaultFiat = () => {
   const account = useAccount()

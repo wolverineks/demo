@@ -2,14 +2,12 @@ import { useChangeWalletState } from 'edge-react-hooks'
 import * as React from 'react'
 import { Button, ListGroup } from 'react-bootstrap'
 
-import { useAccount } from '../Auth'
-import { Boundary } from '../Components/Boundary'
-import { DisplayAmount } from '../Components/DisplayAmount'
-import { Logo } from '../Components/Logo'
+import { useAccount } from '../auth'
+import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
+import { WalletState, useReadLastKnownWalletState } from '../hooks'
 import { getBalance, getDeletedWalletInfos } from '../utils'
 import { FallbackRender } from './FallbackRender'
-import { WalletState, useReadLastKnownWalletState } from './LastKnownWalletStates'
 
 export const DeletedWalletList: React.FC = () => {
   const account = useAccount()

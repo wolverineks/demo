@@ -1,7 +1,4 @@
 export * from './DefaultFiat'
 export * from './FiatAmount'
-export * from './useDefaultFiatCurrencyCode'
 export * from './fiatInfos'
-export * from './useFiatAmount'
-export * from './useDefaultFiatInfo'
 export * from './getFiatInfo'

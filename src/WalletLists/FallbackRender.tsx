@@ -2,7 +2,7 @@ import { useChangeWalletState } from 'edge-react-hooks'
 import * as React from 'react'
 import { Button } from 'react-bootstrap'
 
-import { useAccount } from '../Auth'
+import { useAccount } from '../auth'
 
 export const FallbackRender = ({ walletId }: { walletId: string }) => {
   const account = useAccount()

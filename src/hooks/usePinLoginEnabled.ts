@@ -1,7 +1,7 @@
 import { EdgeAccount, EdgeContext } from 'edge-core-js'
 import { useMutation, useQuery } from 'react-query'
 
-import { optimisticMutationOptions } from '../utils'
+import { optimisticMutationOptions } from './optimisticMutationOptions'
 
 const queryKey = ({ account }: { account: EdgeAccount }) => ['pinLoginEnabled', account.username] as const // FIXME
 

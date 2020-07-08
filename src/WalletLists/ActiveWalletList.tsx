@@ -1,33 +1,32 @@
 import { EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
-import { useChangeWalletState, useOnNewTransactions, useWatchAll } from 'edge-react-hooks'
+import { useChangeWalletState, useOnNewTransactions } from 'edge-react-hooks'
 import * as React from 'react'
 import { Button, Image, ListGroup } from 'react-bootstrap'
 
-import { useAccount } from '../Auth'
-import { Boundary } from '../Components/Boundary'
-import { DisplayAmount } from '../Components/DisplayAmount'
-import { Logo } from '../Components/Logo'
+import { useAccount } from '../auth'
+import { Boundary, DisplayAmount, Logo } from '../components'
+import { onRender } from '../EdgeAccount/AccountInfo'
 import { FiatAmount } from '../Fiat'
-import { useEdgeCurrencyWallet, useEnabledTokens } from '../hooks'
+import { useEnabledTokens, useWallet } from '../hooks'
 import { useSelectedWallet } from '../SelectedWallet'
 import { getBalance } from '../utils'
 
 export const ActiveWalletList: React.FC<{
-  onSelect: (wallet: EdgeCurrencyWallet) => any
+  onSelect: (walletId: string) => any
 }> = ({ onSelect }) => {
   const account = useAccount()
-  const selectedWallet = useSelectedWallet()
 
-  return (
+  // return <div>No active wallets</div>
+  return account.activeWalletIds.length <= 0 ? (
+    <div>No active wallets</div>
+  ) : (
     <ListGroup variant={'flush'}>
       {account.activeWalletIds.map((id) => (
-        <Boundary key={id} suspense={{ fallback: <ListGroup.Item>Loading...</ListGroup.Item> }}>
-          <ActiveWalletRow
-            walletId={id}
-            onSelect={onSelect}
-            isSelected={!!selectedWallet && id === selectedWallet.id}
-          />
-        </Boundary>
+        <React.Profiler key={id} id={id} onRender={onRender}>
+          <Boundary key={id} suspense={{ fallback: <ListGroup.Item>Loading...</ListGroup.Item> }}>
+            <ActiveWalletRow walletId={id} onSelect={() => onSelect(id)} />
+          </Boundary>
+        </React.Profiler>
       ))}
     </ListGroup>
   )
@@ -35,12 +34,12 @@ export const ActiveWalletList: React.FC<{
 
 const ActiveWalletRow: React.FC<{
   walletId: string
-  isSelected: boolean
-  onSelect: (wallet: EdgeCurrencyWallet) => any
-}> = ({ walletId, onSelect, isSelected }) => {
+  onSelect: () => any
+}> = ({ walletId, onSelect }) => {
   const account = useAccount()
-  const wallet = useEdgeCurrencyWallet({ account, walletId })
-  useWatchAll(wallet)
+  const wallet = useWallet({ account, walletId })
+  const selectedWallet = useSelectedWallet()
+  const isSelected = wallet.id === selectedWallet.id
 
   const balance = getBalance({ wallet, currencyCode: wallet.currencyInfo.currencyCode })
 
@@ -51,7 +50,7 @@ const ActiveWalletRow: React.FC<{
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       <ListGroup.Item variant={isSelected ? 'primary' : undefined}>
-        <span onClick={() => onSelect(wallet)} className={'float-left'}>
+        <span onClick={() => onSelect()} className={'float-left'}>
           <Logo walletType={wallet.type} /> {wallet.name}{' '}
           <DisplayAmount nativeAmount={balance} currencyInfo={wallet.currencyInfo} /> -{' '}
           <FiatAmount
@@ -62,7 +61,7 @@ const ActiveWalletRow: React.FC<{
         </span>
 
         <span className={'float-right'}>
-          <WalletOptions wallet={wallet} />
+          <WalletOptions />
         </span>
       </ListGroup.Item>
 
@@ -71,8 +70,9 @@ const ActiveWalletRow: React.FC<{
   )
 }
 
-const WalletOptions = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
+const WalletOptions = () => {
   const account = useAccount()
+  const wallet = useSelectedWallet()
   const { execute: changeWalletState, status } = useChangeWalletState(account)
   const archiveWallet = () => changeWalletState({ walletId: wallet.id, walletState: { archived: true } })
   const deleteWallet = () => changeWalletState({ walletId: wallet.id, walletState: { deleted: true } })
@@ -95,11 +95,7 @@ const useEnabledTokenInfos = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
   return wallet.currencyInfo.metaTokens.filter((tokenInfo) => enabledTokens.includes(tokenInfo.currencyCode))
 }
 
-export const EnabledTokensList: React.FC<{
-  wallet: EdgeCurrencyWallet
-}> = ({ wallet }) => {
-  useWatchAll(wallet)
-
+export const EnabledTokensList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const tokenInfos = useEnabledTokenInfos({ wallet })
 
   return tokenInfos.length > 0 ? (
@@ -117,8 +113,6 @@ const EnabledTokenRow: React.FC<{
   wallet: EdgeCurrencyWallet
   tokenInfo: EdgeMetaToken
 }> = ({ wallet, tokenInfo }) => {
-  useWatchAll(wallet)
-
   const { symbolImage } = tokenInfo
   const balance = wallet.balances[tokenInfo.currencyCode]
 

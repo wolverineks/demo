@@ -1,7 +1,7 @@
 import { EdgeAccount } from 'edge-core-js'
 import { useMutation, useQuery } from 'react-query'
 
-import { optimisticMutationOptions } from '../utils'
+import { optimisticMutationOptions } from './optimisticMutationOptions'
 
 const queryKey = 'defaultFiatCurrencyCode'
 const storeId = 'defaultFiatCurrencyCode'
