@@ -5,14 +5,14 @@ import JSONPretty from 'react-json-pretty'
 import QrReader from 'react-qr-reader'
 
 import { Select } from '../components'
-import { useMaxSpendable, useNewTransaction } from '../hooks'
+import { useCurrencyCodes, useMaxSpendable, useNewTransaction } from '../hooks'
 import { useSelectedWallet } from '../SelectedWallet'
-import { categories, getCurrencyCodes } from '../utils'
+import { categories } from '../utils'
 
 export const Send: React.FC = () => {
   const wallet = useSelectedWallet()
 
-  const currencyCodes = getCurrencyCodes(wallet)
+  const currencyCodes = useCurrencyCodes(wallet)
   const [parsedUri, setParsedUri] = React.useState<EdgeParsedUri>()
   const [currencyCode, setCurrencyCode] = React.useState(wallet.currencyInfo.currencyCode)
   const [publicAddress, setPublicAddress] = React.useState('')
@@ -77,7 +77,8 @@ export const Send: React.FC = () => {
         </FormGroup>
 
         <Select
-          title={'sendCurrencyCode'}
+          title={'CurrencyCode'}
+          id={'sendCurrencyCode'}
           onSelect={(event) => setCurrencyCode(event.currentTarget.value)}
           options={currencyCodes}
           renderOption={(currencyCode: string) => (

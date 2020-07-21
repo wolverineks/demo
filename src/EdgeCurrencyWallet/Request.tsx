@@ -6,15 +6,15 @@ import JSONPretty from 'react-json-pretty'
 
 import { useAccount } from '../auth'
 import { Select } from '../components'
-import { useDisplayDenomination, useFiatAmount, useNativeAmount } from '../hooks'
+import { useCurrencyCodes, useDisplayDenomination, useFiatAmount, useNativeAmount } from '../hooks'
 import { useFiatCurrencyCode, useReceiveAddressAndEncodeUri } from '../hooks'
 import { useSelectedWallet } from '../SelectedWallet'
-import { getCurrencyCodes, getCurrencyInfoFromCurrencyCode, nativeToDenomination } from '../utils'
+import { getCurrencyInfoFromCurrencyCode, nativeToDenomination } from '../utils'
 
 export const Request: React.FC = () => {
   const wallet = useSelectedWallet()
 
-  const currencyCodes = getCurrencyCodes(wallet)
+  const currencyCodes = useCurrencyCodes(wallet)
   const [nativeAmount, setNativeAmount] = React.useState('0')
   // const [fiatAmount, setFiatAmount] = React.useState(0)
   const [currencyCode, setCurrencyCode] = React.useState(currencyCodes[0])
@@ -39,7 +39,8 @@ export const Request: React.FC = () => {
       </FormGroup>
 
       <Select
-        title={'requestCurrencyCode'}
+        title={'CurrencyCode'}
+        id={'requestCurrencyCode'}
         onSelect={(event) => setCurrencyCode(event.currentTarget.value)}
         options={currencyCodes}
         renderOption={(currencyCode) => (

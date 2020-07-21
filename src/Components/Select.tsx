@@ -7,6 +7,7 @@ export const Select = ({
   onSelect,
   disabled,
   title,
+  id,
   defaultValue,
 }: {
   options: any[]
@@ -14,13 +15,14 @@ export const Select = ({
   onSelect: (selection: any) => any
   disabled?: boolean
   title: string
+  id?: string
   defaultValue?: string
   value?: string
 }) => {
   return (
     <FormGroup>
       <FormLabel>{title}</FormLabel>
-      <FormControl as="select" id={title} disabled={disabled} onChange={onSelect} defaultValue={defaultValue}>
+      <FormControl as="select" id={id || title} disabled={disabled} onChange={onSelect} defaultValue={defaultValue}>
         {options.map(renderOption)}
       </FormControl>
     </FormGroup>

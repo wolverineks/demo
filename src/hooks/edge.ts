@@ -64,11 +64,11 @@ export const useLoggedIn = (account: EdgeAccount) => useWatch(account, 'loggedIn
 // ACTIVE TOKEN INFOS
 export const useActiveTokenInfos = (account: EdgeAccount) =>
   useSortedCurrencyWallets(account)
-    .map((walletId) => queryCache.getQueryData([walletId, 'enabledTokens']) as string[])
+    .map((wallet) => queryCache.getQueryData([wallet.id, 'enabledTokens']) as string[])
     .reduce((result, current = []) => [...result, ...current], [])
     .filter(isUnique)
-    .filter((currencyCode) => !['EOS', 'ETH', 'FIO'].includes(currencyCode)) // WTF?
     .map((currencyCode) => getTokenInfoFromCurrencyCode(account, currencyCode))
+    .filter(Boolean) // WTF? why are ['EOS', 'ETH', 'FIO', 'RBTC'] included in enabledTokens?
 
 // ACTIVE CURRENCY INFOS
 export const useActiveCurrencyInfos = (account: EdgeAccount) =>
@@ -171,6 +171,11 @@ export const useFiatCurrencyCode = (wallet: EdgeCurrencyWallet) => useWatch(wall
 export const useName = (wallet: EdgeCurrencyWallet) => useWatch(wallet, 'name')
 export const useSyncRatio = (wallet: EdgeCurrencyWallet) => useWatch(wallet, 'syncRatio')
 
+export const useCurrencyCodes = (wallet: EdgeCurrencyWallet) => [
+  wallet.currencyInfo.currencyCode,
+  ...useEnabledTokenInfos(wallet).map(({ currencyCode }) => currencyCode),
+]
+
 export const useSetFiatCurrencyCode = (wallet: EdgeCurrencyWallet) =>
   useMutation((fiatCurrencyCode: string) => wallet.setFiatCurrencyCode(fiatCurrencyCode))[0]
 
@@ -200,7 +205,7 @@ export const useReceiveAddressAndEncodeUri = (
 
       return Promise.all([receiveAddress, encodeUri]).then(([receiveAddress, uri]) => ({ receiveAddress, uri }))
     },
-    config: { staleTime: Infinity, cacheTime: 0, suspense: false },
+    config: { staleTime: Infinity, cacheTime: 0, suspense: false, useErrorBoundary: false },
   })
 
 // ENABLED TOKENS
@@ -215,13 +220,10 @@ export const useEnabledTokens = (wallet: EdgeCurrencyWallet) => {
 export const useEnableTokens = (wallet: EdgeCurrencyWallet) =>
   useMutation(
     (tokenCurrencyCode: string) => wallet.enableTokens([tokenCurrencyCode]),
-    optimisticMutationOptions([wallet.id, 'enabledTokens'], (tokenCurrencyCode, current: string[] = []) => {
-      const next = [...current, tokenCurrencyCode]
-
-      console.log('qwe', { next })
-
-      return next
-    }),
+    optimisticMutationOptions([wallet.id, 'enabledTokens'], (tokenCurrencyCode, current: string[] = []) => [
+      ...current,
+      tokenCurrencyCode,
+    ]),
   )[0]
 
 export const useDisableTokens = (wallet: EdgeCurrencyWallet) =>
@@ -274,7 +276,13 @@ export const useNewTransaction = (wallet: EdgeCurrencyWallet, spendInfo: EdgeSpe
   useQuery({
     queryKey: [wallet.id, 'transaction', spendInfo],
     queryFn: () => wallet.makeSpend(spendInfo),
-    config: { suspense: false, staleTime: Infinity, cacheTime: 0, useErrorBoundary: false, retry: 0 },
+    config: {
+      suspense: false,
+      staleTime: Infinity,
+      cacheTime: 0,
+      useErrorBoundary: false,
+      retry: 0,
+    },
   })
 
 // SETTINGS

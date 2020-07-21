@@ -3,9 +3,9 @@ import React from 'react'
 import { Form, ListGroup } from 'react-bootstrap'
 
 import { DisplayAmount, Select } from '../components'
-import { usePrevious, useTransactionCount, useTransactions } from '../hooks'
+import { useCurrencyCodes, usePrevious, useTransactionCount, useTransactions } from '../hooks'
 import { useSelectedWallet } from '../SelectedWallet'
-import { getCurrencyCodes, getCurrencyInfoFromCurrencyCode } from '../utils'
+import { getCurrencyInfoFromCurrencyCode } from '../utils'
 
 const initialTransactionCount = 10
 const transactionCounts = [1, 5, 10, 15, 20, 25]
@@ -19,7 +19,7 @@ export const TransactionList: React.FC = () => {
   const previousTransactions = usePrevious<EdgeTransaction[]>({ data, initialData: [] })
   const transactions = data || previousTransactions
   const { data: transactionCount } = useTransactionCount(wallet, options)
-  const currencyCodes = getCurrencyCodes(wallet)
+  const currencyCodes = useCurrencyCodes(wallet)
 
   return (
     <ListGroup>

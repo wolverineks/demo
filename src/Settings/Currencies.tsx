@@ -10,8 +10,6 @@ export const Currencies = () => {
   const currencyInfos = useActiveCurrencyInfos(useAccount())
   const tokenInfos = (useActiveTokenInfos(useAccount()) as unknown) as EdgeMetaToken[]
 
-  console.log('qwe', { tokenInfos })
-
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       {currencyInfos.map((currencyInfo) => (

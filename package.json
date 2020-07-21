@@ -8,7 +8,7 @@
   "scripts": {
     "build": "react-scripts build",
     "eject": "react-scripts eject",
-    "format": "prettier --write .",
+    "format": "prettier --write",
     "lint": "yarn eslint --fix --ext .js,.jsx,.ts,.tsx",
     "precommit": "yarn lint-staged && tsc",
     "start": "react-scripts start",
@@ -23,7 +23,10 @@
     "*.{css}": [
       "yarn format"
     ],
-    "*.{ts,tsx,js,jsx,md,json}": [
+    "*.{md}": [
+      "yarn format"
+    ],
+    "*.{ts,tsx,js,jsx,json}": [
       "yarn lint",
       "yarn format"
     ]

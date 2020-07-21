@@ -31,7 +31,7 @@ export const Edge: React.FC = ({ children }) => {
           retry: false,
           refetchOnWindowFocus: false,
         },
-        mutations: { useErrorBoundary: false },
+        mutations: { useErrorBoundary: false, throwOnError: false },
       }}
     >
       {children}
