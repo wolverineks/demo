@@ -1,17 +1,16 @@
-import { useLoginWithPassword } from 'edge-react-hooks'
-import * as React from 'react'
+import { EdgeAccount } from 'edge-core-js'
+import React from 'react'
 import { Alert, Button, Form, FormGroup } from 'react-bootstrap'
 
 import { useEdgeContext } from '../Edge'
-import { useSetAccount } from './AccountProvider'
+import { useLoginWithPassword } from '../hooks'
 
-export const LoginForm: React.FC<{ onLogin: () => any }> = ({ onLogin }) => {
+export const PasswordLogin: React.FC<{ onLogin: (account: EdgeAccount) => any }> = ({ onLogin }) => {
   const context = useEdgeContext()
 
-  const setAccount = useSetAccount()
   const [username, setUsername] = React.useState('')
   const [password, setPassword] = React.useState('')
-  const { execute: loginWithPassword, error, status, reset } = useLoginWithPassword(context)
+  const [loginWithPassword, { error, status, reset }] = useLoginWithPassword(context)
 
   const onUsernameChange = (username: string) => {
     reset()
@@ -21,10 +20,6 @@ export const LoginForm: React.FC<{ onLogin: () => any }> = ({ onLogin }) => {
   const onPasswordChange = (password: string) => {
     reset()
     setPassword(password)
-  }
-
-  const onSubmit = () => {
-    loginWithPassword({ username, password }).then(setAccount).finally(onLogin)
   }
 
   return (
@@ -42,6 +37,7 @@ export const LoginForm: React.FC<{ onLogin: () => any }> = ({ onLogin }) => {
         <Form.Label>Password</Form.Label>
         <Form.Control
           type={'password'}
+          autoComplete={'new-password'}
           disabled={status === 'loading'}
           onChange={(event) => onPasswordChange(event.currentTarget.value)}
         />
@@ -55,7 +51,7 @@ export const LoginForm: React.FC<{ onLogin: () => any }> = ({ onLogin }) => {
           disabled={status === 'loading'}
           onClick={(event: React.MouseEvent) => {
             event.preventDefault()
-            onSubmit()
+            loginWithPassword({ username, password }, { onSuccess: onLogin })
           }}
         >
           {status === 'loading' ? '...' : 'Login'}

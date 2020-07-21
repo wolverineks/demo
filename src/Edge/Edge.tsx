@@ -1,5 +1,5 @@
 import { addEdgeCorePlugins, closeEdge, lockEdgeCorePlugins } from 'edge-core-js'
-import * as React from 'react'
+import React from 'react'
 import { ReactQueryConfigProvider } from 'react-query'
 
 import { plugins } from './plugins'
@@ -12,14 +12,14 @@ export const useEdge = () => {
     plugins.forEach(addEdgeCorePlugins)
     lockEdgeCorePlugins()
 
-    return closeEdge
+    return () => {
+      closeEdge()
+    }
   }, [])
 }
 
 export const Edge: React.FC = ({ children }) => {
   useEdge()
-
-  console.log('qwe', 'Edge')
 
   return (
     <ReactQueryConfigProvider

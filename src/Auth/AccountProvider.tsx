@@ -1,6 +1,9 @@
 import { EdgeAccount } from 'edge-core-js'
-import { useWatchAll } from 'edge-react-hooks'
-import * as React from 'react'
+import React from 'react'
+import { Container } from 'react-bootstrap'
+
+import { Boundary } from '../components'
+import { Login } from './Login'
 
 export const EdgeAccountContext = React.createContext<EdgeAccount | undefined>(undefined)
 export const SetEdgeAccountContext = React.createContext<(account?: EdgeAccount) => void>(() => undefined)
@@ -15,16 +18,28 @@ export const AccountProvider: React.FC = ({ children }) => {
   )
 }
 
+export const AccountConsumer = EdgeAccountContext.Consumer
+
+export const AccountBoundary: React.FC = ({ children }) => (
+  <Boundary
+    error={{
+      // eslint-disable-next-line react/display-name
+      fallbackRender: ({ resetErrorBoundary }) => (
+        <Container style={{ top: '100px' }}>
+          <Login onLogin={resetErrorBoundary} />
+        </Container>
+      ),
+    }}
+  >
+    {children}
+  </Boundary>
+)
+
 const unauthorized = () => {
   throw new Error('unauthorized')
 }
 
-export const useAccount = () => {
-  const account = React.useContext(EdgeAccountContext) || unauthorized()
-  useWatchAll(account)
-
-  return account
-}
+export const useAccount = () => React.useContext(EdgeAccountContext) || unauthorized()
 export const useSetAccount = () => React.useContext(SetEdgeAccountContext)
 
 // const useAuth = (context: EdgeContext) => {

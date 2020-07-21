@@ -1,35 +1,37 @@
 import { EdgeCurrencyInfo, EdgeDenomination, EdgeMetaToken } from 'edge-core-js'
-import * as React from 'react'
+import React from 'react'
 import { Image, ListGroup, ListGroupItem } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
-import { useDisplayDenomination } from '../hooks'
-import { getActiveCurrencyInfos } from '../utils'
+import { Boundary } from '../components'
+import { useActiveCurrencyInfos, useActiveTokenInfos, useDisplayDenomination } from '../hooks'
 
 export const Currencies = () => {
-  const account = useAccount()
-  const currencyInfos = getActiveCurrencyInfos(account)
+  const currencyInfos = useActiveCurrencyInfos(useAccount())
+  const tokenInfos = (useActiveTokenInfos(useAccount()) as unknown) as EdgeMetaToken[]
+
+  console.log('qwe', { tokenInfos })
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       {currencyInfos.map((currencyInfo) => (
-        <React.Suspense fallback={<div>Currency loading...</div>} key={currencyInfo.currencyCode}>
+        <Boundary key={currencyInfo.currencyCode}>
           <CurrencySetting currencyInfo={currencyInfo} />
-        </React.Suspense>
+        </Boundary>
+      ))}
+
+      {tokenInfos.map((tokenInfo) => (
+        <Boundary key={tokenInfo.currencyCode}>
+          <TokenSetting tokenInfo={tokenInfo} />
+        </Boundary>
       ))}
     </ListGroup>
   )
 }
 
-const CurrencySetting: React.FC<{
-  currencyInfo: EdgeCurrencyInfo
-}> = ({ currencyInfo }) => {
-  const account = useAccount()
-  const { displayName, denominations, symbolImage, currencyCode, metaTokens } = currencyInfo
-  const [denomination, write] = useDisplayDenomination({
-    account,
-    currencyInfo,
-  })
+const CurrencySetting: React.FC<{ currencyInfo: EdgeCurrencyInfo }> = ({ currencyInfo }) => {
+  const { displayName, denominations, symbolImage, currencyCode } = currencyInfo
+  const [denomination, write] = useDisplayDenomination(useAccount(), currencyInfo)
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
@@ -38,22 +40,16 @@ const CurrencySetting: React.FC<{
         {displayName} - {currencyCode}
       </ListGroupItem>
       <Denominations denominations={denominations} onSelect={write} selectedDenomination={denomination} />
-      {metaTokens.map((metaToken) => (
+      {/* {metaTokens.map((metaToken) => (
         <TokenSetting key={metaToken.currencyCode} tokenInfo={metaToken} />
-      ))}
+      ))} */}
     </ListGroup>
   )
 }
 
-const TokenSetting: React.FC<{
-  tokenInfo: EdgeMetaToken
-}> = ({ tokenInfo }) => {
-  const account = useAccount()
+const TokenSetting: React.FC<{ tokenInfo: EdgeMetaToken }> = ({ tokenInfo }) => {
   const { currencyName, currencyCode, denominations, symbolImage } = tokenInfo
-  const [denomination, write] = useDisplayDenomination({
-    account,
-    currencyInfo: tokenInfo,
-  })
+  const [denomination, write] = useDisplayDenomination(useAccount(), tokenInfo)
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>

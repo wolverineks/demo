@@ -1,5 +1,5 @@
 import { EdgeDataStore } from 'edge-core-js'
-import * as React from 'react'
+import React from 'react'
 import { Button, Card, ListGroup } from 'react-bootstrap'
 import Json from 'react-json-pretty'
 

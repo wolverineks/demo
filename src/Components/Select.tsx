@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { FormControl, FormGroup, FormLabel } from 'react-bootstrap'
 
 export const Select = ({

@@ -1,16 +1,13 @@
-import { useDeleteLocalAccount, useLoginWithPin } from 'edge-react-hooks'
-import * as React from 'react'
+import { EdgeAccount } from 'edge-core-js'
+import React from 'react'
 import { Alert, Button, Card, Col, Form, FormControl, FormLabel, ListGroup } from 'react-bootstrap'
 
+import { Boundary } from '../components'
 import { useEdgeContext } from '../Edge'
-import { useLoginMessages, useTimeout } from '../hooks'
-import { getAccountsWithPinLogin } from '../utils'
-// eslint-disable-next-line import/no-unresolved
-import { useSetAccount } from './AccountProvider'
+import { useAccountsWithPinLogin, useLoginMessages, useLoginWithPin } from '../hooks'
 
-export const PinLogin: React.FC<{ onLogin: () => any }> = ({ onLogin }) => {
-  const context = useEdgeContext()
-  const accountsWithPinLogin = getAccountsWithPinLogin({ context })
+export const PinLogin: React.FC<{ onLogin: (account: EdgeAccount) => any }> = ({ onLogin }) => {
+  const accountsWithPinLogin = useAccountsWithPinLogin(useEdgeContext())
 
   return (
     <ListGroup>
@@ -18,36 +15,21 @@ export const PinLogin: React.FC<{ onLogin: () => any }> = ({ onLogin }) => {
         <Card.Text>------</Card.Text>
       ) : (
         accountsWithPinLogin.map(({ username }) => (
-          // <Boundary key={username}>
-          <LocalUserRow username={username} key={username} onLogin={onLogin} />
-          // </Boundary>
+          <Boundary key={username}>
+            <LocalUserRow username={username} key={username} onLogin={onLogin} />
+          </Boundary>
         ))
       )}
     </ListGroup>
   )
 }
 
-const LocalUserRow: React.FC<{ username: string; onLogin: () => any }> = ({ username, onLogin }) => {
-  const context = useEdgeContext()
+const LocalUserRow: React.FC<{ username: string; onLogin: (account: EdgeAccount) => any }> = ({
+  username,
+  onLogin,
+}) => {
   const [pin, setPin] = React.useState('')
-  const deleteLocalAccount = useDeleteLocalAccount(context)
-  const loginWithPin = useLoginWithPin(context)
-  const pending = loginWithPin.status === 'loading' || deleteLocalAccount.status === 'loading'
-  const setAccount = useSetAccount()
-
-  const timeout = useTimeout()
-  React.useEffect(() => {
-    deleteLocalAccount.error && timeout(deleteLocalAccount.reset, 2500)
-  }, [deleteLocalAccount.error, deleteLocalAccount.reset, timeout])
-
-  const handleLogin = () => {
-    loginWithPin.execute({ username, pin }).then((account) => {
-      setAccount(account)
-      onLogin()
-    })
-  }
-
-  const handleDeleteLocalAccount = () => deleteLocalAccount.execute({ username })
+  const [loginWithPin, { status, error, reset }] = useLoginWithPin(useEdgeContext())
 
   return (
     <ListGroup.Item>
@@ -55,51 +37,35 @@ const LocalUserRow: React.FC<{ username: string; onLogin: () => any }> = ({ user
         id={`pin-login ${username}`}
         onSubmit={(event: React.FormEvent) => {
           event.preventDefault()
-          handleLogin()
+          loginWithPin({ username, pin }, { onSuccess: onLogin })
         }}
       >
         <Form.Row>
-          <FormLabel>{username} - PIN</FormLabel>
-          <Col>
-            <FormControl
-              disabled={pending}
-              onChange={(event) => {
-                event.preventDefault()
-                loginWithPin.reset()
-                setPin(event.currentTarget.value)
-              }}
-            />
-          </Col>
+          <FormControl type={'username'} readOnly value={username} />
+
+          <FormControl
+            disabled={status === 'loading'}
+            onChange={(event) => {
+              event.preventDefault()
+              reset()
+              setPin(event.currentTarget.value)
+            }}
+          />
+
+          <Button type={'submit'} variant="primary" disabled={status === 'loading'} form={`pin-login ${username}`}>
+            {status === 'loading' ? '...' : 'Login'}
+          </Button>
         </Form.Row>
       </Form>
 
-      <Form.Row>
-        <Button type={'submit'} variant="primary" disabled={pending} form={`pin-login ${username}`}>
-          {loginWithPin.status === 'loading' ? '...' : 'Login'}
-        </Button>
-
-        <Button
-          variant="danger"
-          disabled={pending}
-          onClick={(event: React.FormEvent) => {
-            event.preventDefault()
-            handleDeleteLocalAccount()
-          }}
-        >
-          {deleteLocalAccount.status === 'loading' ? '...' : 'Remove Account'}
-        </Button>
-      </Form.Row>
-
-      {loginWithPin.error && <Alert variant={'danger'}>{loginWithPin.error.message}</Alert>}
-      {deleteLocalAccount.error && <Alert variant={'danger'}>{deleteLocalAccount.error.message}</Alert>}
+      {status === 'error' && <Alert variant={'danger'}>{error?.message}</Alert>}
       <LoginMessages username={username} />
     </ListGroup.Item>
   )
 }
 
 const LoginMessages: React.FC<{ username: string }> = ({ username }) => {
-  const context = useEdgeContext()
-  const { otpResetPending, recovery2Corrupt } = useLoginMessages({ context, username })
+  const { otpResetPending, recovery2Corrupt } = useLoginMessages(useEdgeContext(), username)
 
   return (
     <ListGroup key={username}>

@@ -1,5 +1,5 @@
 import { EdgeParsedUri, EdgeSpendInfo } from 'edge-core-js'
-import * as React from 'react'
+import React from 'react'
 import { Alert, Button, Form, FormControl, FormGroup, FormLabel, InputGroup } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
 import QrReader from 'react-qr-reader'
@@ -30,7 +30,7 @@ export const Send: React.FC = () => {
     [publicAddress, nativeAmount, currencyCode, name, notes, category],
   )
 
-  const { data: maxSpendable } = useMaxSpendable({ wallet, spendInfo })
+  const { data: maxSpendable } = useMaxSpendable(wallet, spendInfo)
 
   const [scan, setScan] = React.useState(false)
   const onScan = (uri: string) =>
@@ -47,7 +47,7 @@ export const Send: React.FC = () => {
       })
       .catch((error: Error) => console.log(error))
 
-  const { data: transaction, error } = useNewTransaction({ wallet, spendInfo })
+  const { data: transaction, error } = useNewTransaction(wallet, spendInfo)
 
   return (
     <div>
@@ -77,7 +77,7 @@ export const Send: React.FC = () => {
         </FormGroup>
 
         <Select
-          title={'CurrencyCode'}
+          title={'sendCurrencyCode'}
           onSelect={(event) => setCurrencyCode(event.currentTarget.value)}
           options={currencyCodes}
           renderOption={(currencyCode: string) => (

@@ -1,13 +1,13 @@
-import * as React from 'react'
+import React from 'react'
 import { Form, FormControl, FormGroup, FormLabel, ListGroup, ListGroupItem } from 'react-bootstrap'
-import IdleTimer from 'react-idle-timer'
+import { useIdleTimer } from 'react-idle-timer'
 
 import { useAccount, useSetAccount } from '../auth'
 import { useAutoLogout } from '../hooks'
 
 export const AutoLogout = () => {
   const account = useAccount()
-  const [{ enabled, delay }, write] = useAutoLogout({ account })
+  const [{ enabled, delay }, write] = useAutoLogout(account)
   const setAccount = useSetAccount()
 
   const onIdle = () => {
@@ -17,13 +17,12 @@ export const AutoLogout = () => {
 
   return (
     <>
-      {enabled && delay >= 30 && <IdleTimer element={document} onIdle={onIdle} timeout={delay * 1000} />}
-
       <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
         <ListGroupItem>
           <Form>
             <FormGroup>
               <FormLabel>AutoLogout: {delay}</FormLabel>
+              {enabled && delay >= 30 && <IdleTimeout delay={delay} onIdle={onIdle} />}
               <FormControl
                 onChange={(event) =>
                   write({
@@ -34,7 +33,6 @@ export const AutoLogout = () => {
                 value={String(delay)}
               />
 
-              <FormLabel>Enabled</FormLabel>
               <Form.Check
                 id={'autoLogoutEnabled'}
                 type={'switch'}
@@ -48,4 +46,16 @@ export const AutoLogout = () => {
       </ListGroup>
     </>
   )
+}
+
+const IdleTimeout: React.FC<{ onIdle: () => void; delay: number }> = ({ onIdle, delay }) => {
+  const [remainingTime, setRemainingTime] = React.useState(delay)
+  const { getRemainingTime } = useIdleTimer({ timeout: delay * 1000, onIdle })
+
+  React.useEffect(() => {
+    setInterval(() => setRemainingTime(getRemainingTime()), 1000)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return <div>Remaining Time: {(remainingTime / 1000).toFixed(0)}</div>
 }

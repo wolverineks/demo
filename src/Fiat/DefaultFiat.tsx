@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { Form, FormGroup, ListGroup, ListGroupItem } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
@@ -7,11 +7,8 @@ import { useDefaultFiatCurrencyCode, useDefaultFiatInfo } from '../hooks'
 import { FiatInfo, fiatInfos } from './fiatInfos'
 
 export const DefaultFiat = () => {
-  const account = useAccount()
-  const [currencyCode, write] = useDefaultFiatCurrencyCode({
-    account,
-  })
-  const defaultFiatInfo = useDefaultFiatInfo({ account })
+  const [currencyCode, write] = useDefaultFiatCurrencyCode(useAccount())
+  const defaultFiatInfo = useDefaultFiatInfo(useAccount())
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>

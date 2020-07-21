@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { ListGroup } from 'react-bootstrap'
 import { ErrorBoundary } from 'react-error-boundary'
 

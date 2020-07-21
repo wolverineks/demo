@@ -1,27 +1,26 @@
-import { useChangeWalletState } from 'edge-react-hooks'
-import * as React from 'react'
+import React from 'react'
 import { Button, ListGroup } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
-import { useReadLastKnownWalletState } from '../hooks'
-import { LastKnownWalletStates } from '../LastKnownWalletStates'
-import { getArchivedWalletInfos, getBalance } from '../utils'
+import { useArchivedWalletIds, useChangeWalletStates, useReadInactiveWallet } from '../hooks'
+import { InactiveWallets } from '../InactiveWallets'
 import { FallbackRender } from './FallbackRender'
 
 export const ArchivedWalletList: React.FC = () => {
-  const account = useAccount()
-  const archivedWalletInfos = getArchivedWalletInfos({ account })
+  const archivedWalletIds = useArchivedWalletIds(useAccount())
 
-  return (
+  return archivedWalletIds.length <= 0 ? (
+    <div>No archived wallets</div>
+  ) : (
     <>
-      <LastKnownWalletStates />
+      <InactiveWallets />
       <ListGroup variant={'flush'}>
-        {archivedWalletInfos.map((walletInfo) => (
+        {archivedWalletIds.map((id) => (
           // eslint-disable-next-line react/display-name
-          <Boundary key={walletInfo.id} error={{ fallbackRender: () => <FallbackRender walletId={walletInfo.id} /> }}>
-            <WalletRow walletId={walletInfo.id} />
+          <Boundary key={id} error={{ fallbackRender: () => <FallbackRender walletId={id} /> }}>
+            <WalletRow walletId={id} />
           </Boundary>
         ))}
       </ListGroup>
@@ -29,28 +28,25 @@ export const ArchivedWalletList: React.FC = () => {
   )
 }
 
-const WalletRow: React.FC<{
-  walletId: string
-}> = ({ walletId }) => {
-  const account = useAccount()
-  const walletState = useReadLastKnownWalletState({ account, walletId })
-  const balance = getBalance({ wallet: walletState, currencyCode: walletState.currencyInfo.currencyCode })
+const WalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
+  const inactiveWallet = useReadInactiveWallet(useAccount(), walletId)
+  const balance = inactiveWallet.balances[inactiveWallet.currencyInfo.currencyCode]
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       <ListGroup.Item>
         <span className={'float-left'}>
-          <Logo walletType={walletState.type} /> {walletState.name}{' '}
-          <DisplayAmount nativeAmount={balance} currencyInfo={walletState.currencyInfo} /> -{' '}
+          <Logo walletType={inactiveWallet.type} /> {inactiveWallet.name}{' '}
+          <DisplayAmount nativeAmount={balance} currencyInfo={inactiveWallet.currencyInfo} /> -{' '}
           <FiatAmount
-            currencyInfo={walletState.currencyInfo}
-            toCurrencyCode={walletState.fiatCurrencyCode}
+            currencyInfo={inactiveWallet.currencyInfo}
+            toCurrencyCode={inactiveWallet.fiatCurrencyCode}
             nativeAmount={balance}
           />
         </span>
 
         <span className={'float-right'}>
-          <WalletOptions walletId={walletState.id} />
+          <WalletOptions walletId={inactiveWallet.id} />
         </span>
       </ListGroup.Item>
     </ListGroup>
@@ -58,18 +54,15 @@ const WalletRow: React.FC<{
 }
 
 const WalletOptions = ({ walletId }: { walletId: string }) => {
-  const account = useAccount()
-  const { execute: changeWalletState, error, status } = useChangeWalletState(account)
-  const activateWallet = () => changeWalletState({ walletId, walletState: { archived: false } })
-  const deleteWallet = () => changeWalletState({ walletId, walletState: { deleted: true } })
+  const { activateWallet, deleteWallet, error, status } = useChangeWalletStates(useAccount(), walletId)
 
   return (
     <>
-      <Button variant={'danger'} disabled={status === 'loading'} onClick={deleteWallet}>
-        Delete
-      </Button>
       <Button variant={'warning'} disabled={status === 'loading'} onClick={activateWallet}>
         Activate
+      </Button>
+      <Button variant={'danger'} disabled={status === 'loading'} onClick={deleteWallet}>
+        Delete
       </Button>
       {error && <div>{error.message}</div>}
     </>

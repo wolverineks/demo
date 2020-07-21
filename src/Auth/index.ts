@@ -1,5 +1,5 @@
 export * from './Login'
-export * from './LoginForm'
+export * from './PasswordLogin'
 export * from './PinLogin'
-export * from './CreateAccountForm'
+export * from './CreateAccount'
 export * from './AccountProvider'

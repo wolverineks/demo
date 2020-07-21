@@ -1,6 +1,6 @@
 import './index.css'
 
-import * as React from 'react'
+import React from 'react'
 import * as ReactDOM from 'react-dom'
 import { hijackEffects } from 'stop-runaway-react-effects'
 

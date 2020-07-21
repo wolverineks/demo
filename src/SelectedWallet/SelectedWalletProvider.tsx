@@ -1,8 +1,10 @@
-import * as React from 'react'
+import { EdgeCurrencyWallet } from 'edge-core-js'
+import React from 'react'
 import { FallbackProps } from 'react-error-boundary'
 
 import { useAccount } from '../auth'
-import { useWatchAll } from '../hooks'
+import { Boundary } from '../components'
+import { useActiveWalletIds, useCurrencyWallets } from '../hooks'
 
 const SelectedWalletIdContext = React.createContext<string>('')
 const SelectWalletContext = React.createContext<(id: string) => undefined>(() => undefined)
@@ -10,8 +12,6 @@ const SelectWalletContext = React.createContext<(id: string) => undefined>(() =>
 export const SelectedWalletProvider: React.FC = ({ children }) => {
   const account = useAccount()
   const [selectedWalletId, setSelectedWalletId] = React.useState<string>(account.activeWalletIds[0])
-
-  console.log('qwe', 'SelectedWalletProvider')
 
   return (
     <SelectedWalletIdContext.Provider value={selectedWalletId}>
@@ -22,23 +22,30 @@ export const SelectedWalletProvider: React.FC = ({ children }) => {
   )
 }
 
+export const SelectedWalletConsumer = ({ children }: { children: (wallet: EdgeCurrencyWallet) => any }) =>
+  children(useSelectedWallet())
+
 export class NoActiveWalletsError extends Error {}
 
 export const useSelectWallet = () => React.useContext(SelectWalletContext)
 export const useSelectedWallet = () => {
   const pending = React.useRef(false)
   const account = useAccount()
-  if (account.activeWalletIds.length <= 0) throw new NoActiveWalletsError()
+  useActiveWalletIds(account)
+  useCurrencyWallets(account)
 
-  const selectWallet = useSelectWallet()
+  // no active wallets
+  if (account.activeWalletIds.length <= 0) throw new NoActiveWalletsError()
 
   const selectedWalletId = React.useContext(SelectedWalletIdContext)
   const fallbackWalletId = account.activeWalletIds[0]
 
+  // archived or deleted ?
   const walletId = account.activeWalletIds.includes(selectedWalletId) ? selectedWalletId : fallbackWalletId
   const wallet = account.currencyWallets[walletId]
 
-  // if (!account.activeWalletIds.includes(selectedWalletId)) selectWallet(fallbackWalletId)
+  const selectWallet = useSelectWallet()
+  if (!account.activeWalletIds.includes(selectedWalletId)) selectWallet(fallbackWalletId)
 
   // loading
   if (account.activeWalletIds.includes(walletId) && !wallet) {
@@ -48,11 +55,15 @@ export const useSelectedWallet = () => {
     }
   }
 
-  useWatchAll(wallet as any)
-
   // loaded
   return wallet
 }
+
+export const SelectedWalletBoundary: React.FC = ({ children }) => (
+  <Boundary key={useSelectedWallet()?.id} error={{ fallbackRender }}>
+    {children}
+  </Boundary>
+)
 
 export const fallbackRender = ({ error }: FallbackProps) =>
   error instanceof NoActiveWalletsError ? <div>No Selected Wallet</div> : <div>Error: {error?.message}</div>

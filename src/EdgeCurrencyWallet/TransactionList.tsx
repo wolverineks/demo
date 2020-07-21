@@ -1,6 +1,6 @@
 import { EdgeCurrencyWallet, EdgeTransaction } from 'edge-core-js'
-import * as React from 'react'
-import { Button, Form, ListGroup } from 'react-bootstrap'
+import React from 'react'
+import { Form, ListGroup } from 'react-bootstrap'
 
 import { DisplayAmount, Select } from '../components'
 import { usePrevious, useTransactionCount, useTransactions } from '../hooks'
@@ -15,10 +15,10 @@ export const TransactionList: React.FC = () => {
   const [currencyCode, setCurrencyCode] = React.useState<string>(wallet.currencyInfo.currencyCode)
   const [startEntries, setStartEntries] = React.useState<number>(initialTransactionCount)
   const options = React.useMemo(() => ({ currencyCode, startEntries }), [currencyCode, startEntries])
-  const { data, status } = useTransactions({ wallet, options })
+  const { data, status } = useTransactions(wallet, options)
   const previousTransactions = usePrevious<EdgeTransaction[]>({ data, initialData: [] })
   const transactions = data || previousTransactions
-  const { data: transactionCount } = useTransactionCount({ wallet, options })
+  const { data: transactionCount } = useTransactionCount(wallet, options)
   const currencyCodes = getCurrencyCodes(wallet)
 
   return (
@@ -50,18 +50,6 @@ export const TransactionList: React.FC = () => {
 
       <ListGroup>
         Transactions: #:{String(transactionCount)}
-        <Button title={'ResyncBlockchain'} onClick={() => wallet.resyncBlockchain()}>
-          ResyncBlockchain
-        </Button>
-        <Button
-          title={'getTransactions'}
-          onClick={() => wallet.getTransactions().then((transactions) => console.log({ transactions }))}
-        >
-          getTransactions
-        </Button>
-        <Button title={'sync'} onClick={() => wallet.sync()}>
-          sync
-        </Button>
         {status === 'loading' && <div>Loading transactions...</div>}
         {transactionCount !== undefined && transactionCount <= 0 && <div>No Transactions</div>}
         {transactions.map((transaction) => (

@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
 
 const defaultSuspense = { fallback: <div>Loading...</div> }

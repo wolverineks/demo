@@ -4,7 +4,7 @@
     "strict": true,
     "allowSyntheticDefaultImports": true,
     "strictNullChecks": true,
-    "lib": ["dom", "es2015"],
+    "lib": ["dom", "es2019"],
     "jsx": "react",
     "target": "es5",
     "allowJs": true,

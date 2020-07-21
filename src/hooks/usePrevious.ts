@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 
 export const usePrevious = <T>({ data, initialData }: { data: T | undefined; initialData?: any }) => {
   const ref = React.useRef<T>(initialData)
