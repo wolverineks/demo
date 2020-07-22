@@ -4,7 +4,7 @@ import React from 'react'
 import { Button, Container, Navbar } from 'react-bootstrap'
 import { ReactQueryDevtools } from 'react-query-devtools'
 
-import { AccountBoundary, AccountConsumer, AccountProvider, Login, useAccount, useSetAccount } from './auth'
+import { AccountProvider, Login, useAccount, useSetAccount } from './auth'
 import { Boundary } from './components'
 import { Edge } from './Edge'
 import { AccountInfo } from './EdgeAccount/AccountInfo'
@@ -42,7 +42,16 @@ export const App = () => {
       <Boundary>
         <Edge>
           <AccountProvider>
-            <AccountBoundary>
+            <Boundary
+              error={{
+                // eslint-disable-next-line react/display-name
+                fallbackRender: ({ resetErrorBoundary }) => (
+                  <Container style={{ top: '100px' }}>
+                    <Login onLogin={resetErrorBoundary} />
+                  </Container>
+                ),
+              }}
+            >
               <Container>
                 <Header />
 
@@ -50,7 +59,7 @@ export const App = () => {
                   <AccountInfo />
                 </SelectedWalletProvider>
               </Container>
-            </AccountBoundary>
+            </Boundary>
           </AccountProvider>
         </Edge>
       </Boundary>

@@ -60,9 +60,7 @@ const ActiveWalletRow: React.FC<{
           />
         </span>
 
-        <span className={'float-right'}>
-          <WalletOptions walletId={wallet.id} />
-        </span>
+        <WalletOptions walletId={wallet.id} />
       </ListGroup.Item>
 
       <EnabledTokensList wallet={wallet} />
@@ -74,14 +72,14 @@ const WalletOptions = ({ walletId }: { walletId: string }) => {
   const { archiveWallet, deleteWallet, status } = useChangeWalletStates(useAccount(), walletId)
 
   return (
-    <>
+    <span className={'float-right'}>
       <Button variant={'danger'} disabled={status === 'loading'} onClick={deleteWallet}>
         Delete
       </Button>
       <Button variant={'warning'} disabled={status === 'loading'} onClick={archiveWallet}>
         Archive
       </Button>
-    </>
+    </span>
   )
 }
 

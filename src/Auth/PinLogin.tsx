@@ -1,6 +1,6 @@
 import { EdgeAccount } from 'edge-core-js'
 import React from 'react'
-import { Alert, Button, Card, Col, Form, FormControl, FormLabel, ListGroup } from 'react-bootstrap'
+import { Alert, Button, Card, Form, FormControl, ListGroup } from 'react-bootstrap'
 
 import { Boundary } from '../components'
 import { useEdgeContext } from '../Edge'
@@ -15,9 +15,7 @@ export const PinLogin: React.FC<{ onLogin: (account: EdgeAccount) => any }> = ({
         <Card.Text>------</Card.Text>
       ) : (
         accountsWithPinLogin.map(({ username }) => (
-          <Boundary key={username}>
-            <LocalUserRow username={username} key={username} onLogin={onLogin} />
-          </Boundary>
+          <LocalUserRow username={username} key={username} onLogin={onLogin} />
         ))
       )}
     </ListGroup>
@@ -59,7 +57,9 @@ const LocalUserRow: React.FC<{ username: string; onLogin: (account: EdgeAccount)
       </Form>
 
       {status === 'error' && <Alert variant={'danger'}>{error?.message}</Alert>}
-      <LoginMessages username={username} />
+      <Boundary>
+        <LoginMessages username={username} />
+      </Boundary>
     </ListGroup.Item>
   )
 }

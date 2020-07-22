@@ -1,9 +1,8 @@
-import { EdgeAccount } from 'edge-core-js'
+import { EdgeAccount, EdgeContext } from 'edge-core-js'
 import React from 'react'
-import { Container } from 'react-bootstrap'
+import { queryCache, useMutation } from 'react-query'
 
-import { Boundary } from '../components'
-import { Login } from './Login'
+import { useEdgeContext } from '../Edge'
 
 export const EdgeAccountContext = React.createContext<EdgeAccount | undefined>(undefined)
 export const SetEdgeAccountContext = React.createContext<(account?: EdgeAccount) => void>(() => undefined)
@@ -20,21 +19,6 @@ export const AccountProvider: React.FC = ({ children }) => {
 
 export const AccountConsumer = EdgeAccountContext.Consumer
 
-export const AccountBoundary: React.FC = ({ children }) => (
-  <Boundary
-    error={{
-      // eslint-disable-next-line react/display-name
-      fallbackRender: ({ resetErrorBoundary }) => (
-        <Container style={{ top: '100px' }}>
-          <Login onLogin={resetErrorBoundary} />
-        </Container>
-      ),
-    }}
-  >
-    {children}
-  </Boundary>
-)
-
 const unauthorized = () => {
   throw new Error('unauthorized')
 }
@@ -42,106 +26,94 @@ const unauthorized = () => {
 export const useAccount = () => React.useContext(EdgeAccountContext) || unauthorized()
 export const useSetAccount = () => React.useContext(SetEdgeAccountContext)
 
-// const useAuth = (context: EdgeContext) => {
-//   const [account, setAccount] = React.useState<EdgeAccount>();
-//   const [error, setError] = React.useState<Error>();
-//   const pendingRef = React.useRef(false);
-
+// const useLoginLogout = (context: EdgeContext) => {
 //   const logout = () => {
-//     setAccount(undefined);
-//     account && account.logout();
-//   };
+//     const account = queryCache.getQueryData<EdgeAccount>('account')
+//     account && account.logout()
+//     queryCache.removeQueries('account', undefined)
+//   }
+
+//   const [
+//     loginWithPassword,
+//     loginWithPasswordState,
+//   ] = useMutation(({ username, password, otp }: { username: string; password: string; otp?: string }) =>
+//     context.loginWithPassword(username, password, { otp }),
+//   )
+
+//   const [
+//     loginWithPin,
+//     loginWithPinState,
+//   ] = useMutation(({ username, pin, otp }: { username: string; pin: string; otp?: string }) =>
+//     context.loginWithPIN(username, pin, { otp }),
+//   )
+
+//   const [
+//     loginWithRecovery,
+//     loginWithRecoveryState,
+//   ] = useMutation(
+//     ({
+//       username,
+//       recoveryKey,
+//       answers,
+//       otp,
+//     }: {
+//       username: string
+//       recoveryKey: string
+//       answers: string[]
+//       otp?: string
+//     }) => context.loginWithRecovery2(recoveryKey, username, answers, { otp }),
+//   )
+
+//   const [
+//     loginWithKey,
+//     loginWithKeyState,
+//   ] = useMutation(({ username, loginKey, otp }: { username: string; loginKey: string; otp?: string }) =>
+//     context.loginWithKey(username, loginKey, { otp }),
+//   )
+
+//   const [
+//     createAccount,
+//     createAccountState,
+//   ] = useMutation(
+//     ({ username, password, pin, otp }: { username: string; password: string; pin: string; otp?: string }) =>
+//       context.createAccount(username, password, pin, { otp }),
+//   )
 
 //   return {
-//     account,
-//     error,
-//     pending: () => pendingRef.current,
 //     logout,
-//     loginWithPassword: ({ username, password }) => {
-//       if (pendingRef.current) return;
-//       pendingRef.current = true;
-//       return context
-//         .loginWithPassword(username, password)
-//         .then(setAccount)
-//         .catch(setError)
-//         .finally(() => (pendingRef.current = false));
+//     loginWithPassword,
+//     loginWithPin,
+//     loginWithRecovery,
+//     loginWithKey,
+//     createAccount,
+//     status:
+//       loginWithPasswordState.status ||
+//       loginWithPinState.status ||
+//       loginWithRecoveryState.status ||
+//       loginWithKeyState.status ||
+//       createAccountState.status,
+//     error:
+//       loginWithPasswordState.error ||
+//       loginWithPinState.error ||
+//       loginWithRecoveryState.error ||
+//       loginWithKeyState.error ||
+//       createAccountState.error,
+//     reset: () => {
+//       loginWithPasswordState.reset()
+//       loginWithPinState.reset()
+//       loginWithRecoveryState.reset()
+//       loginWithKeyState.reset()
+//       createAccountState.reset()
 //     },
-//     loginWithPin: ({ username, pin, otp }) => {
-//       if (pendingRef.current) return;
-//       pendingRef.current = true;
-//       return context
-//         .loginWithPassword(username, pin, { otp })
-//         .then(setAccount)
-//         .catch(setError)
-//         .finally(() => (pendingRef.current = false));
-//     },
-//     loginWithRecovery: ({ username, key, answers, otp }) => {
-//       if (pendingRef.current) return;
-//       pendingRef.current = true;
-//       return context
-//         .loginWithRecovery2(key, username, answers, { otp })
-//         .then(setAccount)
-//         .catch(setError)
-//         .finally(() => (pendingRef.current = false));
-//     },
-//     loginWithKey: ({ username, key, otp }) => {
-//       if (pendingRef.current) return;
-//       pendingRef.current = true;
-//       return context
-//         .loginWithKey(username, key, { otp })
-//         .then(setAccount)
-//         .catch(setError)
-//         .finally(() => (pendingRef.current = false));
-//     },
-//   };
-// };
+//   }
+// }
 
-// const AuthContext = React.createContext<ReturnType<typeof useAuth>>(
-//   (undefined as unknown) as ReturnType<typeof useAuth>,
-// );
+// const AuthContext = React.createContext<ReturnType<typeof useLoginLogout>>(
+//   (undefined as unknown) as ReturnType<typeof useLoginLogout>,
+// )
 
-// const useLoginWithPassword = () => useAuthContext().loginWithPassword;
-// const usePending = () => useAuthContext().pending;
-// const useError = () => useAuthContext().error;
-// const useAuthContext = () => React.useContext(AuthContext);
+// export const useAuth = () => React.useContext(AuthContext)
 
-// const AuthProvider: React.FC<{ context: EdgeContext }> = ({
-//   context,
-//   children,
-// }) => (
-//   <AuthContext.Provider value={useAuth(context)}>
-//     {children}
-//   </AuthContext.Provider>
-// );
-
-// export const App: React.FC<{ context: EdgeContext }> = ({ context }) => {
-//   return (
-//     <AuthProvider context={context}>
-//       <Login />
-//     </AuthProvider>
-//   );
-// };
-
-// const Login: React.FC = () => {
-//   const [username, setUsername] = React.useState("");
-//   const [password, setPassword] = React.useState("");
-//   const loginWithPassword = useLoginWithPassword();
-//   const error = useError();
-//   const pending = usePending();
-
-//   return (
-//     <div>
-//       {error && <span>{error.message}</span>}
-//       <button
-//         disabled={pending()}
-//         onClick={() =>
-//           loginWithPassword({ username, password }).then(() =>
-//             console.log("LOGGED IN"),
-//           )
-//         }
-//       >
-//         login
-//       </button>
-//     </div>
-//   );
-// };
+// export const AuthProvider: React.FC = ({ children }) => (
+//   <AuthContext.Provider value={useLoginLogout(useEdgeContext())}>{children}</AuthContext.Provider>
+// )
