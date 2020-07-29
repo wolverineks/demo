@@ -1,10 +1,9 @@
-import { EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
+import { EdgeCurrencyWallet } from 'edge-core-js'
 import { useOnNewTransactions, useRenameWallet } from 'edge-react-hooks'
 import React from 'react'
-import { Button, Card, Form, FormControl, FormGroup, FormLabel, Image, ListGroup, Tab, Tabs } from 'react-bootstrap'
+import { Button, Card, Form, FormControl, FormGroup, FormLabel, ListGroup, Tab, Tabs } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
-import { Logo } from '../components'
 import { fiatInfos } from '../Fiat'
 import { useFiatCurrencyCode, useName, useTokens } from '../hooks'
 import { useSelectedWallet } from '../SelectedWallet'

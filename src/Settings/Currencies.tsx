@@ -1,6 +1,6 @@
 import { EdgeCurrencyInfo, EdgeDenomination, EdgeMetaToken } from 'edge-core-js'
 import React from 'react'
-import { Image, ListGroup, ListGroupItem } from 'react-bootstrap'
+import { ListGroup, ListGroupItem } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
 import { Boundary, Logo } from '../components'
