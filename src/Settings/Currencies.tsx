@@ -3,7 +3,7 @@ import React from 'react'
 import { Image, ListGroup, ListGroupItem } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
-import { Boundary } from '../components'
+import { Boundary, Logo } from '../components'
 import { useActiveCurrencyInfos, useActiveTokenInfos, useDisplayDenomination } from '../hooks'
 
 export const Currencies = () => {
@@ -28,31 +28,28 @@ export const Currencies = () => {
 }
 
 const CurrencySetting: React.FC<{ currencyInfo: EdgeCurrencyInfo }> = ({ currencyInfo }) => {
-  const { displayName, denominations, symbolImage, currencyCode } = currencyInfo
-  const [denomination, write] = useDisplayDenomination(useAccount(), currencyInfo)
+  const { displayName, denominations, currencyCode } = currencyInfo
+  const [denomination, write] = useDisplayDenomination(useAccount(), currencyCode)
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       <ListGroupItem>
-        <Image src={symbolImage} />
+        <Logo currencyCode={currencyCode} />
         {displayName} - {currencyCode}
       </ListGroupItem>
       <Denominations denominations={denominations} onSelect={write} selectedDenomination={denomination} />
-      {/* {metaTokens.map((metaToken) => (
-        <TokenSetting key={metaToken.currencyCode} tokenInfo={metaToken} />
-      ))} */}
     </ListGroup>
   )
 }
 
 const TokenSetting: React.FC<{ tokenInfo: EdgeMetaToken }> = ({ tokenInfo }) => {
-  const { currencyName, currencyCode, denominations, symbolImage } = tokenInfo
-  const [denomination, write] = useDisplayDenomination(useAccount(), tokenInfo)
+  const { currencyName, currencyCode, denominations } = tokenInfo
+  const [denomination, write] = useDisplayDenomination(useAccount(), tokenInfo.currencyCode)
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       <ListGroupItem>
-        <Image src={symbolImage} />
+        <Logo currencyCode={currencyCode} />
         {currencyName} - {currencyCode} (token)
       </ListGroupItem>
       <Denominations denominations={denominations} onSelect={write} selectedDenomination={denomination} />

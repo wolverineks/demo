@@ -1,5 +1,2 @@
 export * from './categories'
-export * from './getActiveCurrencyInfos'
-export * from './getCurrencyInfoFromCC'
-export * from './getWalletTypes'
 export * from './utils'

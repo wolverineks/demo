@@ -1,4 +1,3 @@
-import { EdgeCurrencyInfo, EdgeMetaToken } from 'edge-core-js'
 import React from 'react'
 
 import { useAccount } from '../auth'
@@ -6,16 +5,22 @@ import { useFiatAmount } from '../hooks'
 import { getFiatInfo } from './getFiatInfo'
 
 export const FiatAmount = ({
-  currencyInfo,
-  toCurrencyCode,
   nativeAmount,
+  fromCurrencyCode,
+  fiatCurrencyCode,
 }: {
-  currencyInfo: EdgeCurrencyInfo | EdgeMetaToken
-  toCurrencyCode: string
   nativeAmount: string
+  fiatCurrencyCode: string
+  fromCurrencyCode: string
 }) => {
-  const fiatAmount = useFiatAmount(useAccount(), currencyInfo, toCurrencyCode, nativeAmount)
-  const fiatInfo = getFiatInfo({ currencyCode: toCurrencyCode })
+  const account = useAccount()
+  const fiatAmount = useFiatAmount({
+    account,
+    nativeAmount,
+    fromCurrencyCode,
+    fiatCurrencyCode,
+  })
+  const fiatInfo = getFiatInfo(fiatCurrencyCode)
 
   return (
     <>

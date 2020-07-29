@@ -1,34 +1,30 @@
-import { EdgeCurrencyInfo, EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
+import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
-import { Card, Image, ListGroup } from 'react-bootstrap'
+import { Card, ListGroup } from 'react-bootstrap'
 
-import { DisplayAmount } from '../components'
+import { DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
 import { useBalance, useBalances, useEnabledTokenInfos, useFiatCurrencyCode, useName } from '../hooks'
 import { useSelectedWallet } from '../SelectedWallet'
 
-export const BalanceList: React.FC = () => {
-  const wallet = useSelectedWallet()
+export const BalanceList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => (
+  <Card>
+    <ListGroup>
+      <ListGroup.Item>{useName(wallet)}</ListGroup.Item>
+      <ListGroup.Item>
+        <Balance
+          wallet={wallet}
+          currencyCode={wallet.currencyInfo.currencyCode}
+          nativeAmount={useBalance(wallet, wallet.currencyInfo.currencyCode)}
+        />{' '}
+      </ListGroup.Item>
 
-  return (
-    <Card>
-      <ListGroup>
-        <ListGroup.Item>{useName(wallet)}</ListGroup.Item>
-        <ListGroup.Item>
-          <Balance
-            wallet={wallet}
-            currencyInfo={wallet.currencyInfo}
-            nativeAmount={useBalance(wallet, wallet.currencyInfo.currencyCode)}
-          />{' '}
-        </ListGroup.Item>
-
-        <ListGroup.Item>
-          <TokenList />
-        </ListGroup.Item>
-      </ListGroup>
-    </Card>
-  )
-}
+      <ListGroup.Item>
+        <TokenList />
+      </ListGroup.Item>
+    </ListGroup>
+  </Card>
+)
 
 const TokenList = () => {
   const wallet = useSelectedWallet()
@@ -43,7 +39,7 @@ const TokenList = () => {
         <Balance
           key={tokenInfo.currencyCode}
           wallet={wallet}
-          currencyInfo={tokenInfo}
+          currencyCode={tokenInfo.currencyCode}
           nativeAmount={wallet.balances[tokenInfo.currencyCode]}
         />
       ))}
@@ -53,12 +49,20 @@ const TokenList = () => {
 
 const Balance: React.FC<{
   wallet: EdgeCurrencyWallet
-  currencyInfo: EdgeCurrencyInfo | EdgeMetaToken
+  currencyCode: string
   nativeAmount: string
-}> = ({ currencyInfo, nativeAmount = '0', wallet }) => (
-  <div>
-    <Image src={currencyInfo.symbolImage} />
-    <DisplayAmount currencyInfo={currencyInfo} nativeAmount={nativeAmount} /> -{' '}
-    <FiatAmount currencyInfo={currencyInfo} toCurrencyCode={useFiatCurrencyCode(wallet)} nativeAmount={nativeAmount} />
-  </div>
-)
+}> = ({ currencyCode, nativeAmount = '0', wallet }) => {
+  const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
+
+  return (
+    <div>
+      <Logo currencyCode={currencyCode} />
+      <DisplayAmount currencyCode={currencyCode} nativeAmount={nativeAmount} /> -{' '}
+      <FiatAmount
+        nativeAmount={nativeAmount}
+        fromCurrencyCode={wallet.currencyInfo.currencyCode}
+        fiatCurrencyCode={fiatCurrencyCode}
+      />
+    </div>
+  )
+}

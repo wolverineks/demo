@@ -1,19 +1,16 @@
-import { EdgeCurrencyInfo, EdgeCurrencyWallet } from 'edge-core-js'
+import { EdgeCurrencyWallet } from 'edge-core-js'
 import QRCode from 'qrcode.react'
 import React from 'react'
 import { Alert, Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
 
 import { useAccount } from '../auth'
-import { Select } from '../components'
-import { useCurrencyCodes, useDisplayDenomination, useFiatAmount, useNativeAmount } from '../hooks'
+import { Boundary, Select } from '../components'
+import { useCurrencyCodes, useDisplayDenomination, useFiatAmount } from '../hooks'
 import { useFiatCurrencyCode, useReceiveAddressAndEncodeUri } from '../hooks'
-import { useSelectedWallet } from '../SelectedWallet'
-import { getCurrencyInfoFromCurrencyCode, nativeToDenomination } from '../utils'
+import { denominationToNative } from '../utils'
 
-export const Request: React.FC = () => {
-  const wallet = useSelectedWallet()
-
+export const Request: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const currencyCodes = useCurrencyCodes(wallet)
   const [nativeAmount, setNativeAmount] = React.useState('0')
   // const [fiatAmount, setFiatAmount] = React.useState(0)
@@ -29,8 +26,13 @@ export const Request: React.FC = () => {
       </FormGroup>
 
       <FormGroup>
-        <DisplayAmountInput currencyInfo={wallet.currencyInfo} nativeAmount={nativeAmount} onChange={setNativeAmount} />
-        <FiatAmountDisplay wallet={wallet} nativeAmount={nativeAmount} currencyCode={currencyCode} />
+        <Boundary>
+          <DisplayAmountInput currencyCode={currencyCode} onChange={setNativeAmount} />
+        </Boundary>
+
+        <Boundary>
+          <FiatAmountDisplay wallet={wallet} nativeAmount={nativeAmount} currencyCode={currencyCode} />
+        </Boundary>
 
         {/* <DisplayAmountDisplay wallet={wallet} fiatAmount={fiatAmount} currencyCode={currencyCode} />
         <FiatAmountInput wallet={wallet} fiatAmount={fiatAmount} onChange={setFiatAmount} /> */}
@@ -51,7 +53,9 @@ export const Request: React.FC = () => {
       />
 
       <FormGroup>
-        <QRCode value={data?.uri || ''} />
+        <Boundary>
+          <QRCode value={data?.uri || ''} />
+        </Boundary>
       </FormGroup>
 
       {error && <Alert variant={'danger'}>{error.message}</Alert>}
@@ -68,21 +72,23 @@ export const Request: React.FC = () => {
 }
 
 const DisplayAmountInput = ({
-  nativeAmount,
   onChange,
-  currencyInfo,
+  currencyCode,
 }: {
-  nativeAmount: string
   onChange: (nativeAmount: string) => any
-  currencyInfo: EdgeCurrencyInfo
+  currencyCode: string
 }) => {
-  const [denomination] = useDisplayDenomination(useAccount(), currencyInfo)
-  const displayAmount = nativeToDenomination({ denomination, nativeAmount })
+  const [denomination] = useDisplayDenomination(useAccount(), currencyCode)
+  const { symbol, name } = denomination
 
   return (
     <div>
-      <FormLabel>Display Amount:</FormLabel>
-      <FormControl value={displayAmount} onChange={(event) => onChange(event.currentTarget.value)} />
+      <FormLabel>
+        Display Amount: {symbol} {name}
+      </FormLabel>
+      <FormControl
+        onChange={(event) => onChange(denominationToNative({ denomination, amount: event.currentTarget.value }))}
+      />
     </div>
   )
 }
@@ -96,57 +102,19 @@ const FiatAmountDisplay = ({
   nativeAmount: string
   currencyCode: string
 }) => {
-  const currencyInfo = getCurrencyInfoFromCurrencyCode({ wallet, currencyCode })
-  const fiatAmount = useFiatAmount(useAccount(), currencyInfo, nativeAmount, useFiatCurrencyCode(wallet))
+  const account = useAccount()
+  const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
+  const fiatAmount = useFiatAmount({
+    account,
+    nativeAmount,
+    fiatCurrencyCode,
+    fromCurrencyCode: currencyCode,
+  })
 
   return (
     <div>
-      <FormLabel>{useFiatCurrencyCode(wallet)}:</FormLabel>
+      <FormLabel>{fiatCurrencyCode}:</FormLabel>
       <FormControl readOnly value={fiatAmount?.toFixed(2) || '0.00'} />
     </div>
   )
 }
-
-// const FiatAmountInput = ({
-//   wallet,
-//   fiatAmount,
-//   onChange,
-// }: {
-//   wallet: EdgeCurrencyWallet
-//   fiatAmount: number
-//   onChange: (fiatAmount: number) => any
-// }) => {
-//   return (
-//     <div>
-//       <FormLabel>{useFiatCurrencyCode(wallet)}:</FormLabel>
-//       <FormControl
-//         value={fiatAmount?.toFixed(2) || '0.00'}
-//         onChange={(event) => onChange(Number(event.currentTarget.value))}
-//       />
-//     </div>
-//   )
-// }
-
-// const DisplayAmountDisplay = ({
-//   wallet,
-//   fiatAmount,
-//   currencyCode,
-// }: {
-//   wallet: EdgeCurrencyWallet
-//   fiatAmount: number
-//   currencyCode: string
-// }) => {
-//   const nativeAmount = useNativeAmount(
-//     useAccount(),
-//     getCurrencyInfoFromCurrencyCode({ wallet, currencyCode }),
-//     useFiatCurrencyCode(wallet),
-//     fiatAmount,
-//   )
-
-//   return (
-//     <div>
-//       <FormLabel>{currencyCode}:</FormLabel>
-//       <FormControl readOnly value={nativeAmount || '0.00'} />
-//     </div>
-//   )
-// }

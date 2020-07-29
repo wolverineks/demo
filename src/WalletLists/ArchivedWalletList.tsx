@@ -36,12 +36,12 @@ const WalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       <ListGroup.Item>
         <span className={'float-left'}>
-          <Logo walletType={inactiveWallet.type} /> {inactiveWallet.name}{' '}
-          <DisplayAmount nativeAmount={balance} currencyInfo={inactiveWallet.currencyInfo} /> -{' '}
+          <Logo currencyCode={inactiveWallet.currencyInfo.currencyCode} /> {inactiveWallet.name}{' '}
+          <DisplayAmount nativeAmount={balance} currencyCode={inactiveWallet.currencyInfo.currencyCode} /> -{' '}
           <FiatAmount
-            currencyInfo={inactiveWallet.currencyInfo}
-            toCurrencyCode={inactiveWallet.fiatCurrencyCode}
             nativeAmount={balance}
+            fromCurrencyCode={inactiveWallet.currencyInfo.currencyCode}
+            fiatCurrencyCode={inactiveWallet.fiatCurrencyCode}
           />
         </span>
 

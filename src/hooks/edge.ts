@@ -10,6 +10,7 @@ import {
   EdgeSpendInfo,
   EdgeWalletState,
 } from 'edge-core-js'
+import { useOnNewTransactions } from 'edge-react-hooks'
 import React from 'react'
 import { queryCache, useMutation, useQuery } from 'react-query'
 
@@ -17,8 +18,8 @@ import { getFiatInfo } from '../Fiat/getFiatInfo'
 import {
   denominationToNative,
   getExchangeDenomination,
-  getExchangeDenominationFromCC,
-  getTokenInfoFromCurrencyCode,
+  getInfo,
+  getTokenInfo,
   isUnique,
   nativeToDenomination,
 } from '../utils'
@@ -36,7 +37,7 @@ export const useAccountsWithPinLogin = (context: EdgeContext) =>
 // LOGIN MESSAGES
 export const useLoginMessages = (context: EdgeContext, username: string) =>
   useQuery({
-    queryKey: [username, 'loginMessages'],
+    queryKey: ['loginMessages'],
     queryFn: () => context.fetchLoginMessages().then((loginMessages) => loginMessages[username] || []),
     config: { suspense: true, cacheTime: 0, staleTime: Infinity },
   }).data!
@@ -61,20 +62,19 @@ export const useOtpKey = (account: EdgeAccount) => useWatch(account, 'otpKey')
 export const useOtpResetDate = (account: EdgeAccount) => useWatch(account, 'otpResetDate')
 export const useLoggedIn = (account: EdgeAccount) => useWatch(account, 'loggedIn')
 
+// ACTIVE CURRENCY INFOS
+export const useActiveCurrencyInfos = (account: EdgeAccount) =>
+  useSortedCurrencyWallets(account)
+    .map(({ currencyInfo }) => currencyInfo)
+    .filter(isUnique)
+
 // ACTIVE TOKEN INFOS
 export const useActiveTokenInfos = (account: EdgeAccount) =>
   useSortedCurrencyWallets(account)
     .map((wallet) => queryCache.getQueryData([wallet.id, 'enabledTokens']) as string[])
     .reduce((result, current = []) => [...result, ...current], [])
     .filter(isUnique)
-    .map((currencyCode) => getTokenInfoFromCurrencyCode(account, currencyCode))
-    .filter(Boolean) // WTF? why are ['EOS', 'ETH', 'FIO', 'RBTC'] included in enabledTokens?
-
-// ACTIVE CURRENCY INFOS
-export const useActiveCurrencyInfos = (account: EdgeAccount) =>
-  useSortedCurrencyWallets(account)
-    .map(({ currencyInfo }) => currencyInfo)
-    .filter(isUnique)
+    .map((currencyCode) => getTokenInfo(account, currencyCode))
 
 // CHANGE WALLET STATES
 export const useChangeWalletStates = (account: EdgeAccount, walletId: string) => {
@@ -122,15 +122,12 @@ export const useLoginMethod = (account: EdgeAccount) =>
     ? 'edgeLogin'
     : unknownLogin()
 
-export const useWallet = (account: EdgeAccount, walletId: string) => {
-  const wallet = useQuery({
+export const useWallet = (account: EdgeAccount, walletId: string) =>
+  useQuery({
     queryKey: [walletId, 'wallet'],
     queryFn: () => account.waitForCurrencyWallet(walletId),
     config: { suspense: true, useErrorBoundary: false },
   }).data!
-
-  return wallet
-}
 
 export const useDeletedWalletIds = (account: EdgeAccount) =>
   useAllKeys(account)
@@ -147,8 +144,8 @@ export const useReadPinLoginEnabled = (context: EdgeContext, account: EdgeAccoun
 
 export const useWritePinLoginEnabled = (account: EdgeAccount) =>
   useMutation(
-    (enabled: boolean) => account.changePin({ enableLogin: enabled }),
-    optimisticMutationOptions([account.username, 'pinLoginEnabled'], (enabled) => enabled),
+    (enableLogin: boolean) => account.changePin({ enableLogin }),
+    optimisticMutationOptions([account.username, 'pinLoginEnabled'], (enableLogin) => enableLogin),
   )
 
 export const usePinLoginEnabled = (context: EdgeContext, account: EdgeAccount) =>
@@ -167,17 +164,8 @@ export const useBalance = (wallet: EdgeCurrencyWallet, currencyCode: string) =>
   useWatch(wallet, 'balances')[currencyCode]
 export const useBalances = (wallet: EdgeCurrencyWallet) => useWatch(wallet, 'balances')
 export const useBlockHeight = (wallet: EdgeCurrencyWallet) => useWatch(wallet, 'blockHeight')
-export const useFiatCurrencyCode = (wallet: EdgeCurrencyWallet) => useWatch(wallet, 'fiatCurrencyCode')
 export const useName = (wallet: EdgeCurrencyWallet) => useWatch(wallet, 'name')
 export const useSyncRatio = (wallet: EdgeCurrencyWallet) => useWatch(wallet, 'syncRatio')
-
-export const useCurrencyCodes = (wallet: EdgeCurrencyWallet) => [
-  wallet.currencyInfo.currencyCode,
-  ...useEnabledTokenInfos(wallet).map(({ currencyCode }) => currencyCode),
-]
-
-export const useSetFiatCurrencyCode = (wallet: EdgeCurrencyWallet) =>
-  useMutation((fiatCurrencyCode: string) => wallet.setFiatCurrencyCode(fiatCurrencyCode))[0]
 
 // ENABLED TOKEN INFOS
 export const useEnabledTokenInfos = (wallet: EdgeCurrencyWallet) => {
@@ -185,6 +173,15 @@ export const useEnabledTokenInfos = (wallet: EdgeCurrencyWallet) => {
 
   return wallet.currencyInfo.metaTokens.filter((tokenInfo) => enabledTokens.includes(tokenInfo.currencyCode))
 }
+
+export const useCurrencyCodes = (wallet: EdgeCurrencyWallet) =>
+  [wallet.currencyInfo.currencyCode, ...useEnabledTokens(wallet)].filter(isUnique)
+
+// FIAT CURRENCY CODE
+export const useReadFiatCurrencyCode = (wallet: EdgeCurrencyWallet) => useWatch(wallet, 'fiatCurrencyCode')
+export const useWriteFiatCurrencyCode = (wallet: EdgeCurrencyWallet) => useMutation(wallet.setFiatCurrencyCode)
+export const useFiatCurrencyCode = (wallet: EdgeCurrencyWallet) =>
+  [useReadFiatCurrencyCode(wallet), useWriteFiatCurrencyCode(wallet)[0]] as const
 
 // RECEIVE ADDRESS AND ENCODE URI
 export const useReceiveAddressAndEncodeUri = (
@@ -209,13 +206,16 @@ export const useReceiveAddressAndEncodeUri = (
   })
 
 // ENABLED TOKENS
-export const useEnabledTokens = (wallet: EdgeCurrencyWallet) => {
-  return useQuery({
+export const useEnabledTokens = (wallet: EdgeCurrencyWallet) =>
+  useQuery({
     queryKey: [wallet.id, 'enabledTokens'],
-    queryFn: () => wallet.getEnabledTokens(),
+    queryFn: () =>
+      wallet
+        .getEnabledTokens()
+        // WTF? Why is the parent currencyCode in enabledTokens?
+        .then((tokens) => tokens.filter((tokenCode) => tokenCode !== wallet.currencyInfo.currencyCode)),
     config: { suspense: true },
   }).data!
-}
 
 export const useEnableTokens = (wallet: EdgeCurrencyWallet) =>
   useMutation(
@@ -234,21 +234,51 @@ export const useDisableTokens = (wallet: EdgeCurrencyWallet) =>
     ),
   )[0]
 
+export const useTokens = (wallet: EdgeCurrencyWallet) => ({
+  availableTokens: wallet.currencyInfo.metaTokens.map(({ currencyCode }) => currencyCode),
+  enabledTokens: useEnabledTokens(wallet),
+  enableTokens: useEnableTokens(wallet),
+  disableTokens: useDisableTokens(wallet),
+})
+
 // TRANSACTIONS
-export const useTransactions = (wallet: EdgeCurrencyWallet, options: EdgeGetTransactionsOptions) =>
-  useQuery({
+export const useTransactions = (wallet: EdgeCurrencyWallet, options: EdgeGetTransactionsOptions) => {
+  const { data, refetch } = useQuery({
     queryKey: [wallet.id, 'transactions', options],
     queryFn: () => wallet.getTransactions(options),
-    config: { suspense: false, staleTime: Infinity, cacheTime: 0 },
+    config: { suspense: true, staleTime: Infinity, cacheTime: 0 },
   })
 
+  useOnNewTransactions(
+    wallet,
+    React.useCallback(() => refetch(), [refetch]),
+  )
+
+  return data!
+}
+
+// export const useTransactions = (wallet: EdgeCurrencyWallet, options: EdgeGetTransactionsOptions) =>
+// useQuery({
+//   queryKey: [wallet.id, 'transactions', options],
+//   queryFn: () => wallet.getTransactions(options),
+//   config: { suspense: false, staleTime: Infinity, cacheTime: 0 },
+// }).data!
+
 // TRANSACTION COUNT
-export const useTransactionCount = (wallet: EdgeCurrencyWallet, options: EdgeGetTransactionsOptions) =>
-  useQuery({
+export const useTransactionCount = (wallet: EdgeCurrencyWallet, options: EdgeGetTransactionsOptions) => {
+  const { data, refetch } = useQuery({
     queryKey: [wallet.id, 'transactionCount', options],
     queryFn: () => wallet.getNumTransactions(options),
     config: { suspense: false, staleTime: Infinity, cacheTime: 0 },
   })
+
+  useOnNewTransactions(
+    wallet,
+    React.useCallback(() => refetch(), [refetch]),
+  )
+
+  return data!
+}
 
 // MAX SPENDABLE
 export const useMaxSpendable = (wallet: EdgeCurrencyWallet, spendInfo: EdgeSpendInfo) =>
@@ -297,7 +327,7 @@ type AutoLogoutSetting = {
 
 export const useReadAutoLogout = (account: EdgeAccount) =>
   useQuery({
-    queryKey: 'autoLogout',
+    queryKey: [account.username, 'autoLogout'],
     queryFn: () =>
       account.dataStore
         .getItem('autoLogout', 'autoLogout.json')
@@ -310,7 +340,7 @@ export const useWriteAutoLogout = (account: EdgeAccount) =>
   useMutation(
     (autoLogout: AutoLogoutSetting) =>
       account.dataStore.setItem('autoLogout', 'autoLogout.json', JSON.stringify(autoLogout)),
-    optimisticMutationOptions('autoLogout'),
+    optimisticMutationOptions([account.username, 'autoLogout']),
   )
 
 export const useAutoLogout = (account: EdgeAccount) =>
@@ -321,7 +351,7 @@ const defaultFiatCurrencyCode = 'iso:USD'
 
 const useReadDefaultFiatCurrencyCode = (account: EdgeAccount) =>
   useQuery({
-    queryKey: 'defaultFiatCurrencyCode',
+    queryKey: [account.username, 'defaultFiatCurrencyCode'],
     queryFn: () =>
       account.dataStore
         .getItem('defaultFiatCurrencyCode', 'defaultFiatCurrencyCode.json')
@@ -338,7 +368,7 @@ export const useWriteDefaultFiatCurrencyCode = (account: EdgeAccount) =>
         'defaultFiatCurrencyCode.json',
         JSON.stringify(currencyCode),
       ),
-    optimisticMutationOptions('defaultFiatCurrencyCode'),
+    optimisticMutationOptions([account.username, 'defaultFiatCurrencyCode']),
   )
 
 export const useDefaultFiatCurrencyCode = (account: EdgeAccount) =>
@@ -348,7 +378,7 @@ export const useDefaultFiatCurrencyCode = (account: EdgeAccount) =>
 export const useDefaultFiatInfo = (account: EdgeAccount) => {
   const currencyCode = useDefaultFiatCurrencyCode(account)[0]
 
-  return getFiatInfo({ currencyCode })
+  return getFiatInfo(currencyCode)
 }
 
 // DISPLAY DENOMINATION MULTIPLIER
@@ -389,7 +419,8 @@ export const useDisplayDenominationMultiplier = (
   ] as const
 
 // DISPLAY DENOMINATION
-export const useDisplayDenomination = (account: EdgeAccount, currencyInfo: EdgeCurrencyInfo | EdgeMetaToken) => {
+export const useDisplayDenomination = (account: EdgeAccount, currencyCode: string) => {
+  const currencyInfo = getInfo(account, currencyCode)
   const [multiplier, write] = useDisplayDenominationMultiplier(account, currencyInfo)
 
   return [
@@ -399,48 +430,66 @@ export const useDisplayDenomination = (account: EdgeAccount, currencyInfo: EdgeC
   ] as const
 }
 
+// DISPLAY AMOUNT
+export const useDisplayAmount = ({
+  account,
+  nativeAmount,
+  currencyCode,
+}: {
+  account: EdgeAccount
+  nativeAmount: string
+  currencyCode: string
+}) => {
+  const [denomination] = useDisplayDenomination(account, currencyCode)
+
+  return {
+    amount: nativeToDenomination({ denomination, nativeAmount }),
+    denomination,
+    ...denomination,
+  }
+}
+
 // FIAT AMOUNT
-export const useFiatAmount = (
-  account: EdgeAccount,
-  currencyInfo: EdgeCurrencyInfo | EdgeMetaToken,
-  toCurrencyCode: string,
-  nativeAmount: string,
-) => {
-  const denomination = getExchangeDenomination({ currencyInfo })
-  const exchangeAmount = nativeToDenomination({ denomination, nativeAmount })
-  const fromCurrencyCode = currencyInfo.currencyCode
-  const amount = Number(exchangeAmount)
+export const useFiatAmount = ({
+  account,
+  nativeAmount,
+  fromCurrencyCode,
+  fiatCurrencyCode,
+}: {
+  account: EdgeAccount
+  nativeAmount: string
+  fromCurrencyCode: string
+  fiatCurrencyCode: string
+}) => {
+  const denomination = getExchangeDenomination(getInfo(account, fromCurrencyCode))
+  const exchangeAmount = Number(nativeToDenomination({ denomination, nativeAmount }))
 
   return useQuery({
-    queryKey: [{ fromCurrencyCode, toCurrencyCode, exchangeAmount }],
-    queryFn: () => account.rateCache.convertCurrency(fromCurrencyCode, toCurrencyCode, amount),
-    config: { suspense: true },
+    queryKey: [{ fromCurrencyCode, fiatCurrencyCode, exchangeAmount }],
+    queryFn: () => account.rateCache.convertCurrency(fromCurrencyCode, fiatCurrencyCode, exchangeAmount),
+    config: { suspense: true, refetchInterval: 10000 },
   }).data!
 }
 
 // NATIVE AMOUNT
-
-/* 
-const denomination = getExchangeDenomination({ currencyInfo })
-fiatAmount -> convertCurrency -> exchangeAmount -> nativeAmount
-const exchangeAmount = convertCurrency(iso:USD, BTC, fiatAmount)
-const nativeAmount = denominationToNative({ denomination: exchangeDenomination, amount: exchangeAmount })
-*/
-export const useNativeAmount = (
-  account: EdgeAccount,
-  currencyInfo: EdgeCurrencyInfo | EdgeMetaToken,
-  fiatCurrencyCode: string,
-  fiatAmount: number,
-) => {
-  const fromCurrencyCode = currencyInfo.currencyCode
-  const toCurrencyCode = fiatCurrencyCode
+export const useNativeAmount = ({
+  account,
+  fiatAmount,
+  fiatCurrencyCode,
+  toCurrencyCode,
+}: {
+  account: EdgeAccount
+  fiatAmount: number
+  fiatCurrencyCode: string
+  toCurrencyCode: string
+}) => {
+  const denomination = getExchangeDenomination(getInfo(account, toCurrencyCode))
   const exchangeAmount = useQuery({
-    queryKey: [{ fromCurrencyCode, toCurrencyCode, fiatAmount }],
-    queryFn: () => account.rateCache.convertCurrency(fromCurrencyCode, toCurrencyCode, fiatAmount),
+    queryKey: [{ fiatCurrencyCode, toCurrencyCode, fiatAmount }],
+    queryFn: () => account.rateCache.convertCurrency(fiatCurrencyCode, toCurrencyCode, fiatAmount),
     config: { suspense: true },
   }).data!
 
-  const denomination = getExchangeDenomination({ currencyInfo })
   const nativeAmount = denominationToNative({ denomination, amount: String(exchangeAmount) })
 
   return nativeAmount
@@ -471,20 +520,19 @@ export const useWriteInactiveWallet = (account: EdgeAccount, wallet: EdgeCurrenc
   }, [account, wallet, update])
 }
 
-export type InactiveWallet = {
-  id: string
-  keys: EdgeCurrencyWallet['keys']
-  type: string
-  publicWalletInfo: EdgeCurrencyWallet['publicWalletInfo']
-  disklet: Record<string, unknown>
-  localDisklet: Record<string, unknown>
-  displayPrivateSeed: string | null
-  displayPublicSeed: string | null
-  name: string | null
-  fiatCurrencyCode: string
-  currencyInfo: EdgeCurrencyWallet['currencyInfo']
-  balances: EdgeCurrencyWallet['balances']
-  blockHeight: number
-  syncRatio: number
-  otherMethods: EdgeCurrencyWallet['otherMethods']
-}
+export type InactiveWallet = Pick<
+  EdgeCurrencyWallet,
+  | 'id'
+  | 'type'
+  | 'keys'
+  | 'name'
+  | 'fiatCurrencyCode'
+  | 'currencyInfo'
+  | 'balances'
+  | 'blockHeight'
+  | 'displayPrivateSeed'
+  | 'displayPublicSeed'
+  | 'publicWalletInfo'
+  | 'syncRatio'
+  | 'otherMethods'
+>

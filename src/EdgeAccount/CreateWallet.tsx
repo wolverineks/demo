@@ -36,9 +36,9 @@ export const CreateWallet: React.FC = () => {
         disabled={status === 'loading'}
         onSelect={(event) => setType(event.currentTarget.value)}
         options={walletTypes}
-        renderOption={({ display, type, currencyCode }) => (
+        renderOption={({ name, type, currencyCode }) => (
           <option value={type} key={type}>
-            {currencyCode} - {display}
+            {currencyCode} - {name}
           </option>
         )}
       />

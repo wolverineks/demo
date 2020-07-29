@@ -1,19 +1,12 @@
-import { EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
+import { EdgeCurrencyWallet } from 'edge-core-js'
 import { useOnNewTransactions } from 'edge-react-hooks'
 import React from 'react'
-import { Button, Image, ListGroup } from 'react-bootstrap'
+import { Button, ListGroup } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
-import {
-  useActiveWalletIds,
-  useBalance,
-  useChangeWalletStates,
-  useEnabledTokenInfos,
-  useName,
-  useWallet,
-} from '../hooks'
+import { useActiveWalletIds, useBalance, useChangeWalletStates, useEnabledTokens, useName, useWallet } from '../hooks'
 import { useSelectedWallet } from '../SelectedWallet'
 
 export const ActiveWalletList: React.FC<{
@@ -40,7 +33,8 @@ const ActiveWalletRow: React.FC<{
 }> = ({ walletId, onSelect }) => {
   const wallet = useWallet(useAccount(), walletId)
   const selectedWallet = useSelectedWallet()
-  const balance = useBalance(wallet, wallet.currencyInfo.currencyCode)
+  const currencyCode = wallet.currencyInfo.currencyCode
+  const balance = useBalance(wallet, currencyCode)
   const name = useName(wallet)
 
   useOnNewTransactions(wallet, (transactions) =>
@@ -51,12 +45,12 @@ const ActiveWalletRow: React.FC<{
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       <ListGroup.Item variant={wallet.id === selectedWallet.id ? 'primary' : undefined}>
         <span onClick={() => onSelect()} className={'float-left'}>
-          <Logo walletType={wallet.type} /> {name}{' '}
-          <DisplayAmount nativeAmount={balance} currencyInfo={wallet.currencyInfo} /> -{' '}
+          <Logo currencyCode={currencyCode} /> {name}{' '}
+          <DisplayAmount nativeAmount={balance} currencyCode={currencyCode} /> -{' '}
           <FiatAmount
-            currencyInfo={wallet.currencyInfo}
-            toCurrencyCode={wallet.fiatCurrencyCode}
             nativeAmount={balance}
+            fromCurrencyCode={currencyCode}
+            fiatCurrencyCode={wallet.fiatCurrencyCode}
           />
         </span>
 
@@ -84,13 +78,13 @@ const WalletOptions = ({ walletId }: { walletId: string }) => {
 }
 
 export const EnabledTokensList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
-  const tokenInfos = useEnabledTokenInfos(wallet)
+  const tokenCodes = useEnabledTokens(wallet)
 
-  return tokenInfos.length > 0 ? (
+  return tokenCodes.length > 0 ? (
     <ListGroup.Item>
       <ListGroup variant={'flush'}>
-        {tokenInfos.map((tokenInfo) => (
-          <EnabledTokenRow wallet={wallet} key={tokenInfo.currencyCode} tokenInfo={tokenInfo} />
+        {tokenCodes.map((currencyCode) => (
+          <EnabledTokenRow wallet={wallet} key={currencyCode} currencyCode={currencyCode} />
         ))}
       </ListGroup>
     </ListGroup.Item>
@@ -99,17 +93,16 @@ export const EnabledTokensList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wa
 
 const EnabledTokenRow: React.FC<{
   wallet: EdgeCurrencyWallet
-  tokenInfo: EdgeMetaToken
-}> = ({ wallet, tokenInfo }) => {
-  const { symbolImage } = tokenInfo
-  const balance = useBalance(wallet, tokenInfo.currencyCode)
+  currencyCode: string
+}> = ({ wallet, currencyCode }) => {
+  const balance = useBalance(wallet, currencyCode)
 
   return (
     <ListGroup.Item>
       <span className={'float-left'}>
-        <Image src={symbolImage} />
-        <DisplayAmount nativeAmount={balance} currencyInfo={tokenInfo} /> -{' '}
-        <FiatAmount currencyInfo={tokenInfo} toCurrencyCode={wallet.fiatCurrencyCode} nativeAmount={balance} />
+        <Logo currencyCode={currencyCode} />
+        <DisplayAmount nativeAmount={balance} currencyCode={currencyCode} /> -{' '}
+        <FiatAmount nativeAmount={balance} fromCurrencyCode={currencyCode} fiatCurrencyCode={wallet.fiatCurrencyCode} />
       </span>
     </ListGroup.Item>
   )

@@ -1,17 +1,22 @@
-import { EdgeParsedUri, EdgeSpendInfo } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeParsedUri, EdgeSpendInfo } from 'edge-core-js'
 import React from 'react'
 import { Alert, Button, Form, FormControl, FormGroup, FormLabel, InputGroup } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
 import QrReader from 'react-qr-reader'
 
-import { Select } from '../components'
-import { useCurrencyCodes, useMaxSpendable, useNewTransaction } from '../hooks'
-import { useSelectedWallet } from '../SelectedWallet'
-import { categories } from '../utils'
+import { useAccount } from '../auth'
+import { Boundary, Select } from '../components'
+import {
+  useCurrencyCodes,
+  useDisplayAmount,
+  useFiatAmount,
+  useFiatCurrencyCode,
+  useMaxSpendable,
+  useNewTransaction,
+} from '../hooks'
+import { categories, denominationToNative } from '../utils'
 
-export const Send: React.FC = () => {
-  const wallet = useSelectedWallet()
-
+export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const currencyCodes = useCurrencyCodes(wallet)
   const [parsedUri, setParsedUri] = React.useState<EdgeParsedUri>()
   const [currencyCode, setCurrencyCode] = React.useState(wallet.currencyInfo.currencyCode)
@@ -65,14 +70,19 @@ export const Send: React.FC = () => {
         </FormGroup>
 
         <FormGroup>
-          <FormLabel>Native Amount:</FormLabel>
           <InputGroup>
-            <FormControl value={nativeAmount} onChange={(event) => setNativeAmount(event.currentTarget.value)} />
-            <InputGroup.Append>
+            <Boundary>
+              <DisplayAmountInput nativeAmount={nativeAmount} onChange={setNativeAmount} currencyCode={currencyCode} />
               <Button variant="outline-secondary" onClick={() => setNativeAmount(parsedUri?.nativeAmount || '')}>
                 Reset
               </Button>
-            </InputGroup.Append>
+            </Boundary>
+          </InputGroup>
+
+          <InputGroup>
+            <Boundary>
+              <FiatAmountDisplay wallet={wallet} nativeAmount={nativeAmount} currencyCode={currencyCode} />
+            </Boundary>
           </InputGroup>
         </FormGroup>
 
@@ -141,4 +151,54 @@ const Scanner: React.FC<{ onScan: (data: string) => any; show: boolean }> = ({ o
       <QrReader delay={300} onError={setError} onScan={(data) => onScan(data || '')} style={{ width: '50%' }} />
     </div>
   ) : null
+}
+
+const DisplayAmountInput = ({
+  onChange,
+  currencyCode,
+  nativeAmount,
+}: {
+  onChange: (nativeAmount: string) => any
+  currencyCode: string
+  nativeAmount: string
+}) => {
+  const { amount, symbol, denomination, name } = useDisplayAmount({ account: useAccount(), nativeAmount, currencyCode })
+
+  return (
+    <div>
+      <FormLabel>
+        Display Amount: {symbol} {name}
+      </FormLabel>
+      <FormControl
+        value={amount}
+        onChange={(event) => onChange(denominationToNative({ denomination, amount: event.currentTarget.value }))}
+      />
+    </div>
+  )
+}
+
+const FiatAmountDisplay = ({
+  wallet,
+  nativeAmount,
+  currencyCode,
+}: {
+  wallet: EdgeCurrencyWallet
+  nativeAmount: string
+  currencyCode: string
+}) => {
+  const account = useAccount()
+  const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
+  const fiatAmount = useFiatAmount({
+    account,
+    fiatCurrencyCode,
+    nativeAmount,
+    fromCurrencyCode: currencyCode,
+  })
+
+  return (
+    <div>
+      <FormLabel>{fiatCurrencyCode}:</FormLabel>
+      <FormControl readOnly value={fiatAmount.toFixed(2) || '0.00'} />
+    </div>
+  )
 }
