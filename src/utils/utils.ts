@@ -39,8 +39,6 @@ export const nativeToDenomination = ({
 export const denominationToNative = ({ denomination, amount }: { denomination: EdgeDenomination; amount: string }) =>
   String(Number(amount) * Number(denomination.multiplier))
 
-export const getTokenSymbol = (tokenInfo: EdgeMetaToken) => tokenInfo.denominations[0].symbol
-
 export const getCurrencyCodes = (wallet: EdgeCurrencyWallet) => {
   const {
     currencyInfo: { currencyCode, metaTokens },
@@ -50,18 +48,6 @@ export const getCurrencyCodes = (wallet: EdgeCurrencyWallet) => {
 }
 
 export const getExchangeDenomination = (currencyInfo: EdgeCurrencyInfo | EdgeMetaToken) => currencyInfo.denominations[0]
-
-export const getExchangeDenominationFromCC = ({
-  account,
-  currencyCode,
-}: {
-  account: EdgeAccount
-  currencyCode: string
-}) => {
-  const currencyInfo = getCurrencyInfos(account).find((currencyInfo) => currencyInfo.currencyCode === currencyCode)!
-
-  return currencyInfo.denominations[0]
-}
 
 export const getAccountBalance = async (account: EdgeAccount, { toCurrencyCode }: { toCurrencyCode: string }) => {
   const accountBalances: Record<string, number> = {}
