@@ -34,7 +34,7 @@ export const nativeToDenomination = ({
 }: {
   denomination: EdgeDenomination
   nativeAmount: string
-}) => Number(nativeAmount) / Number(denomination.multiplier)
+}) => String(Number(nativeAmount) / Number(denomination.multiplier))
 
 export const denominationToNative = ({ denomination, amount }: { denomination: EdgeDenomination; amount: string }) =>
   String(Number(amount) * Number(denomination.multiplier))

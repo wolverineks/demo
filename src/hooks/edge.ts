@@ -7,6 +7,7 @@ import {
   EdgeDenomination,
   EdgeGetTransactionsOptions,
   EdgeMetaToken,
+  EdgeReceiveAddress,
   EdgeSpendInfo,
   EdgeTransaction,
   EdgeWalletState,
@@ -279,12 +280,17 @@ export const useFiatCurrencyCode = (wallet: EdgeCurrencyWallet) =>
   [useReadFiatCurrencyCode(wallet), useWriteFiatCurrencyCode(wallet)[0]] as const
 
 // RECEIVE ADDRESS AND ENCODE URI
-export const useReceiveAddressAndEncodeUri = (
-  wallet: EdgeCurrencyWallet,
-  nativeAmount: string,
-  options?: EdgeCurrencyCodeOptions,
-  config?: QueryConfig<{ receiveAddress: import('edge-core-js').EdgeReceiveAddress; uri: string }>,
-) =>
+export const useReceiveAddressAndEncodeUri = ({
+  wallet,
+  nativeAmount,
+  options,
+  config,
+}: {
+  wallet: EdgeCurrencyWallet
+  nativeAmount: string
+  options?: EdgeCurrencyCodeOptions
+  config?: QueryConfig<{ receiveAddress: EdgeReceiveAddress; uri: string }>
+}) =>
   useQuery({
     queryKey: [wallet.id, 'receiveAddressAndEncodeUri', nativeAmount, options],
     queryFn: () => {
@@ -357,13 +363,6 @@ export const useTransactions = (
   return data!
 }
 
-// export const useTransactions = (wallet: EdgeCurrencyWallet, options: EdgeGetTransactionsOptions) =>
-// useQuery({
-//   queryKey: [wallet.id, 'transactions', options],
-//   queryFn: () => wallet.getTransactions(options),
-//   config: { suspense: false, staleTime: Infinity, cacheTime: 0 },
-// }).data!
-
 // TRANSACTION COUNT
 export const useTransactionCount = (
   wallet: EdgeCurrencyWallet,
@@ -426,6 +425,34 @@ export const useNewTransaction = (
       retry: 0,
       ...config,
     },
+  })
+
+export const useNativeToDenomination = ({
+  account,
+  currencyCode,
+  nativeAmount,
+}: {
+  account: EdgeAccount
+  currencyCode: string
+  nativeAmount: string
+}) =>
+  nativeToDenomination({
+    denomination: useDisplayDenomination(account, currencyCode)[0],
+    nativeAmount,
+  })
+
+export const useDenominationToNative = ({
+  account,
+  currencyCode,
+  amount,
+}: {
+  account: EdgeAccount
+  currencyCode: string
+  amount: string
+}) =>
+  denominationToNative({
+    denomination: useDisplayDenomination(account, currencyCode)[0],
+    amount,
   })
 
 // SETTINGS

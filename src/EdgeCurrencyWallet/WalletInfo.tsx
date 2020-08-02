@@ -4,7 +4,7 @@ import React from 'react'
 import { Button, Card, Form, FormControl, FormGroup, FormLabel, ListGroup, Tab, Tabs } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
-import { Logo } from '../components'
+import { Boundary, Logo } from '../components'
 import { fiatInfos } from '../Fiat'
 import { useFiatCurrencyCode, useName, useTokens } from '../hooks'
 import { Disklet } from '../Storage/Disklet'
@@ -23,25 +23,41 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet })
   return (
     <Tabs variant={'pills'} id={'walletTabs'} defaultActiveKey={'balance'} key={wallet.id}>
       <Tab eventKey={'balance'} title={'Balance'}>
-        <BalanceList wallet={wallet} />
-        <TransactionList wallet={wallet} />
+        <Boundary>
+          <BalanceList wallet={wallet} />
+        </Boundary>
+
+        <Boundary>
+          <TransactionList wallet={wallet} />
+        </Boundary>
       </Tab>
 
       <Tab eventKey={'send'} title={'Send'}>
-        <Send wallet={wallet} />
+        <Boundary>
+          <Send wallet={wallet} />
+        </Boundary>
       </Tab>
 
       <Tab eventKey={'request'} title={'Request'}>
-        <Request wallet={wallet} />
+        <Boundary>
+          <Request wallet={wallet} />
+        </Boundary>
       </Tab>
 
       <Tab eventKey={'storage'} title={'Storage'}>
-        <Disklet disklet={wallet.disklet} path={'/'} title={'Disklet'} />
-        <Disklet disklet={wallet.localDisklet} path={'/'} title={'Local Disklet'} />
+        <Boundary>
+          <Disklet disklet={wallet.disklet} path={'/'} title={'Disklet'} />
+        </Boundary>
+
+        <Boundary>
+          <Disklet disklet={wallet.localDisklet} path={'/'} title={'Local Disklet'} />
+        </Boundary>
       </Tab>
 
       <Tab eventKey={'settings'} title={'Settings'}>
-        <Settings wallet={wallet} />
+        <Boundary>
+          <Settings wallet={wallet} />
+        </Boundary>
       </Tab>
     </Tabs>
   )

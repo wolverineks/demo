@@ -5,18 +5,23 @@ import { Alert, Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
 
 import { useAccount } from '../auth'
-import { Boundary, Select } from '../components'
-import { useCurrencyCodes, useDisplayDenomination, useFiatAmount } from '../hooks'
+import { Boundary, DisplayAmountInput, FiatAmountDisplay, Select } from '../components'
+import { useCurrencyCodes, useDenominationToNative, useDisplayDenomination } from '../hooks'
 import { useFiatCurrencyCode, useReceiveAddressAndEncodeUri } from '../hooks'
-import { denominationToNative } from '../utils'
 
 export const Request: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const currencyCodes = useCurrencyCodes(wallet)
-  const [nativeAmount, setNativeAmount] = React.useState('0')
+  const [displayAmount, setDisplayAmount] = React.useState('0')
   // const [fiatAmount, setFiatAmount] = React.useState(0)
   const [currencyCode, setCurrencyCode] = React.useState(currencyCodes[0])
+  const nativeAmount = useDenominationToNative({
+    account: useAccount(),
+    currencyCode,
+    amount: displayAmount,
+  })
+  const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
 
-  const { data, error } = useReceiveAddressAndEncodeUri(wallet, nativeAmount, { currencyCode })
+  const { data, error } = useReceiveAddressAndEncodeUri({ wallet, nativeAmount, options: { currencyCode } })
 
   return (
     <Form>
@@ -27,11 +32,15 @@ export const Request: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) =>
 
       <FormGroup>
         <Boundary>
-          <DisplayAmountInput currencyCode={currencyCode} onChange={setNativeAmount} />
+          <DisplayAmountInput displayAmount={displayAmount} onChange={setDisplayAmount} currencyCode={currencyCode} />
         </Boundary>
 
         <Boundary>
-          <FiatAmountDisplay wallet={wallet} nativeAmount={nativeAmount} currencyCode={currencyCode} />
+          <FiatAmountDisplay
+            fiatCurrencyCode={fiatCurrencyCode}
+            nativeAmount={nativeAmount}
+            currencyCode={currencyCode}
+          />
         </Boundary>
 
         {/* <DisplayAmountDisplay wallet={wallet} fiatAmount={fiatAmount} currencyCode={currencyCode} />
@@ -60,61 +69,15 @@ export const Request: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) =>
 
       {error && <Alert variant={'danger'}>{(error as Error).message}</Alert>}
       <JSONPretty
-        json={{
+        data={{
+          displayAmount: String(displayAmount),
           nativeAmount,
+          displayDenomination: useDisplayDenomination(useAccount(), currencyCode)[0],
           currencyCodeOptions: { currencyCode },
           uri: data?.uri,
           receiveAddress: data?.receiveAddress,
         }}
       />
     </Form>
-  )
-}
-
-const DisplayAmountInput = ({
-  onChange,
-  currencyCode,
-}: {
-  onChange: (nativeAmount: string) => any
-  currencyCode: string
-}) => {
-  const [denomination] = useDisplayDenomination(useAccount(), currencyCode)
-  const { symbol, name } = denomination
-
-  return (
-    <div>
-      <FormLabel>
-        Display Amount: {symbol} {name}
-      </FormLabel>
-      <FormControl
-        onChange={(event) => onChange(denominationToNative({ denomination, amount: event.currentTarget.value }))}
-      />
-    </div>
-  )
-}
-
-const FiatAmountDisplay = ({
-  wallet,
-  nativeAmount,
-  currencyCode,
-}: {
-  wallet: EdgeCurrencyWallet
-  nativeAmount: string
-  currencyCode: string
-}) => {
-  const account = useAccount()
-  const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
-  const fiatAmount = useFiatAmount({
-    account,
-    nativeAmount,
-    fiatCurrencyCode,
-    fromCurrencyCode: currencyCode,
-  })
-
-  return (
-    <div>
-      <FormLabel>{fiatCurrencyCode}:</FormLabel>
-      <FormControl readOnly value={fiatAmount?.toFixed(2) || '0.00'} />
-    </div>
   )
 }
