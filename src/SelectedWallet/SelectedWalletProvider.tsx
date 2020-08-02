@@ -28,14 +28,14 @@ export const SelectedWalletConsumer = ({ children }: { children: (wallet: EdgeCu
 export class NoActiveWalletsError extends Error {}
 
 export const useSelectWallet = () => React.useContext(SelectWalletContext)
-export const useSelectedWallet = () => {
+export const useSelectedWallet = (options: { suspense: boolean } = { suspense: true }) => {
   const pending = React.useRef(false)
   const account = useAccount()
   useActiveWalletIds(account)
   useCurrencyWallets(account)
 
   // no active wallets
-  if (account.activeWalletIds.length <= 0) throw new NoActiveWalletsError()
+  // if (account.activeWalletIds.length <= 0 && options.suspense) throw new NoActiveWalletsError()
 
   const selectedWalletId = React.useContext(SelectedWalletIdContext)
   const fallbackWalletId = account.activeWalletIds[0]
@@ -60,9 +60,7 @@ export const useSelectedWallet = () => {
 }
 
 export const SelectedWalletBoundary: React.FC = ({ children }) => (
-  <Boundary key={useSelectedWallet()?.id} error={{ fallbackRender }}>
-    {children}
-  </Boundary>
+  <Boundary error={{ fallbackRender }}>{children}</Boundary>
 )
 
 export const fallbackRender = ({ error }: FallbackProps) =>

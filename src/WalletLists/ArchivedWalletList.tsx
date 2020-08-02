@@ -54,17 +54,25 @@ const WalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
 }
 
 const WalletOptions = ({ walletId }: { walletId: string }) => {
-  const { activateWallet, deleteWallet, error, status } = useChangeWalletStates(useAccount(), walletId)
+  const { activateWallet, deleteWallet, error, status } = useChangeWalletStates(useAccount())
 
   return (
     <>
-      <Button variant={'warning'} disabled={status === 'loading'} onClick={activateWallet}>
+      <Button variant={'warning'} disabled={status === 'loading'} onClick={() => activateWallet(walletId)}>
         Activate
       </Button>
-      <Button variant={'danger'} disabled={status === 'loading'} onClick={deleteWallet}>
+      <Button variant={'danger'} disabled={status === 'loading'} onClick={() => deleteWallet(walletId)}>
         Delete
       </Button>
-      {error && <div>{error.message}</div>}
+      {error && <DisplayError error={error} />}
     </>
   )
+}
+
+const DisplayError: React.FC<{ error: unknown }> = ({ error }) => {
+  if (error instanceof Error) {
+    return <div>{error.message}</div>
+  }
+
+  throw error
 }

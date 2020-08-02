@@ -4,9 +4,9 @@ import React from 'react'
 import { Button, Card, Form, FormControl, FormGroup, FormLabel, ListGroup, Tab, Tabs } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
+import { Logo } from '../components'
 import { fiatInfos } from '../Fiat'
 import { useFiatCurrencyCode, useName, useTokens } from '../hooks'
-import { useSelectedWallet } from '../SelectedWallet'
 import { Disklet } from '../Storage/Disklet'
 import { getTokenInfo } from '../utils'
 import { BalanceList } from './BalanceList'
@@ -14,8 +14,7 @@ import { Request } from './Request'
 import { Send } from './Send'
 import { TransactionList } from './TransactionList'
 
-export const WalletInfo: React.FC = () => {
-  const wallet = useSelectedWallet()
+export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   useOnNewTransactions(
     wallet,
     (transactions) => transactions && alert(transactions.length > 1 ? 'New Transactions' : 'New Transaction'),
@@ -49,7 +48,13 @@ export const WalletInfo: React.FC = () => {
 }
 
 const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
-  const { availableTokens } = useTokens(wallet)
+  const { availableTokens, enabledTokens, enableToken, disableToken } = useTokens(wallet)
+
+  const toggleToken = React.useCallback(
+    (currencyCode: string) =>
+      enabledTokens.includes(currencyCode) ? disableToken(currencyCode) : enableToken(currencyCode),
+    [disableToken, enableToken, enabledTokens],
+  )
 
   return (
     <Card>
@@ -62,7 +67,12 @@ const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
       ) : (
         <ListGroup>
           {availableTokens.map((currencyCode) => (
-            <TokenRow key={currencyCode} currencyCode={currencyCode} wallet={wallet} />
+            <TokenRow
+              key={currencyCode}
+              currencyCode={currencyCode}
+              isEnabled={enabledTokens.includes(currencyCode)}
+              onClick={toggleToken}
+            />
           ))}
         </ListGroup>
       )}
@@ -70,34 +80,33 @@ const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   )
 }
 
-const TokenRow: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
-  const { enabledTokens, enableTokens, disableTokens } = useTokens(wallet)
+const TokenRow: React.FC<{
+  currencyCode: string
+  isEnabled: boolean
+  onClick: (currencyCode: string) => void
+}> = ({ currencyCode, isEnabled, onClick }) => {
   const { currencyName } = getTokenInfo(useAccount(), currencyCode)
-
-  const toggleToken = (currencyCode: string) => () => {
-    enabledTokens.includes(currencyCode) ? disableTokens(currencyCode) : enableTokens(currencyCode)
-  }
 
   return (
     <ListGroup.Item
       key={currencyCode}
-      variant={enabledTokens.includes(currencyCode) ? 'primary' : undefined}
-      onClick={toggleToken(currencyCode)}
+      variant={isEnabled ? 'primary' : undefined}
+      onClick={() => onClick(currencyCode)}
     >
-      {currencyCode} - {currencyName}
+      <Logo currencyCode={currencyCode} /> {currencyCode} - {currencyName}
     </ListGroup.Item>
   )
 }
 
 const RenameWallet: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
-  const [walletName, setWalletName] = React.useState<string>(useName(wallet) || '')
+  const [name, setName] = React.useState<string>(useName(wallet) || '')
   const { execute, status } = useRenameWallet(wallet)
 
   return (
     <FormGroup>
       <Form.Label>Wallet Name</Form.Label>
-      <FormControl value={walletName} onChange={(event) => setWalletName(event.currentTarget.value)} />
-      <Button onClick={() => execute({ name: walletName })} disabled={status === 'loading'}>
+      <FormControl value={name} onChange={(event) => setName(event.currentTarget.value)} />
+      <Button onClick={() => execute({ name })} disabled={status === 'loading'}>
         Rename
       </Button>
     </FormGroup>

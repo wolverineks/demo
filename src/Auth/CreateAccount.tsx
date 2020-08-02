@@ -1,16 +1,16 @@
-import { EdgeAccount } from 'edge-core-js'
-import { useCreateAccount } from 'edge-react-hooks'
+import { EdgeAccount, EdgeContext } from 'edge-core-js'
 import React from 'react'
 import { Alert, Button, Form, FormGroup } from 'react-bootstrap'
 
-import { useEdgeContext } from '../Edge'
+import { useCreateAccount } from '../hooks'
 
 const onChange = (cb: (value: string) => any) => (event: any) => cb(event.currentTarget.value)
 
-export const CreateAccount: React.FC<{ onLogin: (account: EdgeAccount) => any }> = ({ onLogin }) => {
-  const context = useEdgeContext()
-
-  const { execute: createAccount, error, status } = useCreateAccount(context)
+export const CreateAccount: React.FC<{ context: EdgeContext; onLogin: (account: EdgeAccount) => any }> = ({
+  onLogin,
+  context,
+}) => {
+  const [createAccount, { status, error }] = useCreateAccount(context)
   const pending = status === 'loading'
   const [username, setUsername] = React.useState('')
   const [password, setPassword] = React.useState('')
@@ -39,12 +39,12 @@ export const CreateAccount: React.FC<{ onLogin: (account: EdgeAccount) => any }>
         <Form.Control required disabled={pending} type={'number'} onChange={onChange(setPin)} />
       </FormGroup>
 
-      {error && <Alert variant={'danger'}>{error.message.toString()}</Alert>}
+      {error && <Alert variant={'danger'}>{(error as Error).message.toString()}</Alert>}
       <FormGroup>
         <Button
           variant={'primary'}
           disabled={pending}
-          onClick={() => createAccount({ username, password, pin }, { onSuccess: onLogin })}
+          onClick={() => createAccount({ username, password, pin, otp: '' }, { onSuccess: onLogin })}
         >
           {pending ? 'Creating account...' : 'Create'}
         </Button>

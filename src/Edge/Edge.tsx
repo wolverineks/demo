@@ -25,41 +25,19 @@ export const Edge: React.FC = ({ children }) => {
     <ReactQueryConfigProvider
       config={{
         queries: {
-          useErrorBoundary: true,
           cacheTime: 0,
           staleTime: Infinity,
           retry: false,
-          refetchOnWindowFocus: false,
+          suspense: true,
         },
-        mutations: { useErrorBoundary: false, throwOnError: false },
+        mutations: {
+          useErrorBoundary: false,
+          throwOnError: false,
+        },
+        shared: {},
       }}
     >
       {children}
     </ReactQueryConfigProvider>
   )
 }
-
-// close: void;
-//     error: Error;
-//     login: EdgeAccount;
-//     loginStart: {
-//         username: string;
-//     };
-//     loginError: {
-//         error: Error;
-//     };
-
-// useOn(useEdgeContext(), "error", error => alert(error));
-// const useOn = (
-//   object: any,
-//   eventName: string,
-//   callback: (error: Error) => any,
-// ) => {
-//   React.useEffect(() => {
-//     const unsub = object.on(eventName, callback);
-
-//     return () => {
-//       unsub();
-//     };
-//   }, [object, eventName, callback]);
-// };

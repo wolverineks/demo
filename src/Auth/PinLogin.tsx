@@ -1,13 +1,16 @@
-import { EdgeAccount } from 'edge-core-js'
+import { EdgeAccount, EdgeContext } from 'edge-core-js'
 import React from 'react'
 import { Alert, Button, Card, Form, FormControl, ListGroup } from 'react-bootstrap'
 
 import { Boundary } from '../components'
-import { useEdgeContext } from '../Edge'
 import { useAccountsWithPinLogin, useLoginMessages, useLoginWithPin } from '../hooks'
 
-export const PinLogin: React.FC<{ onLogin: (account: EdgeAccount) => any }> = ({ onLogin }) => {
-  const accountsWithPinLogin = useAccountsWithPinLogin(useEdgeContext())
+export const PinLogin: React.FC<{ context: EdgeContext; onLogin: (account: EdgeAccount) => any }> = ({
+  onLogin,
+  context,
+}) => {
+  const accountsWithPinLogin = useAccountsWithPinLogin(context)
+  const loginWithPin = useLoginWithPin(context, { onSuccess: onLogin })
 
   return (
     <ListGroup>
@@ -15,19 +18,19 @@ export const PinLogin: React.FC<{ onLogin: (account: EdgeAccount) => any }> = ({
         <Card.Text>------</Card.Text>
       ) : (
         accountsWithPinLogin.map(({ username }) => (
-          <LocalUserRow username={username} key={username} onLogin={onLogin} />
+          <LocalUserRow loginWithPin={loginWithPin} username={username} key={username} context={context} />
         ))
       )}
     </ListGroup>
   )
 }
 
-const LocalUserRow: React.FC<{ username: string; onLogin: (account: EdgeAccount) => any }> = ({
-  username,
-  onLogin,
-}) => {
+const LocalUserRow: React.FC<{
+  loginWithPin: ReturnType<typeof useLoginWithPin>
+  context: EdgeContext
+  username: string
+}> = ({ username, context, loginWithPin: [loginWithPin, { reset, error, status }] }) => {
   const [pin, setPin] = React.useState('')
-  const [loginWithPin, { status, error, reset }] = useLoginWithPin(useEdgeContext())
 
   return (
     <ListGroup.Item>
@@ -35,7 +38,7 @@ const LocalUserRow: React.FC<{ username: string; onLogin: (account: EdgeAccount)
         id={`pin-login ${username}`}
         onSubmit={(event: React.FormEvent) => {
           event.preventDefault()
-          loginWithPin({ username, pin }, { onSuccess: onLogin })
+          loginWithPin({ username, pin })
         }}
       >
         <Form.Row>
@@ -56,16 +59,16 @@ const LocalUserRow: React.FC<{ username: string; onLogin: (account: EdgeAccount)
         </Form.Row>
       </Form>
 
-      {status === 'error' && <Alert variant={'danger'}>{error?.message}</Alert>}
+      {error && <Alert variant={'danger'}>{(error as Error).message}</Alert>}
       <Boundary>
-        <LoginMessages username={username} />
+        <LoginMessages username={username} context={context} />
       </Boundary>
     </ListGroup.Item>
   )
 }
 
-const LoginMessages: React.FC<{ username: string }> = ({ username }) => {
-  const { otpResetPending, recovery2Corrupt } = useLoginMessages(useEdgeContext(), username)
+const LoginMessages: React.FC<{ username: string; context: EdgeContext }> = ({ username, context }) => {
+  const { otpResetPending, recovery2Corrupt } = useLoginMessages(context, username)
 
   return (
     <ListGroup key={username}>

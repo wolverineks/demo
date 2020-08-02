@@ -8,7 +8,7 @@ import { useActiveCurrencyInfos, useActiveTokenInfos, useDisplayDenomination } f
 
 export const Currencies = () => {
   const currencyInfos = useActiveCurrencyInfos(useAccount())
-  const tokenInfos = (useActiveTokenInfos(useAccount()) as unknown) as EdgeMetaToken[]
+  const tokenInfos = useActiveTokenInfos(useAccount())
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
@@ -72,7 +72,7 @@ const Denominations = ({
       <Denomination
         key={denomination.name}
         denomination={denomination}
-        onSelect={onSelect}
+        onSelect={() => onSelect(denomination)}
         isSelected={denomination.multiplier === selectedDenomination.multiplier}
       />
     ))}
@@ -81,10 +81,10 @@ const Denominations = ({
 
 const Denomination: React.FC<{
   denomination: EdgeDenomination
-  onSelect: (denomination: EdgeDenomination) => any
+  onSelect: () => any
   isSelected: boolean
 }> = ({ denomination, onSelect, isSelected }) => (
-  <ListGroupItem onClick={() => onSelect(denomination)} variant={isSelected ? 'primary' : undefined}>
+  <ListGroupItem onClick={() => onSelect()} variant={isSelected ? 'primary' : undefined}>
     {denomination.name}, {denomination.multiplier}, {denomination.symbol}
   </ListGroupItem>
 )

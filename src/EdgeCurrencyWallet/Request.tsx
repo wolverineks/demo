@@ -37,7 +37,7 @@ export const Request: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) =>
         {/* <DisplayAmountDisplay wallet={wallet} fiatAmount={fiatAmount} currencyCode={currencyCode} />
         <FiatAmountInput wallet={wallet} fiatAmount={fiatAmount} onChange={setFiatAmount} /> */}
 
-        {error && <Alert variant={'danger'}>{error.message}</Alert>}
+        {error && <Alert variant={'danger'}>{(error as Error).message}</Alert>}
       </FormGroup>
 
       <Select
@@ -58,7 +58,7 @@ export const Request: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) =>
         </Boundary>
       </FormGroup>
 
-      {error && <Alert variant={'danger'}>{error.message}</Alert>}
+      {error && <Alert variant={'danger'}>{(error as Error).message}</Alert>}
       <JSONPretty
         json={{
           nativeAmount,

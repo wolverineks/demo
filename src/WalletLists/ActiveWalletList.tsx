@@ -13,6 +13,7 @@ export const ActiveWalletList: React.FC<{
   onSelect: (walletId: string) => any
 }> = ({ onSelect }) => {
   const activeWalletIds = useActiveWalletIds(useAccount())
+  const selectedWallet = useSelectedWallet({ suspense: false })
 
   return activeWalletIds.length <= 0 ? (
     <div>No active wallets</div>
@@ -20,7 +21,7 @@ export const ActiveWalletList: React.FC<{
     <ListGroup variant={'flush'}>
       {activeWalletIds.map((id) => (
         <Boundary key={id} suspense={{ fallback: <ListGroup.Item>Loading...</ListGroup.Item> }}>
-          <ActiveWalletRow walletId={id} onSelect={() => onSelect(id)} />
+          <ActiveWalletRow walletId={id} onSelect={() => onSelect(id)} isSelected={id === selectedWallet.id} />
         </Boundary>
       ))}
     </ListGroup>
@@ -30,9 +31,9 @@ export const ActiveWalletList: React.FC<{
 const ActiveWalletRow: React.FC<{
   walletId: string
   onSelect: () => any
-}> = ({ walletId, onSelect }) => {
+  isSelected: boolean
+}> = ({ walletId, onSelect, isSelected }) => {
   const wallet = useWallet(useAccount(), walletId)
-  const selectedWallet = useSelectedWallet()
   const currencyCode = wallet.currencyInfo.currencyCode
   const balance = useBalance(wallet, currencyCode)
   const name = useName(wallet)
@@ -43,7 +44,7 @@ const ActiveWalletRow: React.FC<{
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
-      <ListGroup.Item variant={wallet.id === selectedWallet.id ? 'primary' : undefined}>
+      <ListGroup.Item variant={isSelected ? 'primary' : undefined}>
         <span onClick={() => onSelect()} className={'float-left'}>
           <Logo currencyCode={currencyCode} /> {name}{' '}
           <DisplayAmount nativeAmount={balance} currencyCode={currencyCode} /> -{' '}
@@ -63,14 +64,14 @@ const ActiveWalletRow: React.FC<{
 }
 
 const WalletOptions = ({ walletId }: { walletId: string }) => {
-  const { archiveWallet, deleteWallet, status } = useChangeWalletStates(useAccount(), walletId)
+  const { archiveWallet, deleteWallet, status } = useChangeWalletStates(useAccount())
 
   return (
     <span className={'float-right'}>
-      <Button variant={'danger'} disabled={status === 'loading'} onClick={deleteWallet}>
+      <Button variant={'danger'} disabled={status === 'loading'} onClick={() => deleteWallet(walletId)}>
         Delete
       </Button>
-      <Button variant={'warning'} disabled={status === 'loading'} onClick={archiveWallet}>
+      <Button variant={'warning'} disabled={status === 'loading'} onClick={() => archiveWallet(walletId)}>
         Archive
       </Button>
     </span>

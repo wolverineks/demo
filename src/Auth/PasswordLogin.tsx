@@ -1,16 +1,16 @@
-import { EdgeAccount } from 'edge-core-js'
+import { EdgeAccount, EdgeContext } from 'edge-core-js'
 import React from 'react'
 import { Alert, Button, Form, FormGroup } from 'react-bootstrap'
 
-import { useEdgeContext } from '../Edge'
 import { useLoginWithPassword } from '../hooks'
 
-export const PasswordLogin: React.FC<{ onLogin: (account: EdgeAccount) => any }> = ({ onLogin }) => {
-  const context = useEdgeContext()
-
+export const PasswordLogin: React.FC<{ context: EdgeContext; onLogin: (account: EdgeAccount) => any }> = ({
+  onLogin,
+  context,
+}) => {
   const [username, setUsername] = React.useState('')
   const [password, setPassword] = React.useState('')
-  const [loginWithPassword, { error, status, reset }] = useLoginWithPassword(context)
+  const [loginWithPassword, { error, status, reset }] = useLoginWithPassword(context, { onSuccess: onLogin })
 
   const onUsernameChange = (username: string) => {
     reset()
@@ -28,6 +28,7 @@ export const PasswordLogin: React.FC<{ onLogin: (account: EdgeAccount) => any }>
         <Form.Label>Username</Form.Label>
         <Form.Control
           type={'username'}
+          autoComplete={'username'}
           disabled={status === 'loading'}
           onChange={(event) => onUsernameChange(event.currentTarget.value)}
         />
@@ -37,13 +38,13 @@ export const PasswordLogin: React.FC<{ onLogin: (account: EdgeAccount) => any }>
         <Form.Label>Password</Form.Label>
         <Form.Control
           type={'password'}
-          autoComplete={'new-password'}
+          autoComplete={'password'}
           disabled={status === 'loading'}
           onChange={(event) => onPasswordChange(event.currentTarget.value)}
         />
       </FormGroup>
 
-      {error && <Alert variant={'danger'}>{error.message}</Alert>}
+      {error && <Alert variant={'danger'}>{(error as Error).message}</Alert>}
 
       <FormGroup>
         <Button
@@ -51,7 +52,7 @@ export const PasswordLogin: React.FC<{ onLogin: (account: EdgeAccount) => any }>
           disabled={status === 'loading'}
           onClick={(event: React.MouseEvent) => {
             event.preventDefault()
-            loginWithPassword({ username, password }, { onSuccess: onLogin })
+            loginWithPassword({ username, password })
           }}
         >
           {status === 'loading' ? '...' : 'Login'}

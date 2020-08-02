@@ -4,11 +4,7 @@ import { Button, ListGroup } from 'react-bootstrap'
 import { useAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
-import {
-  useDeletedWalletIds,
-  useReadInactiveWallet,
-  useChangeWalletStates as usseActivateArchiveDelete,
-} from '../hooks'
+import { useChangeWalletStates, useDeletedWalletIds, useReadInactiveWallet } from '../hooks'
 import { FallbackRender } from './FallbackRender'
 
 export const DeletedWalletList: React.FC = () => {
@@ -59,17 +55,25 @@ const WalletRow: React.FC<{
 }
 
 const WalletOptions = ({ walletId }: { walletId: string }) => {
-  const { activateWallet, archiveWallet, error, status } = usseActivateArchiveDelete(useAccount(), walletId)
+  const { activateWallet, archiveWallet, error, status } = useChangeWalletStates(useAccount())
 
   return (
     <>
-      <Button variant={'warning'} disabled={status === 'loading'} onClick={activateWallet}>
+      <Button variant={'warning'} disabled={status === 'loading'} onClick={() => activateWallet(walletId)}>
         Activate
       </Button>
-      <Button variant={'warning'} disabled={status === 'loading'} onClick={archiveWallet}>
+      <Button variant={'warning'} disabled={status === 'loading'} onClick={() => archiveWallet(walletId)}>
         Archive
       </Button>
-      {error && <div>{error.message}</div>}
+      {error && <DisplayError error={error} />}
     </>
   )
+}
+
+const DisplayError: React.FC<{ error: unknown }> = ({ error }) => {
+  if (error instanceof Error) {
+    return <div>{error.message}</div>
+  }
+
+  throw error
 }

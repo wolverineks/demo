@@ -5,7 +5,7 @@ import { useAccount } from '../auth'
 import { Boundary } from '../components'
 import { WalletInfo } from '../EdgeCurrencyWallet/WalletInfo'
 import { useActiveWalletIds } from '../hooks'
-import { SelectedWalletBoundary, SelectedWalletConsumer, fallbackRender, useSelectWallet } from '../SelectedWallet'
+import { fallbackRender, useSelectWallet, useSelectedWallet } from '../SelectedWallet'
 import { Settings } from '../Settings/Settings'
 import { Storage } from '../Storage'
 import { ActiveWalletList, ArchivedWalletList, DeletedWalletList } from '../WalletLists/'
@@ -14,6 +14,7 @@ import { CreateWallet } from './CreateWallet'
 export const AccountInfo = () => {
   const [tab, setTab] = React.useState('wallets')
   const selectWallet = useSelectWallet()
+  const selectedWallet = useSelectedWallet()
   const activeWalletIds = useActiveWalletIds(useAccount())
 
   return (
@@ -21,7 +22,7 @@ export const AccountInfo = () => {
       id={'accountTabs'}
       defaultActiveKey={'wallets'}
       activeKey={tab}
-      onSelect={(tab: any) => setTab(tab || 'wallets')}
+      onSelect={(tab) => tab && setTab(tab)}
       transition={false}
     >
       <Tab eventKey={'wallets'} title={'Wallets'}>
@@ -58,9 +59,13 @@ export const AccountInfo = () => {
       </Tab>
 
       <Tab eventKey={'wallet'} title={'Wallet'}>
-        <SelectedWalletBoundary>
-          <SelectedWalletConsumer>{(wallet) => <WalletInfo key={wallet.id} />}</SelectedWalletConsumer>
-        </SelectedWalletBoundary>
+        {selectedWallet ? (
+          <Boundary>
+            <WalletInfo wallet={selectedWallet} />
+          </Boundary>
+        ) : (
+          <div>No SelectedWallet</div>
+        )}
       </Tab>
 
       <Tab eventKey={'storage'} title={'Storage'}>

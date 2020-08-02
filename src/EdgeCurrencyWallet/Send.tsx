@@ -119,7 +119,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
           )}
         />
 
-        {error && <Alert>{error.message}</Alert>}
+        {error && <Alert>{(error as Error).message}</Alert>}
       </Form>
 
       <Button onClick={() => setScan((scan) => !scan)}>Scan</Button>

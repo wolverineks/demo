@@ -9,15 +9,22 @@ type Watch<EdgeObject, Property extends keyof EdgeObject> = (
 export const useWatch = <EdgeObject extends { watch: Watch<EdgeObject, Property> }, Property extends keyof EdgeObject>(
   object: EdgeObject,
   property: Property,
+  callback?: (data: EdgeObject[Property]) => any,
 ): EdgeObject[Property] => {
-  const [, rerender] = React.useState({})
+  const [, rerender] = React.useState(object[property])
   React.useEffect(() => {
-    const unsub = object.watch(property, () => rerender({}))
+    const unsub = object.watch(property, () => {
+      if (callback) {
+        callback(object[property])
+      } else {
+        rerender(object[property])
+      }
+    })
 
     return () => {
       unsub()
     }
-  }, [object, property])
+  }, [callback, object, property])
 
   return object[property]
 }
