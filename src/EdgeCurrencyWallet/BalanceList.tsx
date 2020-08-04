@@ -4,7 +4,7 @@ import { Card, ListGroup } from 'react-bootstrap'
 
 import { DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
-import { useBalance, useBalances, useEnabledTokenInfos, useFiatCurrencyCode, useName } from '../hooks'
+import { useBalance, useEnabledTokenInfos, useFiatCurrencyCode, useName } from '../hooks'
 import { useSelectedWallet } from '../SelectedWallet'
 
 export const BalanceList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => (
@@ -12,11 +12,7 @@ export const BalanceList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }
     <ListGroup>
       <ListGroup.Item>{useName(wallet)}</ListGroup.Item>
       <ListGroup.Item>
-        <Balance
-          wallet={wallet}
-          currencyCode={wallet.currencyInfo.currencyCode}
-          nativeAmount={useBalance(wallet, wallet.currencyInfo.currencyCode)}
-        />{' '}
+        <Balance wallet={wallet} currencyCode={wallet.currencyInfo.currencyCode} />{' '}
       </ListGroup.Item>
 
       <ListGroup.Item>
@@ -28,7 +24,6 @@ export const BalanceList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }
 
 const TokenList = () => {
   const wallet = useSelectedWallet()
-  useBalances(wallet)
   const tokenInfos = useEnabledTokenInfos(wallet)
 
   return tokenInfos.length <= 0 ? (
@@ -36,12 +31,7 @@ const TokenList = () => {
   ) : (
     <div>
       {tokenInfos.map((tokenInfo) => (
-        <Balance
-          key={tokenInfo.currencyCode}
-          wallet={wallet}
-          currencyCode={tokenInfo.currencyCode}
-          nativeAmount={wallet.balances[tokenInfo.currencyCode]}
-        />
+        <Balance key={tokenInfo.currencyCode} wallet={wallet} currencyCode={tokenInfo.currencyCode} />
       ))}
     </div>
   )
@@ -50,16 +40,16 @@ const TokenList = () => {
 const Balance: React.FC<{
   wallet: EdgeCurrencyWallet
   currencyCode: string
-  nativeAmount: string
-}> = ({ currencyCode, nativeAmount = '0', wallet }) => {
+}> = ({ currencyCode, wallet }) => {
+  const balance = useBalance(wallet, currencyCode) || '0'
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
 
   return (
     <div>
       <Logo currencyCode={currencyCode} />
-      <DisplayAmount currencyCode={currencyCode} nativeAmount={nativeAmount} /> -{' '}
+      <DisplayAmount currencyCode={currencyCode} nativeAmount={balance} /> -{' '}
       <FiatAmount
-        nativeAmount={nativeAmount}
+        nativeAmount={balance}
         fromCurrencyCode={wallet.currencyInfo.currencyCode}
         fiatCurrencyCode={fiatCurrencyCode}
       />

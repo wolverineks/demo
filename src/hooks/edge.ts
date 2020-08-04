@@ -237,11 +237,7 @@ export const useReadPinLoginEnabled = (context: EdgeContext, account: EdgeAccoun
 export const useWritePinLoginEnabled = (account: EdgeAccount) =>
   useMutation(
     (enableLogin: boolean) => account.changePin({ enableLogin }),
-    optimisticMutationOptions([account.username, 'pinLoginEnabled'], (enableLogin) => {
-      console.log('qwe', 'pinLoginEnabled')
-
-      return enableLogin
-    }),
+    optimisticMutationOptions([account.username, 'pinLoginEnabled'], (enableLogin) => enableLogin),
   )
 
 export const usePinLoginEnabled = (context: EdgeContext, account: EdgeAccount) =>
@@ -344,14 +340,10 @@ export const useTokens = (wallet: EdgeCurrencyWallet) => ({
 })
 
 // TRANSACTIONS
-export const useTransactions = (
-  wallet: EdgeCurrencyWallet,
-  options: EdgeGetTransactionsOptions,
-  config?: QueryConfig<EdgeTransaction[]>,
-) => {
+export const useTransactions = (wallet: EdgeCurrencyWallet, config?: QueryConfig<EdgeTransaction[]>) => {
   const { data, refetch } = useQuery({
-    queryKey: [wallet.id, 'transactions', options],
-    queryFn: () => wallet.getTransactions(options),
+    queryKey: [wallet.id, 'transactions'],
+    queryFn: () => wallet.getTransactions(),
     config: { suspense: true, staleTime: Infinity, cacheTime: 0, ...config },
   })
 
@@ -366,7 +358,7 @@ export const useTransactions = (
 // TRANSACTION COUNT
 export const useTransactionCount = (
   wallet: EdgeCurrencyWallet,
-  options: EdgeGetTransactionsOptions,
+  options?: EdgeGetTransactionsOptions,
   config?: QueryConfig<number>,
 ) => {
   const { data, refetch } = useQuery({

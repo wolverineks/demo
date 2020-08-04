@@ -28,7 +28,7 @@ export const SelectedWalletConsumer = ({ children }: { children: (wallet: EdgeCu
 export class NoActiveWalletsError extends Error {}
 
 export const useSelectWallet = () => React.useContext(SelectWalletContext)
-export const useSelectedWallet = (options: { suspense: boolean } = { suspense: true }) => {
+export const useSelectedWallet = () => {
   const pending = React.useRef(false)
   const account = useAccount()
   useActiveWalletIds(account)

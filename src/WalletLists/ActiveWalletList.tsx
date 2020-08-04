@@ -13,7 +13,7 @@ export const ActiveWalletList: React.FC<{
   onSelect: (walletId: string) => any
 }> = ({ onSelect }) => {
   const activeWalletIds = useActiveWalletIds(useAccount())
-  const selectedWallet = useSelectedWallet({ suspense: false })
+  const selectedWallet = useSelectedWallet()
 
   return activeWalletIds.length <= 0 ? (
     <div>No active wallets</div>
@@ -35,7 +35,7 @@ const ActiveWalletRow: React.FC<{
 }> = ({ walletId, onSelect, isSelected }) => {
   const wallet = useWallet(useAccount(), walletId)
   const currencyCode = wallet.currencyInfo.currencyCode
-  const balance = useBalance(wallet, currencyCode)
+  const balance = useBalance(wallet, currencyCode) || '0'
   const name = useName(wallet)
 
   useOnNewTransactions(wallet, (transactions) =>
@@ -85,7 +85,9 @@ export const EnabledTokensList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wa
     <ListGroup.Item>
       <ListGroup variant={'flush'}>
         {tokenCodes.map((currencyCode) => (
-          <EnabledTokenRow wallet={wallet} key={currencyCode} currencyCode={currencyCode} />
+          <Boundary key={currencyCode}>
+            <EnabledTokenRow wallet={wallet} currencyCode={currencyCode} />
+          </Boundary>
         ))}
       </ListGroup>
     </ListGroup.Item>
@@ -96,15 +98,25 @@ const EnabledTokenRow: React.FC<{
   wallet: EdgeCurrencyWallet
   currencyCode: string
 }> = ({ wallet, currencyCode }) => {
-  const balance = useBalance(wallet, currencyCode)
-
   return (
     <ListGroup.Item>
       <span className={'float-left'}>
         <Logo currencyCode={currencyCode} />
-        <DisplayAmount nativeAmount={balance} currencyCode={currencyCode} /> -{' '}
-        <FiatAmount nativeAmount={balance} fromCurrencyCode={currencyCode} fiatCurrencyCode={wallet.fiatCurrencyCode} />
+        <Boundary suspense={{ fallback: <span>Loading...</span> }}>
+          <Amounts wallet={wallet} currencyCode={currencyCode} />
+        </Boundary>
       </span>
     </ListGroup.Item>
+  )
+}
+
+const Amounts: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
+  const balance = useBalance(wallet, currencyCode) || '0'
+
+  return (
+    <>
+      <DisplayAmount nativeAmount={balance} currencyCode={currencyCode} /> -{' '}
+      <FiatAmount nativeAmount={balance} fromCurrencyCode={currencyCode} fiatCurrencyCode={wallet.fiatCurrencyCode} />
+    </>
   )
 }

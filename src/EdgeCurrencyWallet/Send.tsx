@@ -18,6 +18,7 @@ import {
 import { categories } from '../utils'
 
 export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
+  const account = useAccount()
   const currencyCodes = useCurrencyCodes(wallet)
   const [parsedUri, setParsedUri] = React.useState<EdgeParsedUri>()
   const [currencyCode, setCurrencyCode] = React.useState(wallet.currencyInfo.currencyCode)
@@ -30,12 +31,12 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
 
   const nativeAmount = useDenominationToNative({
-    account: useAccount(),
+    account,
     currencyCode,
     amount: displayAmount,
   })
   const parsedUriDisplayAmount = useNativeToDenomination({
-    account: useAccount(),
+    account,
     nativeAmount: parsedUri?.nativeAmount || '0',
     currencyCode,
   })
@@ -67,6 +68,15 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
       .catch((error: Error) => console.log(error))
 
   const { data: transaction, error } = useNewTransaction(wallet, spendInfo)
+
+  const onConfirm = () => {
+    if (!transaction) return
+
+    wallet
+      .signTx(transaction)
+      .then(() => wallet.broadcastTx(transaction))
+      .then(() => wallet.saveTx(transaction))
+  }
 
   return (
     <div>
@@ -126,7 +136,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
         </FormGroup>
 
         <FormGroup>
-          <FormLabel>Note</FormLabel>
+          <FormLabel>Notes</FormLabel>
           <FormControl as={'textarea'} value={notes} onChange={(event) => setNotes(event.currentTarget.value)} />
         </FormGroup>
 
@@ -144,6 +154,10 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
         {error && <Alert>{(error as Error).message}</Alert>}
       </Form>
 
+      <Button disabled={!transaction} onClick={() => onConfirm()}>
+        Confirm
+      </Button>
+
       <Button onClick={() => setScan((scan) => !scan)}>Scan</Button>
 
       {scan && <Scanner onScan={!parsedUri ? onScan : () => undefined} show={!parsedUri} />}
@@ -152,7 +166,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
         data={{
           displayAmount: String(displayAmount),
           nativeAmount: String(nativeAmount),
-          displayDenomination: useDisplayDenomination(useAccount(), currencyCode)[0],
+          displayDenomination: useDisplayDenomination(account, currencyCode)[0],
           parsedUri: String(parsedUri),
           parsedUriDisplayAmount: String(parsedUriDisplayAmount),
           currencyCode: String(currencyCode),

@@ -9,10 +9,17 @@ const defaultError = { fallbackRender }
 export const Boundary: React.FC<{
   suspense?: Partial<React.ComponentProps<typeof React.Suspense>>
   error?: Partial<React.ComponentProps<typeof ErrorBoundary>>
-}> = ({ error = {}, suspense = {}, children }) => (
-  <React.Suspense {...defaultSuspense} {...suspense}>
-    <ErrorBoundary {...defaultError} {...error}>
-      {children}
-    </ErrorBoundary>
-  </React.Suspense>
-)
+  suspend?: boolean
+  catch?: boolean
+}> = ({ children, ...props }) => {
+  const CatchBoundary = props.catch !== false ? ErrorBoundary : React.Fragment
+  const SuspendBoundary = props.suspend !== false ? React.Suspense : React.Fragment
+
+  return (
+    <SuspendBoundary {...defaultSuspense} {...props.suspense}>
+      <CatchBoundary {...defaultError} {...props.error}>
+        {children}
+      </CatchBoundary>
+    </SuspendBoundary>
+  )
+}

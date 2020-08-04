@@ -53,11 +53,15 @@ export const App = () => {
               }}
             >
               <Container>
-                <Header />
+                <Boundary catch={false}>
+                  <Header />
+                </Boundary>
 
-                <SelectedWalletProvider>
-                  <AccountInfo />
-                </SelectedWalletProvider>
+                <Boundary catch={false}>
+                  <SelectedWalletProvider>
+                    <AccountInfo />
+                  </SelectedWalletProvider>
+                </Boundary>
               </Container>
             </Boundary>
           </AccountProvider>
