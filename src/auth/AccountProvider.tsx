@@ -1,8 +1,5 @@
-import { EdgeAccount, EdgeContext } from 'edge-core-js'
+import { EdgeAccount } from 'edge-core-js'
 import React from 'react'
-import { queryCache, useMutation } from 'react-query'
-
-import { useEdgeContext } from '../Edge'
 
 export const EdgeAccountContext = React.createContext<EdgeAccount | undefined>(undefined)
 export const SetEdgeAccountContext = React.createContext<(account?: EdgeAccount) => void>(() => undefined)
