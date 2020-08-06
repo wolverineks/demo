@@ -4,7 +4,7 @@ import { Card, ListGroup } from 'react-bootstrap'
 
 import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
-import { useBalance, useEnabledTokenInfos, useFiatCurrencyCode, useName } from '../hooks'
+import { useBalance, useEnabledTokens, useFiatCurrencyCode, useName } from '../hooks'
 import { useSelectedWallet } from '../SelectedWallet'
 
 export const BalanceList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => (
@@ -26,15 +26,15 @@ export const BalanceList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }
 
 const TokenList = () => {
   const wallet = useSelectedWallet()
-  const tokenInfos = useEnabledTokenInfos(wallet)
+  const tokens = useEnabledTokens(wallet)
 
-  return tokenInfos.length <= 0 ? (
+  return tokens.length <= 0 ? (
     <div>No Tokens</div>
   ) : (
     <div>
-      {tokenInfos.map((tokenInfo) => (
-        <Boundary key={tokenInfo.currencyCode}>
-          <Balance wallet={wallet} currencyCode={tokenInfo.currencyCode} />
+      {tokens.map((currencyCode) => (
+        <Boundary key={currencyCode}>
+          <Balance wallet={wallet} currencyCode={currencyCode} />
         </Boundary>
       ))}
     </div>
@@ -45,7 +45,7 @@ const Balance: React.FC<{
   wallet: EdgeCurrencyWallet
   currencyCode: string
 }> = ({ currencyCode, wallet }) => {
-  const balance = useBalance(wallet, currencyCode) || '0'
+  const balance = useBalance(wallet, currencyCode)
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
 
   return (
