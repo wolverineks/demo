@@ -36,7 +36,7 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 0,
     '@typescript-eslint/no-non-null-assertion': 0,
     '@typescript-eslint/explicit-module-boundary-types': 0,
-    'import/no-unresolved': [2, { caseSensitive: false, ignore: ['react'] }],
+    'import/no-unresolved': [2, { caseSensitive: true, ignore: ['react'] }],
     '@typescript-eslint/no-unused-vars': [0, { argsIgnorePattern: '^_' }],
     '@typescript-eslint/member-delimiter-style': [
       0,
