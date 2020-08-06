@@ -2,7 +2,7 @@ import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 import { Card, ListGroup } from 'react-bootstrap'
 
-import { DisplayAmount, Logo } from '../components'
+import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
 import { useBalance, useEnabledTokenInfos, useFiatCurrencyCode, useName } from '../hooks'
 import { useSelectedWallet } from '../SelectedWallet'
@@ -12,7 +12,9 @@ export const BalanceList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }
     <ListGroup>
       <ListGroup.Item>{useName(wallet)}</ListGroup.Item>
       <ListGroup.Item>
-        <Balance wallet={wallet} currencyCode={wallet.currencyInfo.currencyCode} />{' '}
+        <Boundary>
+          <Balance wallet={wallet} currencyCode={wallet.currencyInfo.currencyCode} />{' '}
+        </Boundary>
       </ListGroup.Item>
 
       <ListGroup.Item>
@@ -31,7 +33,9 @@ const TokenList = () => {
   ) : (
     <div>
       {tokenInfos.map((tokenInfo) => (
-        <Balance key={tokenInfo.currencyCode} wallet={wallet} currencyCode={tokenInfo.currencyCode} />
+        <Boundary key={tokenInfo.currencyCode}>
+          <Balance wallet={wallet} currencyCode={tokenInfo.currencyCode} />
+        </Boundary>
       ))}
     </div>
   )
