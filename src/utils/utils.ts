@@ -1,4 +1,6 @@
-import { EdgeAccount, EdgeCurrencyInfo, EdgeCurrencyWallet, EdgeDenomination, EdgeMetaToken } from 'edge-core-js'
+import { EdgeAccount, EdgeCurrencyWallet, EdgeDenomination } from 'edge-core-js'
+
+import { getFiatInfo } from '../Fiat'
 
 export const isUnique = (value: any, index: number, array: any[]) => array.indexOf(value) === index
 
@@ -24,11 +26,14 @@ export const getTokenInfo = (account: EdgeAccount, currencyCode: string) =>
   getTokenInfos(account).find((tokenInfo) => tokenInfo.currencyCode === currencyCode)!
 
 export const getInfo = (account: EdgeAccount, currencyCode: string) =>
-  getCurrencyInfo(account, currencyCode) || getTokenInfo(account, currencyCode)
+  getCurrencyInfo(account, currencyCode) || getTokenInfo(account, currencyCode) || getFiatInfo(currencyCode)
 
 export const getLogo = (account: EdgeAccount, currencyCode: string) => getInfo(account, currencyCode).symbolImage
 
-export const nativeToDenomination = ({
+export const getExchangeDenomination = (account: EdgeAccount, currencyCode: string) =>
+  getInfo(account, currencyCode).denominations[0]
+
+export const nativeToDenominated = ({
   denomination,
   nativeAmount,
 }: {
@@ -36,7 +41,7 @@ export const nativeToDenomination = ({
   nativeAmount: string
 }) => String(Number(nativeAmount) / Number(denomination.multiplier))
 
-export const denominationToNative = ({ denomination, amount }: { denomination: EdgeDenomination; amount: string }) =>
+export const denominatedToNative = ({ denomination, amount }: { denomination: EdgeDenomination; amount: string }) =>
   String(Number(amount) * Number(denomination.multiplier))
 
 export const getCurrencyCodes = (wallet: EdgeCurrencyWallet) => {
@@ -46,8 +51,6 @@ export const getCurrencyCodes = (wallet: EdgeCurrencyWallet) => {
 
   return [currencyCode, ...metaTokens.map(({ currencyCode }) => currencyCode)]
 }
-
-export const getExchangeDenomination = (currencyInfo: EdgeCurrencyInfo | EdgeMetaToken) => currencyInfo.denominations[0]
 
 export const getAccountBalance = async (account: EdgeAccount, { toCurrencyCode }: { toCurrencyCode: string }) => {
   const accountBalances: Record<string, number> = {}
@@ -64,7 +67,7 @@ export const getAccountBalance = async (account: EdgeAccount, { toCurrencyCode }
   const accountBalance = 0
 
   Object.entries(accountBalances).forEach(async ([currencyCode, nativeAmount]) => {
-    const exchangeAmount = nativeToDenomination({
+    const exchangeAmount = nativeToDenominated({
       nativeAmount: String(nativeAmount),
       denomination: exchangeDenominations[currencyCode],
     })

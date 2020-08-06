@@ -5,14 +5,13 @@ import JSONPretty from 'react-json-pretty'
 import QrReader from 'react-qr-reader'
 
 import { useAccount } from '../auth'
-import { Boundary, DisplayAmountInput, FiatAmountDisplay, Select } from '../components'
+import { FlipInput, Select } from '../components'
 import {
   useCurrencyCodes,
-  useDenominationToNative,
   useDisplayDenomination,
   useFiatCurrencyCode,
   useMaxSpendable,
-  useNativeToDenomination,
+  useNativeToDisplay,
   useNewTransaction,
 } from '../hooks'
 import { categories } from '../utils'
@@ -29,18 +28,12 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const [category, setCategory] = React.useState('')
 
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
-
-  const nativeAmount = useDenominationToNative({
-    account,
-    currencyCode,
-    amount: displayAmount,
-  })
-  const parsedUriDisplayAmount = useNativeToDenomination({
+  const [nativeAmount, setNativeAmount] = React.useState('0')
+  const parsedUriDisplayAmount = useNativeToDisplay({
     account,
     nativeAmount: parsedUri?.nativeAmount || '0',
     currencyCode,
   })
-
   const spendInfo: EdgeSpendInfo = React.useMemo(
     () => ({
       metadata: { name, notes, category },
@@ -49,7 +42,6 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
     }),
     [publicAddress, nativeAmount, currencyCode, name, notes, category],
   )
-
   const { data: maxSpendable } = useMaxSpendable(wallet, spendInfo)
 
   const [scan, setScan] = React.useState(false)
@@ -79,80 +71,57 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   }
 
   return (
-    <div>
-      <Form>
-        <FormGroup>
-          <FormLabel>To:</FormLabel>
-          <InputGroup>
-            <FormControl value={publicAddress} onChange={(event) => setPublicAddress(event.currentTarget.value)} />
-            <InputGroup.Append>
-              <Button variant="outline-secondary" onClick={() => setPublicAddress(parsedUri?.publicAddress || '')}>
-                Reset
-              </Button>
-            </InputGroup.Append>
-          </InputGroup>
-        </FormGroup>
+    <Form>
+      <FormGroup>
+        <FormLabel>To:</FormLabel>
+        <InputGroup>
+          <FormControl value={publicAddress} onChange={(event) => setPublicAddress(event.currentTarget.value)} />
+          {/* <InputGroup.Append>
+            <Button variant="outline-secondary" onClick={() => setPublicAddress(parsedUri?.publicAddress || '')}>
+              Reset
+            </Button>
+          </InputGroup.Append> */}
+        </InputGroup>
+      </FormGroup>
 
-        <FormGroup>
-          <InputGroup>
-            <Boundary>
-              <DisplayAmountInput
-                displayAmount={displayAmount}
-                onChange={setDisplayAmount}
-                currencyCode={currencyCode}
-              />
-              <Button variant="outline-secondary" onClick={() => setDisplayAmount(parsedUriDisplayAmount)}>
-                Reset
-              </Button>
-            </Boundary>
-          </InputGroup>
+      <FormGroup>
+        <FlipInput currencyCode={currencyCode} fiatCurrencyCode={fiatCurrencyCode} onChange={setNativeAmount} />
+      </FormGroup>
 
-          <InputGroup>
-            <Boundary>
-              <FiatAmountDisplay
-                fiatCurrencyCode={fiatCurrencyCode}
-                nativeAmount={nativeAmount}
-                currencyCode={currencyCode}
-              />
-            </Boundary>
-          </InputGroup>
-        </FormGroup>
+      <Select
+        title={'CurrencyCode'}
+        id={'sendCurrencyCode'}
+        onSelect={(event) => setCurrencyCode(event.currentTarget.value)}
+        options={currencyCodes}
+        renderOption={(currencyCode: string) => (
+          <option key={currencyCode} value={currencyCode}>
+            {currencyCode}
+          </option>
+        )}
+      />
 
-        <Select
-          title={'CurrencyCode'}
-          id={'sendCurrencyCode'}
-          onSelect={(event) => setCurrencyCode(event.currentTarget.value)}
-          options={currencyCodes}
-          renderOption={(currencyCode: string) => (
-            <option key={currencyCode} value={currencyCode}>
-              {currencyCode}
-            </option>
-          )}
-        />
+      <FormGroup>
+        <FormLabel>Name</FormLabel>
+        <FormControl value={name} onChange={(event) => setName(event.currentTarget.value)} />
+      </FormGroup>
 
-        <FormGroup>
-          <FormLabel>Name</FormLabel>
-          <FormControl value={name} onChange={(event) => setName(event.currentTarget.value)} />
-        </FormGroup>
+      <FormGroup>
+        <FormLabel>Notes</FormLabel>
+        <FormControl as={'textarea'} value={notes} onChange={(event) => setNotes(event.currentTarget.value)} />
+      </FormGroup>
 
-        <FormGroup>
-          <FormLabel>Notes</FormLabel>
-          <FormControl as={'textarea'} value={notes} onChange={(event) => setNotes(event.currentTarget.value)} />
-        </FormGroup>
+      <Select
+        title={'Category'}
+        onSelect={(event) => setCategory(event.currentTarget.value)}
+        options={[{ value: 'none', display: '-' }, ...categories]}
+        renderOption={(category) => (
+          <option value={category.value} key={category.value}>
+            {category.display}
+          </option>
+        )}
+      />
 
-        <Select
-          title={'Category'}
-          onSelect={(event) => setCategory(event.currentTarget.value)}
-          options={[{ value: 'none', display: '-' }, ...categories]}
-          renderOption={(category) => (
-            <option value={category.value} key={category.value}>
-              {category.display}
-            </option>
-          )}
-        />
-
-        {error && <Alert>{(error as Error).message}</Alert>}
-      </Form>
+      {error && <Alert>{(error as Error).message}</Alert>}
 
       <Button disabled={!transaction} onClick={() => onConfirm()}>
         Confirm
@@ -165,8 +134,9 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
       <JSONPretty
         data={{
           displayAmount: String(displayAmount),
-          nativeAmount: String(nativeAmount),
           displayDenomination: useDisplayDenomination(account, currencyCode)[0],
+          nativeAmount: String(nativeAmount),
+          fiatCurrencyCode,
           parsedUri: String(parsedUri),
           parsedUriDisplayAmount: String(parsedUriDisplayAmount),
           currencyCode: String(currencyCode),
@@ -176,7 +146,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
           transaction: String(transaction),
         }}
       />
-    </div>
+    </Form>
   )
 }
 

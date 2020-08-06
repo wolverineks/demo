@@ -18,12 +18,12 @@ import { MutationConfig, QueryConfig, queryCache, useMutation, useQuery } from '
 
 import { getFiatInfo } from '../Fiat/getFiatInfo'
 import {
-  denominationToNative,
+  denominatedToNative,
   getExchangeDenomination,
   getInfo,
   getTokenInfo,
   isUnique,
-  nativeToDenomination,
+  nativeToDenominated,
 } from '../utils'
 import { optimisticMutationOptions } from './optimisticMutationOptions'
 import { useWatch } from './watch'
@@ -252,8 +252,30 @@ export const useSortedCurrencyWallets = (account: EdgeAccount) => {
 }
 
 // EDGE CURRENCY WALLET
-export const useBalance = (wallet: EdgeCurrencyWallet, currencyCode: string) =>
-  useWatch(wallet, 'balances')[currencyCode]
+export const useBalance = (wallet: EdgeCurrencyWallet, currencyCode: string) => {
+  const { refetch, data } = useQuery({
+    queryKey: [wallet.id, 'balance', currencyCode],
+    queryFn: () => waitForBalance(wallet, currencyCode),
+    config: { suspense: true, cacheTime: 0, staleTime: Infinity },
+  })
+
+  useWatch(wallet, 'balances', () => refetch())
+
+  return data!
+}
+
+export const waitForBalance = (wallet: EdgeCurrencyWallet, code: string): Promise<string> =>
+  wallet.balances[code] != null
+    ? Promise.resolve(wallet.balances[code])
+    : new Promise((resolve) => {
+        const unsubscribe = wallet.watch('balances', (balances) => {
+          if (balances[code] != null) {
+            unsubscribe()
+            resolve(balances[code])
+          }
+        })
+      })
+
 export const useBalances = (wallet: EdgeCurrencyWallet) => useWatch(wallet, 'balances')
 export const useBlockHeight = (wallet: EdgeCurrencyWallet) => useWatch(wallet, 'blockHeight')
 export const useName = (wallet: EdgeCurrencyWallet) => useWatch(wallet, 'name')
@@ -419,7 +441,44 @@ export const useNewTransaction = (
     },
   })
 
-export const useNativeToDenomination = ({
+// CONVERSIONS
+
+export const useExchangeToNative = ({
+  account,
+  currencyCode,
+  exchangeAmount,
+}: {
+  account: EdgeAccount
+  currencyCode: string
+  exchangeAmount: string
+}) =>
+  denominatedToNative({
+    denomination: getExchangeDenomination(account, currencyCode),
+    amount: exchangeAmount,
+  })
+
+export const useDisplayToNative = (
+  {
+    account,
+    currencyCode,
+    displayAmount,
+  }: {
+    account: EdgeAccount
+    currencyCode: string
+    displayAmount: string
+  },
+  config?: { onSuccess: (amount: string) => any },
+) => {
+  const result = denominatedToNative({
+    denomination: useDisplayDenomination(account, currencyCode)[0],
+    amount: displayAmount,
+  })
+  config?.onSuccess(result)
+
+  return result
+}
+
+export const useNativeToExchange = ({
   account,
   currencyCode,
   nativeAmount,
@@ -428,23 +487,53 @@ export const useNativeToDenomination = ({
   currencyCode: string
   nativeAmount: string
 }) =>
-  nativeToDenomination({
+  nativeToDenominated({
+    denomination: getExchangeDenomination(account, currencyCode),
+    nativeAmount,
+  })
+
+export const useNativeToDisplay = ({
+  account,
+  currencyCode,
+  nativeAmount,
+}: {
+  account: EdgeAccount
+  currencyCode: string
+  nativeAmount: string
+}) =>
+  nativeToDenominated({
     denomination: useDisplayDenomination(account, currencyCode)[0],
     nativeAmount,
   })
 
-export const useDenominationToNative = ({
+// COMPOUND
+export const useExchangeToDisplay = ({
   account,
   currencyCode,
-  amount,
+  exchangeAmount,
 }: {
   account: EdgeAccount
   currencyCode: string
-  amount: string
+  exchangeAmount: string
 }) =>
-  denominationToNative({
-    denomination: useDisplayDenomination(account, currencyCode)[0],
-    amount,
+  useNativeToDisplay({
+    account,
+    currencyCode,
+    nativeAmount: useExchangeToNative({ account, currencyCode, exchangeAmount }),
+  })
+
+export const useDisplayToExchange = ({
+  account,
+  currencyCode,
+  displayAmount,
+}: {
+  account: EdgeAccount
+  currencyCode: string
+  displayAmount: string
+}) =>
+  nativeToDenominated({
+    denomination: getExchangeDenomination(account, currencyCode),
+    nativeAmount: useDisplayToNative({ account, displayAmount, currencyCode }),
   })
 
 // SETTINGS
@@ -576,10 +665,50 @@ export const useDisplayAmount = ({
   const [denomination] = useDisplayDenomination(account, currencyCode)
 
   return {
-    amount: nativeToDenomination({ denomination, nativeAmount }),
+    amount: nativeToDenominated({ denomination, nativeAmount }),
     denomination,
     ...denomination,
   }
+}
+
+// CONVERT CURRENCY
+export const useExchangeRate = (
+  {
+    account,
+    fromCurrencyCode,
+    toCurrencyCode,
+  }: {
+    account: EdgeAccount
+    fromCurrencyCode: string
+    toCurrencyCode: string
+  },
+  config?: QueryConfig<number, unknown>,
+) =>
+  useQuery({
+    queryKey: ['exchangeRate', { fromCurrencyCode, toCurrencyCode }],
+    queryFn: () => account.rateCache.convertCurrency(fromCurrencyCode, toCurrencyCode),
+    config: { suspense: true, cacheTime: 0, staleTime: 0, ...config },
+  }).data!
+
+export const useConvertedAmount = (
+  {
+    account,
+    exchangeAmount,
+    fromCurrencyCode,
+    toCurrencyCode,
+  }: {
+    account: EdgeAccount
+    exchangeAmount: number
+    fromCurrencyCode: string
+    toCurrencyCode: string
+  },
+  config?: QueryConfig<number>,
+) => {
+  return useQuery({
+    queryKey: [{ fromCurrencyCode, toCurrencyCode, amount: exchangeAmount }],
+    queryFn: () => account.rateCache.convertCurrency(fromCurrencyCode, toCurrencyCode, exchangeAmount),
+    config: { suspense: true, refetchInterval: 10000, ...config },
+  }).data!
 }
 
 // FIAT AMOUNT
@@ -597,8 +726,8 @@ export const useFiatAmount = (
   },
   config?: QueryConfig<number>,
 ) => {
-  const denomination = getExchangeDenomination(getInfo(account, fromCurrencyCode))
-  const exchangeAmount = Number(nativeToDenomination({ denomination, nativeAmount }))
+  const denomination = getExchangeDenomination(account, fromCurrencyCode)
+  const exchangeAmount = Number(nativeToDenominated({ denomination, nativeAmount }))
 
   return useQuery({
     queryKey: [{ fromCurrencyCode, fiatCurrencyCode, exchangeAmount }],
@@ -622,14 +751,14 @@ export const useNativeAmount = (
   },
   config?: QueryConfig<number>,
 ) => {
-  const denomination = getExchangeDenomination(getInfo(account, toCurrencyCode))
+  const denomination = getExchangeDenomination(account, toCurrencyCode)
   const exchangeAmount = useQuery({
     queryKey: [{ fiatCurrencyCode, toCurrencyCode, fiatAmount }],
     queryFn: () => account.rateCache.convertCurrency(fiatCurrencyCode, toCurrencyCode, fiatAmount),
     config: { suspense: true, ...config },
   }).data!
 
-  const nativeAmount = denominationToNative({ denomination, amount: String(exchangeAmount) })
+  const nativeAmount = denominatedToNative({ denomination, amount: String(exchangeAmount) })
 
   return nativeAmount
 }
