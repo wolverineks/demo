@@ -1,7 +1,7 @@
 import React from 'react'
 import { FormControl, FormGroup, FormLabel } from 'react-bootstrap'
 
-export const Select = ({
+export const Select = <T,>({
   options,
   renderOption,
   onSelect,
@@ -10,9 +10,9 @@ export const Select = ({
   id,
   defaultValue,
 }: {
-  options: any[]
-  renderOption: (item: any) => React.ReactElement
-  onSelect: (selection: any) => any
+  options: T[]
+  renderOption: (item: T) => React.ReactElement
+  onSelect: (event: React.ChangeEvent<any>) => any
   disabled?: boolean
   title: string
   id?: string

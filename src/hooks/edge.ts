@@ -221,6 +221,18 @@ export const useWallet = (account: EdgeAccount, walletId: string, config?: Query
     config: { suspense: true, ...config },
   }).data!
 
+// ACTIVE WALLET INFOS
+export const useActiveWalletInfos = (account: EdgeAccount) =>
+  useActiveWalletIds(account).map((id) => account.allKeys.find((walletInfo) => walletInfo.id === id)!)
+
+// ARCHIVED WALLET INFOS
+export const useArchivedWalletInfos = (account: EdgeAccount) =>
+  useArchivedWalletIds(account).map((id) => account.allKeys.find((walletInfo) => walletInfo.id === id))
+
+// DELETED WALLET INFOS
+export const useDeletedWalletInfos = (account: EdgeAccount) =>
+  useDeletedWalletIds(account).map((id) => account.allKeys.find((walletInfo) => walletInfo.id === id))
+
 export const useDeletedWalletIds = (account: EdgeAccount) =>
   useAllKeys(account)
     .filter(({ deleted }) => deleted)

@@ -4,26 +4,60 @@ import React from 'react'
 import { Button, ListGroup } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
-import { Boundary, DisplayAmount, Logo } from '../components'
+import { Boundary, DisplayAmount, Logo, Select } from '../components'
 import { FiatAmount } from '../Fiat'
-import { useActiveWalletIds, useBalance, useChangeWalletStates, useEnabledTokens, useName, useWallet } from '../hooks'
+import {
+  useActiveCurrencyInfos,
+  useActiveWalletIds,
+  useActiveWalletInfos,
+  useBalance,
+  useChangeWalletStates,
+  useCurrencyWallets,
+  useEnabledTokens,
+  useName,
+  useSortedCurrencyWallets,
+  useWallet,
+} from '../hooks'
 import { useSelectedWallet } from '../SelectedWallet'
 
 export const ActiveWalletList: React.FC<{
   onSelect: (walletId: string) => any
 }> = ({ onSelect }) => {
-  const activeWalletIds = useActiveWalletIds(useAccount())
+  const account = useAccount()
+  const activeWalletInfos = useActiveWalletInfos(account)
   const selectedWallet = useSelectedWallet()
+  const currencyInfos = useActiveCurrencyInfos(account)
+  const [filter, setFilter] = React.useState('none')
 
-  return activeWalletIds.length <= 0 ? (
+  return activeWalletInfos.length <= 0 ? (
     <div>No active wallets</div>
   ) : (
     <ListGroup variant={'flush'}>
-      {activeWalletIds.map((id) => (
-        <Boundary key={id} suspense={{ fallback: <ListGroup.Item>Loading...</ListGroup.Item> }}>
-          <ActiveWalletRow walletId={id} onSelect={() => onSelect(id)} isSelected={id === selectedWallet.id} />
-        </Boundary>
-      ))}
+      {currencyInfos.length > 1 && (
+        <Select
+          title={'Wallet Types'}
+          options={[
+            { value: 'none', display: '-' },
+            ...currencyInfos.map((currencyInfo) => ({
+              value: currencyInfo.walletType,
+              display: currencyInfo.displayName,
+            })),
+          ]}
+          renderOption={({ value, display }) => (
+            <option value={value} key={value}>
+              {display}
+            </option>
+          )}
+          onSelect={(event) => setFilter(event.currentTarget.value)}
+        />
+      )}
+      {activeWalletInfos
+        .filter(filter === 'none' ? (x) => x : (walletInfo) => walletInfo.type === filter)
+        .map(({ id }) => (
+          <Boundary key={id} suspense={{ fallback: <ListGroup.Item>Loading...</ListGroup.Item> }}>
+            <ActiveWalletRow walletId={id} onSelect={() => onSelect(id)} isSelected={id === selectedWallet.id} />
+          </Boundary>
+        ))}
     </ListGroup>
   )
 }
