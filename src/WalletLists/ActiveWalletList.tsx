@@ -1,18 +1,15 @@
-import { EdgeCurrencyWallet } from 'edge-core-js'
+import { EdgeAccount, EdgeCurrencyWallet } from 'edge-core-js'
 import { useOnNewTransactions } from 'edge-react-hooks'
 import React from 'react'
-import { Button, ListGroup } from 'react-bootstrap'
+import { Button, FormControl, ListGroup } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
-import { Boundary, DisplayAmount, Logo, Select } from '../components'
+import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
 import {
-  useActiveCurrencyInfos,
   useActiveWalletIds,
-  useActiveWalletInfos,
   useBalance,
   useChangeWalletStates,
-  useCurrencyWallets,
   useEnabledTokens,
   useName,
   useSortedCurrencyWallets,
@@ -20,44 +17,41 @@ import {
 } from '../hooks'
 import { useSelectedWallet } from '../SelectedWallet'
 
+const useFilteredWalletIds = (account: EdgeAccount, query: string) => {
+  const activeWalletIds = useActiveWalletIds(account)
+  const currencyWallets = useSortedCurrencyWallets(account)
+  const hiddenIds = currencyWallets
+    .filter(
+      (wallet) =>
+        !wallet.name?.toLowerCase().includes(query.toLowerCase()) &&
+        !wallet.currencyInfo.currencyCode.toLowerCase().includes(query.toLowerCase()) &&
+        !wallet.fiatCurrencyCode.toLowerCase().includes(query.toLowerCase()),
+    )
+    .map(({ id }) => id)
+
+  return activeWalletIds.filter((id) => !hiddenIds.includes(id))
+}
+
 export const ActiveWalletList: React.FC<{
   onSelect: (walletId: string) => any
 }> = ({ onSelect }) => {
   const account = useAccount()
-  const activeWalletInfos = useActiveWalletInfos(account)
   const selectedWallet = useSelectedWallet()
-  const currencyInfos = useActiveCurrencyInfos(account)
-  const [filter, setFilter] = React.useState('none')
+  const [query, setQuery] = React.useState('')
+  const visibleWalletIds = useFilteredWalletIds(account, query)
+  const activeWalletIds = useActiveWalletIds(account)
 
-  return activeWalletInfos.length <= 0 ? (
+  return activeWalletIds.length <= 0 ? (
     <div>No active wallets</div>
   ) : (
     <ListGroup variant={'flush'}>
-      {currencyInfos.length > 1 && (
-        <Select
-          title={'Wallet Types'}
-          options={[
-            { value: 'none', display: '-' },
-            ...currencyInfos.map((currencyInfo) => ({
-              value: currencyInfo.walletType,
-              display: currencyInfo.displayName,
-            })),
-          ]}
-          renderOption={({ value, display }) => (
-            <option value={value} key={value}>
-              {display}
-            </option>
-          )}
-          onSelect={(event) => setFilter(event.currentTarget.value)}
-        />
-      )}
-      {activeWalletInfos
-        .filter(filter === 'none' ? (x) => x : (walletInfo) => walletInfo.type === filter)
-        .map(({ id }) => (
-          <Boundary key={id} suspense={{ fallback: <ListGroup.Item>Loading...</ListGroup.Item> }}>
-            <ActiveWalletRow walletId={id} onSelect={() => onSelect(id)} isSelected={id === selectedWallet.id} />
-          </Boundary>
-        ))}
+      <FormControl placeholder={'Search'} onChange={(event) => setQuery(event.currentTarget.value)} />
+
+      {visibleWalletIds.map((id) => (
+        <Boundary key={id} suspense={{ fallback: <ListGroup.Item>Loading...</ListGroup.Item> }}>
+          <ActiveWalletRow walletId={id} onSelect={() => onSelect(id)} isSelected={id === selectedWallet.id} />
+        </Boundary>
+      ))}
     </ListGroup>
   )
 }
