@@ -2,7 +2,7 @@ import { EdgeAccount, EdgeContext } from 'edge-core-js'
 import React from 'react'
 import { Alert, Button, Card, Form, FormControl, ListGroup } from 'react-bootstrap'
 
-import { Boundary } from '../components'
+import { Boundary, Select } from '../components'
 import { useAccountsWithPinLogin, useLoginMessages, useLoginWithPin } from '../hooks'
 
 export const PinLogin: React.FC<{ context: EdgeContext; onLogin: (account: EdgeAccount) => any }> = ({
@@ -10,16 +10,25 @@ export const PinLogin: React.FC<{ context: EdgeContext; onLogin: (account: EdgeA
   context,
 }) => {
   const accountsWithPinLogin = useAccountsWithPinLogin(context)
+  const [username, setUsername] = React.useState(accountsWithPinLogin[0].username)
   const loginWithPin = useLoginWithPin(context, { onSuccess: onLogin })
 
   return (
     <ListGroup>
+      <Select
+        onSelect={(event) => setUsername(event.currentTarget.value)}
+        title={'Accounts'}
+        options={accountsWithPinLogin}
+        renderOption={(option) => (
+          <option key={option.username} value={option.username}>
+            {option.username}
+          </option>
+        )}
+      />
       {accountsWithPinLogin.length <= 0 ? (
         <Card.Text>------</Card.Text>
       ) : (
-        accountsWithPinLogin.map(({ username }) => (
-          <LocalUserRow loginWithPin={loginWithPin} username={username} key={username} context={context} />
-        ))
+        <LocalUserRow loginWithPin={loginWithPin} username={username} context={context} />
       )}
     </ListGroup>
   )
@@ -42,8 +51,6 @@ const LocalUserRow: React.FC<{
         }}
       >
         <Form.Row>
-          <FormControl type={'username'} readOnly value={username} />
-
           <FormControl
             disabled={status === 'loading'}
             onChange={(event) => {
