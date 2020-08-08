@@ -17,7 +17,7 @@ export const AccountProvider: React.FC = ({ children }) => {
 export const AccountConsumer = EdgeAccountContext.Consumer
 
 const unauthorized = () => {
-  throw new Error('unauthorized')
+  throw new Error('Unauthorized')
 }
 
 export const useAccount = () => React.useContext(EdgeAccountContext) || unauthorized()

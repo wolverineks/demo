@@ -9,7 +9,6 @@ import { fiatInfos } from '../Fiat'
 import { useFiatCurrencyCode, useName, useTokens } from '../hooks'
 import { Disklet } from '../Storage/Disklet'
 import { getTokenInfo } from '../utils'
-import { BalanceList } from './BalanceList'
 import { Request } from './Request'
 import { Send } from './Send'
 import { TransactionList } from './TransactionList'
@@ -21,12 +20,8 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet })
   )
 
   return (
-    <Tabs variant={'pills'} id={'walletTabs'} defaultActiveKey={'balance'} key={wallet.id}>
-      <Tab eventKey={'balance'} title={'Balance'}>
-        <Boundary>
-          <BalanceList wallet={wallet} />
-        </Boundary>
-
+    <Tabs id={'walletTabs'} defaultActiveKey={'history'} key={wallet.id}>
+      <Tab eventKey={'history'} title={'History'}>
         <Boundary>
           <TransactionList wallet={wallet} />
         </Boundary>
@@ -153,40 +148,62 @@ const SetFiatCurrencyCode: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet 
   )
 }
 
-const WalletOptions: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => (
-  <Form>
-    <RenameWallet wallet={wallet} />
-    <SetFiatCurrencyCode wallet={wallet} />
-  </Form>
-)
-
-const DisplayKeys: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
+const PrivateSeed: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const [showPrivateSeed, setShowPrivateSeed] = React.useState(false)
+
+  return (
+    <FormGroup>
+      <FormLabel>Private Seed</FormLabel>
+      <FormControl readOnly value={showPrivateSeed ? wallet.getDisplayPrivateSeed() || '' : ''} />
+      <Button onClick={() => setShowPrivateSeed((x) => !x)}>Show Private Seed</Button>
+    </FormGroup>
+  )
+}
+
+const PublicSeed: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const [showPublicSeed, setShowPublicSeed] = React.useState(false)
 
   return (
-    <Form>
-      <FormGroup>
-        <FormLabel>Private Seed</FormLabel>
-        <FormControl readOnly value={showPrivateSeed ? wallet.getDisplayPrivateSeed() || '' : ''} />
-        <Button onClick={() => setShowPrivateSeed((x) => !x)}>Show Private Seed</Button>
-      </FormGroup>
-
-      <FormGroup>
-        <FormLabel>Public Seed</FormLabel>
-        <FormControl readOnly value={showPublicSeed ? wallet.getDisplayPublicSeed() || '' : ''} />
-        <Button onClick={() => setShowPublicSeed((x) => !x)}>Show Public Seed</Button>
-      </FormGroup>
-    </Form>
+    <FormGroup>
+      <FormLabel>Public Seed</FormLabel>
+      <FormControl readOnly value={showPublicSeed ? wallet.getDisplayPublicSeed() || '' : ''} />
+      <Button onClick={() => setShowPublicSeed((x) => !x)}>Show Public Seed</Button>
+    </FormGroup>
   )
 }
 
 const Settings: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
+  const [query, setQuery] = React.useState('')
+
   return (
     <>
-      <WalletOptions wallet={wallet} />
-      <DisplayKeys wallet={wallet} />
+      <FormControl placeholder={'filter'} onChange={(event) => setQuery(event.currentTarget.value)} />
+
+      <Matcher query={query} match={'rename wallet'}>
+        <RenameWallet wallet={wallet} />
+      </Matcher>
+
+      <Matcher query={query} match={'fiat currency Code'}>
+        <SetFiatCurrencyCode wallet={wallet} />
+      </Matcher>
+
+      <Matcher query={query} match={'private seed'}>
+        <PrivateSeed wallet={wallet} />
+      </Matcher>
+
+      <Matcher query={query} match={'public seed'}>
+        <PublicSeed wallet={wallet} />
+      </Matcher>
+
       <Tokens wallet={wallet} />
     </>
   )
 }
+
+const normalize = (text: string) => text.trim().toLowerCase()
+
+const matches = (query: string, target: string) => normalize(target).includes(normalize(query))
+
+const Matcher: React.FC<{ query: string; match: string }> = ({ children, query, match }) => (
+  <>{matches(query, match) ? children : null}</>
+)

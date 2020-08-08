@@ -1,84 +1,82 @@
 import React from 'react'
-import { Tab, Tabs } from 'react-bootstrap'
+import { Button, Col, FormControl, Row } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
 import { Boundary } from '../components'
 import { WalletInfo } from '../EdgeCurrencyWallet/WalletInfo'
 import { useActiveWalletIds } from '../hooks'
-import { fallbackRender, useSelectWallet, useSelectedWallet } from '../SelectedWallet'
+import { Route, useRoute, useSetRoute } from '../route'
+import { SearchQueryProvider, useSetSearchQuery } from '../search'
+import { useSelectWallet, useSelectedWallet } from '../SelectedWallet'
 import { Settings } from '../Settings/Settings'
-import { Storage } from '../Storage'
-import { ActiveWalletList, ArchivedWalletList, DeletedWalletList } from '../WalletLists/'
-import { CreateWallet } from './CreateWallet'
+import { ActiveWalletList, ArchivedWalletList, DeletedWalletList } from '../WalletLists'
+import { CreateWallet } from '.'
 
 export const AccountInfo = () => {
-  const [tab, setTab] = React.useState('wallets')
-  const selectWallet = useSelectWallet()
+  const route = useRoute()
   const selectedWallet = useSelectedWallet()
-  const activeWalletIds = useActiveWalletIds(useAccount())
 
   return (
-    <Tabs
-      id={'accountTabs'}
-      defaultActiveKey={'wallets'}
-      activeKey={tab}
-      onSelect={(tab) => tab && setTab(tab)}
-      transition={false}
-    >
-      <Tab eventKey={'wallets'} title={'Wallets'}>
-        <Tabs variant={'pills'} id={'walletLists'} defaultActiveKey={'active'} transition={false}>
-          <Tab eventKey={'active'} title={'Active'}>
-            <Boundary error={{ fallbackRender }}>
-              <ActiveWalletList
-                onSelect={(walletId: string) => {
-                  selectWallet(walletId)
-                  setTab('wallet')
-                }}
-              />
-            </Boundary>
-          </Tab>
+    <Row>
+      <Col xl={3} lg={3} md={3} sm={3} xs={0}>
+        <SearchQueryProvider>
+          <Inner />
+        </SearchQueryProvider>
+      </Col>
 
-          <Tab eventKey={'archived'} title={'Archived'}>
+      <Col xl={6} lg={9} md={9} sm={9} xs={9}>
+        {route === 'account' ? (
+          selectedWallet ? (
             <Boundary>
-              <ArchivedWalletList />
+              <WalletInfo wallet={selectedWallet} />
             </Boundary>
-          </Tab>
-
-          <Tab eventKey={'deleted'} title={'Deleted'}>
-            <Boundary>
-              <DeletedWalletList />
-            </Boundary>
-          </Tab>
-
-          <Tab eventKey={'create'} title={'Create'}>
-            <Boundary>
-              <CreateWallet key={activeWalletIds.length} />
-            </Boundary>
-          </Tab>
-        </Tabs>
-      </Tab>
-
-      <Tab eventKey={'wallet'} title={'Wallet'}>
-        {selectedWallet ? (
-          <Boundary>
-            <WalletInfo wallet={selectedWallet} />
-          </Boundary>
+          ) : (
+            <div>No SelectedWallet</div>
+          )
+        ) : route === 'settings' ? (
+          <SearchQueryProvider>
+            <Settings />
+          </SearchQueryProvider>
         ) : (
-          <div>No SelectedWallet</div>
+          <div>404</div>
         )}
-      </Tab>
+      </Col>
+    </Row>
+  )
+}
 
-      <Tab eventKey={'storage'} title={'Storage'}>
-        <Boundary>
-          <Storage />
-        </Boundary>
-      </Tab>
+const Inner = () => {
+  const route = useRoute()
+  const setRoute = useSetRoute()
+  const activeWalletIds = useActiveWalletIds(useAccount())
+  const selectWallet = useSelectWallet()
+  const setSearchQuery = useSetSearchQuery()
 
-      <Tab eventKey={'settings'} title={'Settings'}>
-        <Boundary>
-          <Settings />
-        </Boundary>
-      </Tab>
-    </Tabs>
+  return (
+    <div>
+      <FormControl placeholder={'Search'} onChange={(event) => setSearchQuery(event.currentTarget.value)} />
+      <Boundary>
+        <ActiveWalletList
+          onSelect={(walletId: string) => {
+            selectWallet(walletId)
+            setRoute(Route.account)
+          }}
+        />
+      </Boundary>
+
+      <Boundary>
+        <ArchivedWalletList />
+      </Boundary>
+
+      <Boundary>
+        <DeletedWalletList />
+      </Boundary>
+
+      <Boundary>
+        <CreateWallet key={activeWalletIds.length} />
+      </Boundary>
+
+      <Button onClick={() => setRoute(Route.settings)}>Settings</Button>
+    </div>
   )
 }

@@ -9,16 +9,15 @@ import { CreateAccount } from './CreateAccount'
 import { PasswordLogin } from './PasswordLogin'
 import { PinLogin } from './PinLogin'
 
-export const Login: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
+export const Login: React.FC = () => {
   const context = useEdgeContext()
   const setAccount = useSetAccount()
   const _onLogin = (account: EdgeAccount) => {
     setAccount(account)
-    onLogin()
   }
 
   return (
-    <Tabs id={'loginCreateAccountTabs'} defaultActiveKey={'login'} transition={false}>
+    <Tabs id={'loginCreateAccountTabs'} defaultActiveKey={'login'}>
       <Tab eventKey={'login'} title={'Login'}>
         <Boundary>
           <PasswordLogin onLogin={_onLogin} context={context} />

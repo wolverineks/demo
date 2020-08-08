@@ -1,7 +1,7 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
 import { useOnNewTransactions } from 'edge-react-hooks'
 import React from 'react'
-import { Button, FormControl, ListGroup } from 'react-bootstrap'
+import { Accordion, Button, ListGroup } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo } from '../components'
@@ -15,6 +15,7 @@ import {
   useSortedCurrencyWallets,
   useWallet,
 } from '../hooks'
+import { useSearchQuery } from '../search'
 import { useSelectedWallet } from '../SelectedWallet'
 import { useFilteredWalletIds } from './filter'
 
@@ -23,23 +24,27 @@ export const ActiveWalletList: React.FC<{
 }> = ({ onSelect }) => {
   const account = useAccount()
   const selectedWallet = useSelectedWallet()
-  const [query, setQuery] = React.useState('')
+  const searchQuery = useSearchQuery()
   const activeWalletIds = useActiveWalletIds(account)
   const currencyWallets = useSortedCurrencyWallets(account)
-  const visibleWalletIds = useFilteredWalletIds(currencyWallets, activeWalletIds, query)
+  const visibleWalletIds = useFilteredWalletIds(currencyWallets, activeWalletIds, searchQuery)
 
-  return activeWalletIds.length <= 0 ? (
-    <div>No active wallets</div>
-  ) : (
-    <ListGroup variant={'flush'}>
-      <FormControl placeholder={'Search'} onChange={(event) => setQuery(event.currentTarget.value)} />
-      {visibleWalletIds.length <= 0 && <div>No Matching wallets</div>}
-      {visibleWalletIds.map((id) => (
-        <Boundary key={id} suspense={{ fallback: <ListGroup.Item>Loading...</ListGroup.Item> }}>
-          <ActiveWalletRow walletId={id} onSelect={() => onSelect(id)} isSelected={id === selectedWallet.id} />
-        </Boundary>
-      ))}
-    </ListGroup>
+  return (
+    <Accordion defaultActiveKey={'0'}>
+      <Accordion.Toggle as={ListGroup.Item} eventKey={'0'}>
+        Active Wallets ({visibleWalletIds.length})
+      </Accordion.Toggle>
+
+      <Accordion.Collapse eventKey={'0'}>
+        <ListGroup variant={'flush'}>
+          {visibleWalletIds.map((id) => (
+            <Boundary key={id} suspense={{ fallback: <ListGroup.Item>Loading...</ListGroup.Item> }}>
+              <ActiveWalletRow walletId={id} onSelect={() => onSelect(id)} isSelected={id === selectedWallet.id} />
+            </Boundary>
+          ))}
+        </ListGroup>
+      </Accordion.Collapse>
+    </Accordion>
   )
 }
 
@@ -58,7 +63,7 @@ const ActiveWalletRow: React.FC<{
   )
 
   return (
-    <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
+    <>
       <ListGroup.Item variant={isSelected ? 'primary' : undefined}>
         <span onClick={() => onSelect()} className={'float-left'}>
           <Logo currencyCode={currencyCode} /> {name}{' '}
@@ -74,7 +79,7 @@ const ActiveWalletRow: React.FC<{
       </ListGroup.Item>
 
       <EnabledTokensList wallet={wallet} />
-    </ListGroup>
+    </>
   )
 }
 
@@ -83,11 +88,11 @@ const WalletOptions = ({ walletId }: { walletId: string }) => {
 
   return (
     <span className={'float-right'}>
-      <Button variant={'danger'} disabled={status === 'loading'} onClick={() => deleteWallet(walletId)}>
-        Delete
-      </Button>
       <Button variant={'warning'} disabled={status === 'loading'} onClick={() => archiveWallet(walletId)}>
-        Archive
+        A
+      </Button>
+      <Button variant={'danger'} disabled={status === 'loading'} onClick={() => deleteWallet(walletId)}>
+        X
       </Button>
     </span>
   )

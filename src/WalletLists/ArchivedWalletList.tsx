@@ -1,36 +1,39 @@
 import React from 'react'
-import { Button, FormControl, ListGroup } from 'react-bootstrap'
+import { Accordion, Button, ListGroup } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
 import { useArchivedWalletIds, useChangeWalletStates, useInactiveWallets, useReadInactiveWallet } from '../hooks'
 import { InactiveWallets } from '../InactiveWallets'
+import { useSearchQuery } from '../search'
 import { FallbackRender } from './FallbackRender'
 import { useFilteredWalletIds } from './filter'
 
 export const ArchivedWalletList: React.FC = () => {
   const archivedWalletIds = useArchivedWalletIds(useAccount())
-  const [query, setQuery] = React.useState('')
+  const searchQuery = useSearchQuery()
   const inactiveWallets = useInactiveWallets(useAccount())
-  const visibleWalletIds = useFilteredWalletIds(inactiveWallets, archivedWalletIds, query)
+  const visibleWalletIds = useFilteredWalletIds(inactiveWallets, archivedWalletIds, searchQuery)
 
-  return archivedWalletIds.length <= 0 ? (
-    <div>No archived wallets</div>
-  ) : (
-    <>
+  return (
+    <Accordion>
       <InactiveWallets />
-      <ListGroup variant={'flush'}>
-        <FormControl placeholder={'Search'} onChange={(event) => setQuery(event.currentTarget.value)} />
-        {visibleWalletIds.length <= 0 && <div>No Matching wallets</div>}
-        {visibleWalletIds.map((id) => (
-          // eslint-disable-next-line react/display-name
-          <Boundary key={id} error={{ fallbackRender: () => <FallbackRender walletId={id} /> }}>
-            <WalletRow walletId={id} />
-          </Boundary>
-        ))}
-      </ListGroup>
-    </>
+      <Accordion.Toggle as={ListGroup.Item} eventKey={'0'}>
+        Archived Wallets ({visibleWalletIds.length})
+      </Accordion.Toggle>
+
+      <Accordion.Collapse eventKey={'0'}>
+        <ListGroup variant={'flush'}>
+          {visibleWalletIds.map((id) => (
+            // eslint-disable-next-line react/display-name
+            <Boundary key={id} error={{ fallbackRender: () => <FallbackRender walletId={id} /> }}>
+              <WalletRow walletId={id} />
+            </Boundary>
+          ))}
+        </ListGroup>
+      </Accordion.Collapse>
+    </Accordion>
   )
 }
 
@@ -39,23 +42,21 @@ const WalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
   const balance = inactiveWallet.balances[inactiveWallet.currencyInfo.currencyCode]
 
   return (
-    <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
-      <ListGroup.Item>
-        <span className={'float-left'}>
-          <Logo currencyCode={inactiveWallet.currencyInfo.currencyCode} /> {inactiveWallet.name}{' '}
-          <DisplayAmount nativeAmount={balance} currencyCode={inactiveWallet.currencyInfo.currencyCode} /> -{' '}
-          <FiatAmount
-            nativeAmount={balance}
-            fromCurrencyCode={inactiveWallet.currencyInfo.currencyCode}
-            fiatCurrencyCode={inactiveWallet.fiatCurrencyCode}
-          />
-        </span>
+    <ListGroup.Item>
+      <span className={'float-left'}>
+        <Logo currencyCode={inactiveWallet.currencyInfo.currencyCode} /> {inactiveWallet.name}{' '}
+        <DisplayAmount nativeAmount={balance} currencyCode={inactiveWallet.currencyInfo.currencyCode} /> -{' '}
+        <FiatAmount
+          nativeAmount={balance}
+          fromCurrencyCode={inactiveWallet.currencyInfo.currencyCode}
+          fiatCurrencyCode={inactiveWallet.fiatCurrencyCode}
+        />
+      </span>
 
-        <span className={'float-right'}>
-          <WalletOptions walletId={inactiveWallet.id} />
-        </span>
-      </ListGroup.Item>
-    </ListGroup>
+      <span className={'float-right'}>
+        <WalletOptions walletId={inactiveWallet.id} />
+      </span>
+    </ListGroup.Item>
   )
 }
 
@@ -65,10 +66,10 @@ const WalletOptions = ({ walletId }: { walletId: string }) => {
   return (
     <>
       <Button variant={'warning'} disabled={status === 'loading'} onClick={() => activateWallet(walletId)}>
-        Activate
+        A
       </Button>
       <Button variant={'danger'} disabled={status === 'loading'} onClick={() => deleteWallet(walletId)}>
-        Delete
+        X
       </Button>
       {error && <DisplayError error={error} />}
     </>

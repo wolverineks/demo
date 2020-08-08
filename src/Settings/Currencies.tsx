@@ -1,10 +1,11 @@
 import { EdgeCurrencyInfo, EdgeDenomination, EdgeMetaToken } from 'edge-core-js'
 import React from 'react'
-import { ListGroup, ListGroupItem } from 'react-bootstrap'
+import { FormControl, ListGroup, ListGroupItem } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
 import { Boundary, Logo } from '../components'
 import { useActiveCurrencyInfos, useActiveTokenInfos, useDisplayDenomination } from '../hooks'
+import { useSearchQuery, useSetSearchQuery } from '../search'
 
 const normalize = (text: string) => text.trim().toLowerCase()
 
@@ -18,9 +19,13 @@ export const Currencies: React.FC<{ query: string }> = ({ query }) => {
   const currencyInfos = useActiveCurrencyInfos(useAccount())
   const tokenInfos = useActiveTokenInfos(useAccount())
   const visibleSettings = [...currencyInfos, ...tokenInfos].filter(matches(query))
+  const setSearchQuery = useSetSearchQuery()
+  const searchQuery = useSearchQuery()
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
+      <FormControl placeholder={'Search'} onChange={(event) => setSearchQuery(event.currentTarget.value)} />
+
       {visibleSettings.map((currencyInfo) => (
         <Boundary key={currencyInfo.currencyCode}>
           <CurrencySetting info={currencyInfo} />
