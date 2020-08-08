@@ -25,7 +25,7 @@ export const Edge: React.FC = ({ children }) => {
     <ReactQueryConfigProvider
       config={{
         queries: {
-          cacheTime: 0,
+          cacheTime: Infinity,
           staleTime: Infinity,
           retry: false,
           suspense: true,

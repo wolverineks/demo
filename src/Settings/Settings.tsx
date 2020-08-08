@@ -1,45 +1,71 @@
+/* eslint-disable react/display-name */
 import React from 'react'
-import { ListGroup } from 'react-bootstrap'
-import { ErrorBoundary } from 'react-error-boundary'
+import { FormControl, ListGroup } from 'react-bootstrap'
 
 import { AutoLogout } from '../AutoLogout'
+import { Boundary } from '../components'
 import { DefaultFiat } from '../Fiat'
 import { OTP } from '../OTP'
 import { PinLogin } from '../PinLogin'
 import { Currencies } from './Currencies'
 
+const normalize = (text: string) => text.trim().toLowerCase()
+
+const matches = (query: string, target: string) => normalize(target).includes(normalize(query))
+
 export const Settings = () => {
+  const [query, setQuery] = React.useState('')
+
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
-      <ErrorBoundary fallbackRender={({ error }) => <div>Error: {error?.message}</div>}>
-        <React.Suspense fallback={<div>OTP loading...</div>}>
+      <FormControl placeholder={'Search'} onChange={(event) => setQuery(event.currentTarget.value)} />
+
+      <Matcher query={query} match={'otp'}>
+        <Boundary
+          error={{ fallbackRender: ({ error }) => <div>Error: {error?.message}</div> }}
+          suspense={{ fallback: <div>OTP loading...</div> }}
+        >
           <OTP />
-        </React.Suspense>
-      </ErrorBoundary>
+        </Boundary>
+      </Matcher>
 
-      <ErrorBoundary fallbackRender={({ error }) => <div>Error: {error?.message}</div>}>
-        <React.Suspense fallback={<div>AutoLogout loading...</div>}>
+      <Matcher query={query} match="autologout">
+        <Boundary
+          error={{ fallbackRender: ({ error }) => <div>Error: {error?.message}</div> }}
+          suspense={{ fallback: <div>AutoLogout loading...</div> }}
+        >
           <AutoLogout />
-        </React.Suspense>
-      </ErrorBoundary>
+        </Boundary>
+      </Matcher>
 
-      <ErrorBoundary fallbackRender={({ error }) => <div>Error: {error?.message}</div>}>
-        <React.Suspense fallback={<div>Default Fiat loading...</div>}>
+      <Matcher query={query} match="default fiat">
+        <Boundary
+          error={{ fallbackRender: ({ error }) => <div>Error: {error?.message}</div> }}
+          suspense={{ fallback: <div>Default Fiat loading...</div> }}
+        >
           <DefaultFiat />
-        </React.Suspense>
-      </ErrorBoundary>
+        </Boundary>
+      </Matcher>
 
-      <ErrorBoundary fallbackRender={({ error }) => <div>Error: {error?.message}</div>}>
-        <React.Suspense fallback={<div>PinLogin loading...</div>}>
+      <Matcher query={query} match="pinLogin">
+        <Boundary
+          error={{ fallbackRender: ({ error }) => <div>Error: {error?.message}</div> }}
+          suspense={{ fallback: <div>PinLogin loading...</div> }}
+        >
           <PinLogin />
-        </React.Suspense>
-      </ErrorBoundary>
+        </Boundary>
+      </Matcher>
 
-      <ErrorBoundary fallbackRender={({ error }) => <div>Error: {error?.message}</div>}>
-        <React.Suspense fallback={<div>Currencies loading...</div>}>
-          <Currencies />
-        </React.Suspense>
-      </ErrorBoundary>
+      <Boundary
+        error={{ fallbackRender: ({ error }) => <div>Error: {error?.message}</div> }}
+        suspense={{ fallback: <div>Currencies loading...</div> }}
+      >
+        <Currencies query={query} />
+      </Boundary>
     </ListGroup>
   )
 }
+
+const Matcher: React.FC<{ query: string; match: string }> = ({ children, query, match }) => (
+  <>{matches(query, match) ? children : null}</>
+)

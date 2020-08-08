@@ -1,4 +1,4 @@
-import { EdgeAccount, EdgeCurrencyWallet } from 'edge-core-js'
+import { EdgeCurrencyWallet } from 'edge-core-js'
 import { useOnNewTransactions } from 'edge-react-hooks'
 import React from 'react'
 import { Button, FormControl, ListGroup } from 'react-bootstrap'
@@ -16,21 +16,7 @@ import {
   useWallet,
 } from '../hooks'
 import { useSelectedWallet } from '../SelectedWallet'
-
-const useFilteredWalletIds = (account: EdgeAccount, query: string) => {
-  const activeWalletIds = useActiveWalletIds(account)
-  const currencyWallets = useSortedCurrencyWallets(account)
-  const hiddenIds = currencyWallets
-    .filter(
-      (wallet) =>
-        !wallet.name?.toLowerCase().includes(query.toLowerCase()) &&
-        !wallet.currencyInfo.currencyCode.toLowerCase().includes(query.toLowerCase()) &&
-        !wallet.fiatCurrencyCode.toLowerCase().includes(query.toLowerCase()),
-    )
-    .map(({ id }) => id)
-
-  return activeWalletIds.filter((id) => !hiddenIds.includes(id))
-}
+import { useFilteredWalletIds } from './filter'
 
 export const ActiveWalletList: React.FC<{
   onSelect: (walletId: string) => any
@@ -38,15 +24,16 @@ export const ActiveWalletList: React.FC<{
   const account = useAccount()
   const selectedWallet = useSelectedWallet()
   const [query, setQuery] = React.useState('')
-  const visibleWalletIds = useFilteredWalletIds(account, query)
   const activeWalletIds = useActiveWalletIds(account)
+  const currencyWallets = useSortedCurrencyWallets(account)
+  const visibleWalletIds = useFilteredWalletIds(currencyWallets, activeWalletIds, query)
 
   return activeWalletIds.length <= 0 ? (
     <div>No active wallets</div>
   ) : (
     <ListGroup variant={'flush'}>
       <FormControl placeholder={'Search'} onChange={(event) => setQuery(event.currentTarget.value)} />
-
+      {visibleWalletIds.length <= 0 && <div>No Matching wallets</div>}
       {visibleWalletIds.map((id) => (
         <Boundary key={id} suspense={{ fallback: <ListGroup.Item>Loading...</ListGroup.Item> }}>
           <ActiveWalletRow walletId={id} onSelect={() => onSelect(id)} isSelected={id === selectedWallet.id} />

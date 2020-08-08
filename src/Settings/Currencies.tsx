@@ -6,53 +6,42 @@ import { useAccount } from '../auth'
 import { Boundary, Logo } from '../components'
 import { useActiveCurrencyInfos, useActiveTokenInfos, useDisplayDenomination } from '../hooks'
 
-export const Currencies = () => {
+const normalize = (text: string) => text.trim().toLowerCase()
+
+const matches = (query: string) => (info: EdgeCurrencyInfo | EdgeMetaToken) =>
+  normalize(info.currencyCode).includes(normalize(query)) ||
+  (isToken(info)
+    ? normalize(info.currencyName).includes(normalize(query))
+    : normalize(info.displayName).includes(normalize(query)))
+
+export const Currencies: React.FC<{ query: string }> = ({ query }) => {
   const currencyInfos = useActiveCurrencyInfos(useAccount())
   const tokenInfos = useActiveTokenInfos(useAccount())
+  const visibleSettings = [...currencyInfos, ...tokenInfos].filter(matches(query))
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
-      {currencyInfos.map((currencyInfo) => (
+      {visibleSettings.map((currencyInfo) => (
         <Boundary key={currencyInfo.currencyCode}>
-          <CurrencySetting currencyInfo={currencyInfo} />
-        </Boundary>
-      ))}
-
-      {tokenInfos.map((tokenInfo) => (
-        <Boundary key={tokenInfo.currencyCode}>
-          <TokenSetting tokenInfo={tokenInfo} />
+          <CurrencySetting info={currencyInfo} />
         </Boundary>
       ))}
     </ListGroup>
   )
 }
 
-const CurrencySetting: React.FC<{ currencyInfo: EdgeCurrencyInfo }> = ({ currencyInfo }) => {
-  const { displayName, denominations, currencyCode } = currencyInfo
-  const [denomination, write] = useDisplayDenomination(useAccount(), currencyCode)
+const isToken = (info: EdgeCurrencyInfo | EdgeMetaToken): info is EdgeMetaToken => (info as any).currencyName != null
+
+const CurrencySetting: React.FC<{ info: EdgeCurrencyInfo | EdgeMetaToken }> = ({ info }) => {
+  const [denomination, write] = useDisplayDenomination(useAccount(), info.currencyCode)
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       <ListGroupItem>
-        <Logo currencyCode={currencyCode} />
-        {displayName} - {currencyCode}
+        <Logo currencyCode={info.currencyCode} />
+        {isToken(info) ? info.currencyName : info.displayName} - {info.currencyCode}
       </ListGroupItem>
-      <Denominations denominations={denominations} onSelect={write} selectedDenomination={denomination} />
-    </ListGroup>
-  )
-}
-
-const TokenSetting: React.FC<{ tokenInfo: EdgeMetaToken }> = ({ tokenInfo }) => {
-  const { currencyName, currencyCode, denominations } = tokenInfo
-  const [denomination, write] = useDisplayDenomination(useAccount(), tokenInfo.currencyCode)
-
-  return (
-    <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
-      <ListGroupItem>
-        <Logo currencyCode={currencyCode} />
-        {currencyName} - {currencyCode} (token)
-      </ListGroupItem>
-      <Denominations denominations={denominations} onSelect={write} selectedDenomination={denomination} />
+      <Denominations denominations={info.denominations} onSelect={write} selectedDenomination={denomination} />
     </ListGroup>
   )
 }

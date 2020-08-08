@@ -40,12 +40,12 @@ export const useAccountsWithPinLogin = (context: EdgeContext) =>
 export const useLoginMessages = (
   context: EdgeContext,
   username: string,
-  config?: QueryConfig<{ otpResetPending: boolean; recovery2Corrupt: boolean }, unknown>,
+  config?: QueryConfig<{ otpResetPending: boolean; recovery2Corrupt: boolean }>,
 ) =>
   useQuery({
     queryKey: ['loginMessages'],
     queryFn: () => context.fetchLoginMessages().then((loginMessages) => loginMessages[username] || []),
-    config: { suspense: true, cacheTime: 0, staleTime: Infinity, ...config },
+    config: { ...config },
   }).data!
 
 // CREATE ACCOUNT
@@ -79,11 +79,11 @@ export const useHiddenWalletIds = (account: EdgeAccount) => useWatch(account, 'h
 export const useOtpResetDate = (account: EdgeAccount) => useWatch(account, 'otpResetDate')
 export const useLoggedIn = (account: EdgeAccount) => useWatch(account, 'loggedIn')
 
-export const useActiveWalletIds_optimisticUpdates = (account: EdgeAccount) => {
+export const useActiveWalletIds_optimisticUpdates = (account: EdgeAccount, config?: QueryConfig<string[]>) => {
   const { data, refetch } = useQuery({
     queryKey: [account.username, 'activeWalletIds'],
     queryFn: () => Promise.resolve(account.activeWalletIds),
-    config: { initialData: account.activeWalletIds, initialStale: true },
+    config: { initialData: account.activeWalletIds, initialStale: true, ...config },
   })
 
   useWatch(account, 'activeWalletIds', refetch)
@@ -91,11 +91,11 @@ export const useActiveWalletIds_optimisticUpdates = (account: EdgeAccount) => {
   return data!
 }
 
-export const useArchivedWalletIds_optimisticUpdates = (account: EdgeAccount) => {
+export const useArchivedWalletIds_optimisticUpdates = (account: EdgeAccount, config?: QueryConfig<string[]>) => {
   const { data, refetch } = useQuery({
     queryKey: [account.username, 'archivedWalletIds'],
     queryFn: () => Promise.resolve(account.archivedWalletIds),
-    config: { initialData: account.archivedWalletIds, initialStale: true },
+    config: { initialData: account.archivedWalletIds, initialStale: true, ...config },
   })
 
   useWatch(account, 'archivedWalletIds', refetch)
@@ -103,13 +103,13 @@ export const useArchivedWalletIds_optimisticUpdates = (account: EdgeAccount) => 
   return data!
 }
 
-export const useDeletedWalletIds_optimisticUpdates = (account: EdgeAccount) => {
+export const useDeletedWalletIds_optimisticUpdates = (account: EdgeAccount, config?: QueryConfig<string[]>) => {
   const deletedWalletIds = account.allKeys.filter(({ deleted }) => deleted).map(({ id }) => id)
 
   const { data, refetch } = useQuery({
     queryKey: [account.username, 'deletedWalletIds'],
     queryFn: () => Promise.resolve(deletedWalletIds),
-    config: { initialData: deletedWalletIds, initialStale: true },
+    config: { initialData: deletedWalletIds, initialStale: true, ...config },
   })
 
   useWatch(account, 'archivedWalletIds', refetch)
@@ -117,11 +117,11 @@ export const useDeletedWalletIds_optimisticUpdates = (account: EdgeAccount) => {
   return data!
 }
 
-export const useOtpKey = (account: EdgeAccount) => {
+export const useOtpKey = (account: EdgeAccount, config?: QueryConfig<string>) => {
   const { data, refetch } = useQuery({
     queryKey: [account.username, 'otpKey'],
-    queryFn: () => Promise.resolve(account.otpKey),
-    config: { initialData: account.otpKey },
+    queryFn: () => Promise.resolve(account.otpKey || ''),
+    config: { initialData: account.otpKey, ...config },
   })
 
   useWatch(account, 'otpKey', refetch)
@@ -218,7 +218,7 @@ export const useWallet = (account: EdgeAccount, walletId: string, config?: Query
   useQuery({
     queryKey: [walletId, 'wallet'],
     queryFn: () => account.waitForCurrencyWallet(walletId),
-    config: { suspense: true, ...config },
+    config: { ...config },
   }).data!
 
 // ACTIVE WALLET INFOS
@@ -243,7 +243,7 @@ export const useReadPinLoginEnabled = (context: EdgeContext, account: EdgeAccoun
   useQuery({
     queryKey: [account.username, 'pinLoginEnabled'],
     queryFn: () => context.pinLoginEnabled(account.username),
-    config: { suspense: true, ...config },
+    config: { ...config },
   })
 
 export const useWritePinLoginEnabled = (account: EdgeAccount) =>
@@ -268,7 +268,7 @@ export const useBalance = (wallet: EdgeCurrencyWallet, currencyCode: string) => 
   const { refetch, data } = useQuery({
     queryKey: [wallet.id, 'balance', currencyCode],
     queryFn: () => waitForBalance(wallet, currencyCode),
-    config: { suspense: true, cacheTime: 0, staleTime: Infinity },
+    config: {},
   })
 
   useWatch(wallet, 'balances', () => refetch())
@@ -334,7 +334,7 @@ export const useReceiveAddressAndEncodeUri = ({
 
       return Promise.all([receiveAddress, uri]).then(([receiveAddress, uri]) => ({ receiveAddress, uri }))
     },
-    config: { staleTime: Infinity, cacheTime: 0, suspense: false, ...config },
+    config: { suspense: false, ...config },
   })
 
 // ENABLED TOKENS
@@ -346,7 +346,7 @@ export const useEnabledTokens = (wallet: EdgeCurrencyWallet, config?: QueryConfi
         .getEnabledTokens()
         // WTF? Why is the parent currencyCode in enabledTokens?
         .then((tokens) => tokens.filter((tokenCode) => tokenCode !== wallet.currencyInfo.currencyCode)),
-    config: { suspense: true, ...config },
+    config: { ...config },
   }).data!
 
 export const useEnableToken = (wallet: EdgeCurrencyWallet) =>
@@ -378,7 +378,7 @@ export const useTransactions = (wallet: EdgeCurrencyWallet, config?: QueryConfig
   const { data, refetch } = useQuery({
     queryKey: [wallet.id, 'transactions'],
     queryFn: () => wallet.getTransactions(),
-    config: { suspense: true, staleTime: Infinity, cacheTime: 0, ...config },
+    config: { ...config },
   })
 
   useOnNewTransactions(
@@ -398,7 +398,7 @@ export const useTransactionCount = (
   const { data, refetch } = useQuery({
     queryKey: [wallet.id, 'transactionCount', options],
     queryFn: () => wallet.getNumTransactions(options),
-    config: { suspense: false, staleTime: Infinity, cacheTime: 0, ...config },
+    config: { suspense: false, ...config },
   })
 
   useOnNewTransactions(
@@ -414,7 +414,7 @@ export const useMaxSpendable = (wallet: EdgeCurrencyWallet, spendInfo: EdgeSpend
   useQuery({
     queryKey: [wallet.id, 'maxSpendable', spendInfo],
     queryFn: () => wallet.getMaxSpendable(spendInfo),
-    config: { suspense: false, staleTime: Infinity, cacheTime: 0, retry: 0, ...config },
+    config: { suspense: false, ...config },
   })
 
 // MAX TRANSACTION
@@ -444,13 +444,7 @@ export const useNewTransaction = (
   useQuery({
     queryKey: [wallet.id, 'transaction', spendInfo],
     queryFn: () => wallet.makeSpend(spendInfo),
-    config: {
-      suspense: false,
-      staleTime: Infinity,
-      cacheTime: 0,
-      retry: 0,
-      ...config,
-    },
+    config: { suspense: false, ...config },
   })
 
 // CONVERSIONS
@@ -566,7 +560,7 @@ export const useReadAutoLogout = (account: EdgeAccount, config?: QueryConfig<Aut
         .getItem('autoLogout', 'autoLogout.json')
         .then(JSON.parse)
         .catch(() => defaultAutoLogout) as Promise<AutoLogoutSetting>,
-    config: { suspense: true, cacheTime: 0, staleTime: Infinity, ...config },
+    config: { ...config },
   })
 
 export const useWriteAutoLogout = (account: EdgeAccount) =>
@@ -590,7 +584,7 @@ const useReadDefaultFiatCurrencyCode = (account: EdgeAccount, config?: QueryConf
         .getItem('defaultFiatCurrencyCode', 'defaultFiatCurrencyCode.json')
         .then(JSON.parse)
         .catch(() => defaultFiatCurrencyCode) as Promise<string>,
-    config: { suspense: true, ...config },
+    config: { ...config },
   })
 
 export const useWriteDefaultFiatCurrencyCode = (account: EdgeAccount) =>
@@ -626,7 +620,7 @@ export const useReadDisplayDenominationMultiplier = (
       account.dataStore
         .getItem('displayDenominationMultiplier', currencyInfo.currencyCode)
         .catch(() => currencyInfo.denominations[0]),
-    config: { suspense: true, ...config },
+    config: { ...config },
   })
 
 export const useWriteDisplayDenominationMultiplier = (
@@ -699,7 +693,7 @@ export const useExchangeRate = (
   useQuery({
     queryKey: ['exchangeRate', { fromCurrencyCode, toCurrencyCode }],
     queryFn: () => account.rateCache.convertCurrency(fromCurrencyCode, toCurrencyCode),
-    config: { suspense: true, cacheTime: 0, staleTime: 0, ...config },
+    config: { ...config },
   }).data!
 
 export const useConvertedAmount = (
@@ -719,7 +713,7 @@ export const useConvertedAmount = (
   return useQuery({
     queryKey: [{ fromCurrencyCode, toCurrencyCode, amount: exchangeAmount }],
     queryFn: () => account.rateCache.convertCurrency(fromCurrencyCode, toCurrencyCode, exchangeAmount),
-    config: { suspense: true, refetchInterval: 10000, ...config },
+    config: { ...config },
   }).data!
 }
 
@@ -744,7 +738,7 @@ export const useFiatAmount = (
   return useQuery({
     queryKey: [{ fromCurrencyCode, fiatCurrencyCode, exchangeAmount }],
     queryFn: () => account.rateCache.convertCurrency(fromCurrencyCode, fiatCurrencyCode, exchangeAmount),
-    config: { suspense: true, refetchInterval: 10000, ...config },
+    config: { ...config },
   }).data!
 }
 
@@ -767,7 +761,7 @@ export const useNativeAmount = (
   const exchangeAmount = useQuery({
     queryKey: [{ fiatCurrencyCode, toCurrencyCode, fiatAmount }],
     queryFn: () => account.rateCache.convertCurrency(fiatCurrencyCode, toCurrencyCode, fiatAmount),
-    config: { suspense: true, ...config },
+    config: { ...config },
   }).data!
 
   const nativeAmount = denominatedToNative({ denomination, amount: String(exchangeAmount) })
@@ -776,11 +770,23 @@ export const useNativeAmount = (
 }
 
 // INACTIVE WALLETS
+export const useInactiveWallets = (account: EdgeAccount) => {
+  const [, rerender] = React.useState({})
+  React.useEffect(() => {
+    queryCache.subscribe((_queryCache, query) => query?.queryKey[1] === 'inactiveWallet' && rerender({}))
+  }, [account])
+
+  return queryCache
+    .getQueries<InactiveWallet>(({ queryKey }) => queryKey[1] === 'inactiveWallet')
+    .map((query) => query.state.data!)
+    .filter(Boolean)
+}
+
 export const useReadInactiveWallet = (account: EdgeAccount, walletId: string, config?: QueryConfig<InactiveWallet>) =>
   useQuery({
     queryKey: [walletId, 'inactiveWallet'],
     queryFn: () => account.dataStore.getItem('inactiveWallets', walletId).then(JSON.parse) as Promise<InactiveWallet>,
-    config: { suspense: true, cacheTime: 0, ...config },
+    config: { ...config },
   }).data!
 
 export const useWriteInactiveWallet = (account: EdgeAccount, wallet: EdgeCurrencyWallet) => {

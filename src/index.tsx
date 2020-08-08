@@ -8,7 +8,7 @@ import { App } from './App'
 import * as serviceWorker from './serviceWorker'
 
 if (process.env.NODE_ENV === 'development') {
-  hijackEffects()
+  hijackEffects({ timeLimit: 3000, callCount: 100 })
 }
 
 ReactDOM.render(

@@ -1,15 +1,19 @@
 import React from 'react'
-import { Button, ListGroup } from 'react-bootstrap'
+import { Button, FormControl, ListGroup } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
-import { useArchivedWalletIds, useChangeWalletStates, useReadInactiveWallet } from '../hooks'
+import { useArchivedWalletIds, useChangeWalletStates, useInactiveWallets, useReadInactiveWallet } from '../hooks'
 import { InactiveWallets } from '../InactiveWallets'
 import { FallbackRender } from './FallbackRender'
+import { useFilteredWalletIds } from './filter'
 
 export const ArchivedWalletList: React.FC = () => {
   const archivedWalletIds = useArchivedWalletIds(useAccount())
+  const [query, setQuery] = React.useState('')
+  const inactiveWallets = useInactiveWallets(useAccount())
+  const visibleWalletIds = useFilteredWalletIds(inactiveWallets, archivedWalletIds, query)
 
   return archivedWalletIds.length <= 0 ? (
     <div>No archived wallets</div>
@@ -17,7 +21,9 @@ export const ArchivedWalletList: React.FC = () => {
     <>
       <InactiveWallets />
       <ListGroup variant={'flush'}>
-        {archivedWalletIds.map((id) => (
+        <FormControl placeholder={'Search'} onChange={(event) => setQuery(event.currentTarget.value)} />
+        {visibleWalletIds.length <= 0 && <div>No Matching wallets</div>}
+        {visibleWalletIds.map((id) => (
           // eslint-disable-next-line react/display-name
           <Boundary key={id} error={{ fallbackRender: () => <FallbackRender walletId={id} /> }}>
             <WalletRow walletId={id} />

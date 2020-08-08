@@ -1,20 +1,28 @@
 import React from 'react'
-import { Button, ListGroup } from 'react-bootstrap'
+import { Button, FormControl, ListGroup } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
-import { useChangeWalletStates, useDeletedWalletIds, useReadInactiveWallet } from '../hooks'
+import { useChangeWalletStates, useDeletedWalletIds, useInactiveWallets, useReadInactiveWallet } from '../hooks'
 import { FallbackRender } from './FallbackRender'
+import { useFilteredWalletIds } from './filter'
 
 export const DeletedWalletList: React.FC = () => {
   const deletedWalletIds = useDeletedWalletIds(useAccount())
+  const [query, setQuery] = React.useState('')
+  const inactiveWallets = useInactiveWallets(useAccount())
+  const visibleWalletIds = useFilteredWalletIds(inactiveWallets, deletedWalletIds, query)
+
+  console.log('qwe')
 
   return deletedWalletIds.length <= 0 ? (
     <div>No deleted wallets</div>
   ) : (
     <ListGroup variant={'flush'}>
-      {deletedWalletIds.map((id) => (
+      <FormControl placeholder={'Search'} onChange={(event) => setQuery(event.currentTarget.value)} />
+      {visibleWalletIds.length <= 0 && <div>No Matching wallets</div>}
+      {visibleWalletIds.map((id) => (
         // eslint-disable-next-line react/display-name
         <Boundary key={id} error={{ fallbackRender: () => <FallbackRender walletId={id} /> }}>
           <WalletRow walletId={id} />

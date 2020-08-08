@@ -2,6 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 
 import React from 'react'
 import { Button, Container, Navbar } from 'react-bootstrap'
+import { queryCache } from 'react-query'
 import { ReactQueryDevtools } from 'react-query-devtools'
 
 import { AccountProvider, Login, useAccount, useSetAccount } from './auth'
@@ -26,6 +27,7 @@ const Header = () => {
             onClick={() => {
               setAccount(undefined)
               account.logout()
+              queryCache.removeQueries(({ queryKey }) => queryKey[0] !== 'context')
             }}
           >
             Logout
