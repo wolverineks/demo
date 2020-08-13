@@ -5,7 +5,7 @@ import { FormControl, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { useAccount } from '../auth'
 import { Boundary, Logo } from '../components'
 import { useActiveCurrencyInfos, useActiveTokenInfos, useDisplayDenomination } from '../hooks'
-import { useSearchQuery, useSetSearchQuery } from '../search'
+import { useSetSearchQuery } from '../search'
 
 const normalize = (text: string) => text.trim().toLowerCase()
 
@@ -20,7 +20,6 @@ export const Currencies: React.FC<{ query: string }> = ({ query }) => {
   const tokenInfos = useActiveTokenInfos(useAccount())
   const visibleSettings = [...currencyInfos, ...tokenInfos].filter(matches(query))
   const setSearchQuery = useSetSearchQuery()
-  const searchQuery = useSearchQuery()
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>

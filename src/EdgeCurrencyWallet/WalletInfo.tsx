@@ -32,7 +32,7 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet })
   )
 
   return (
-    <Tabs id={'walletTabs'} defaultActiveKey={'history'} key={wallet.id}>
+    <Tabs id={'walletTabs'} defaultActiveKey={'history'}>
       <Tab eventKey={'history'} title={'History'}>
         <Boundary>
           <Total wallet={wallet} />

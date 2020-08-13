@@ -67,7 +67,7 @@ const Inner = () => {
       </ListGroup.Item>
 
       <Boundary>
-        <ActiveWalletList />
+        <ActiveWalletList onSelect={() => setRoute(Route.account)} />
       </Boundary>
 
       <Boundary>

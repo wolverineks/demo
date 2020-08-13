@@ -5,13 +5,13 @@ import { Alert, Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
 
 import { useAccount } from '../auth'
-import { Boundary, FlipInput, Select } from '../components'
-import { useCurrencyCodes, useDisplayDenomination } from '../hooks'
+import { Boundary, FlipInput } from '../components'
+import { useDisplayDenomination } from '../hooks'
 import { useFiatCurrencyCode, useReceiveAddressAndEncodeUri } from '../hooks'
+import { useSelectedWallet } from '../SelectedWallet'
 
 export const Request: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
-  const currencyCodes = useCurrencyCodes(wallet)
-  const [currencyCode, setCurrencyCode] = React.useState(currencyCodes[0])
+  const [{ currencyCode }] = useSelectedWallet()
   const [nativeAmount, setNativeAmount] = React.useState('0')
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
   const { data, error } = useReceiveAddressAndEncodeUri({ wallet, nativeAmount, options: { currencyCode } })
@@ -26,18 +26,6 @@ export const Request: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) =>
       <FormGroup>
         <FlipInput onChange={setNativeAmount} currencyCode={currencyCode} fiatCurrencyCode={fiatCurrencyCode} />
       </FormGroup>
-
-      <Select
-        title={'CurrencyCode'}
-        id={'requestCurrencyCode'}
-        onSelect={(event) => setCurrencyCode(event.currentTarget.value)}
-        options={currencyCodes}
-        renderOption={(currencyCode) => (
-          <option key={currencyCode} value={currencyCode}>
-            {currencyCode}
-          </option>
-        )}
-      />
 
       <FormGroup>
         <Boundary>

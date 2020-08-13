@@ -19,7 +19,7 @@ import { useSearchQuery } from '../search'
 import { useSelectedWallet } from '../SelectedWallet'
 import { useFilteredWalletIds } from './filter'
 
-export const ActiveWalletList: React.FC = () => {
+export const ActiveWalletList: React.FC<{ onSelect: () => void }> = ({ onSelect }) => {
   const account = useAccount()
   const searchQuery = useSearchQuery()
   const activeWalletIds = useActiveWalletIds(account)
@@ -36,7 +36,7 @@ export const ActiveWalletList: React.FC = () => {
         <ListGroup variant={'flush'}>
           {visibleWalletIds.map((id) => (
             <Boundary key={id} suspense={{ fallback: <ListGroup.Item>Loading...</ListGroup.Item> }}>
-              <ActiveWalletRow walletId={id} />
+              <ActiveWalletRow walletId={id} onSelect={onSelect} />
             </Boundary>
           ))}
         </ListGroup>
@@ -47,7 +47,8 @@ export const ActiveWalletList: React.FC = () => {
 
 const ActiveWalletRow: React.FC<{
   walletId: string
-}> = ({ walletId }) => {
+  onSelect: () => void
+}> = ({ walletId, onSelect }) => {
   const account = useAccount()
   const wallet = useWallet({ account, walletId })
   const currencyCode = wallet.currencyInfo.currencyCode
@@ -64,7 +65,13 @@ const ActiveWalletRow: React.FC<{
   return (
     <>
       <ListGroup.Item variant={isSelected ? 'primary' : undefined}>
-        <span onClick={() => selectWallet({ id: wallet.id, currencyCode })} className={'float-left'}>
+        <span
+          onClick={() => {
+            selectWallet({ id: wallet.id, currencyCode })
+            onSelect()
+          }}
+          className={'float-left'}
+        >
           <Logo currencyCode={currencyCode} /> {name}{' '}
           <DisplayAmount nativeAmount={balance} currencyCode={currencyCode} /> -{' '}
           <FiatAmount
