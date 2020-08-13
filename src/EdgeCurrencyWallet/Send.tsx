@@ -7,20 +7,19 @@ import QrReader from 'react-qr-reader'
 import { useAccount } from '../auth'
 import { FlipInput, Select } from '../components'
 import {
-  useCurrencyCodes,
   useDisplayDenomination,
   useFiatCurrencyCode,
   useMaxSpendable,
   useNativeToDisplay,
   useNewTransaction,
 } from '../hooks'
+import { useSelectedWallet } from '../SelectedWallet'
 import { categories } from '../utils'
 
 export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const account = useAccount()
-  const currencyCodes = useCurrencyCodes(wallet)
   const [parsedUri, setParsedUri] = React.useState<EdgeParsedUri>()
-  const [currencyCode, setCurrencyCode] = React.useState(wallet.currencyInfo.currencyCode)
+  const [selected] = useSelectedWallet()
   const [publicAddress, setPublicAddress] = React.useState('')
   const [displayAmount, setDisplayAmount] = React.useState('0')
   const [name, setName] = React.useState('')
@@ -32,32 +31,32 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const parsedUriDisplayAmount = useNativeToDisplay({
     account,
     nativeAmount: parsedUri?.nativeAmount || '0',
-    currencyCode,
+    currencyCode: selected.currencyCode,
   })
   const spendInfo: EdgeSpendInfo = React.useMemo(
     () => ({
       metadata: { name, notes, category },
-      currencyCode,
+      currencyCode: selected.currencyCode,
       spendTargets: [{ publicAddress, nativeAmount }],
     }),
-    [publicAddress, nativeAmount, currencyCode, name, notes, category],
+    [name, notes, category, selected.currencyCode, publicAddress, nativeAmount],
   )
   const { data: maxSpendable } = useMaxSpendable(wallet, spendInfo)
 
-  const [scan, setScan] = React.useState(false)
-  const onScan = (uri: string) =>
-    wallet
-      .parseUri(uri, currencyCode)
-      .then((parsedUri: EdgeParsedUri) => {
-        setParsedUri(parsedUri)
-        setPublicAddress(parsedUri.publicAddress || '')
-        setDisplayAmount(parsedUriDisplayAmount || '')
-        setCurrencyCode(parsedUri.currencyCode || '')
-        setName(parsedUri.metadata?.name || '')
-        setNotes(parsedUri.metadata?.notes || '')
-        setCategory(parsedUri.metadata?.category || '')
-      })
-      .catch((error: Error) => console.log(error))
+  // const [scan, setScan] = React.useState(false)
+  // const onScan = (uri: string) =>
+  //   wallet
+  //     .parseUri(uri, currencyCode)
+  //     .then((parsedUri: EdgeParsedUri) => {
+  //       setParsedUri(parsedUri)
+  //       setPublicAddress(parsedUri.publicAddress || '')
+  //       setDisplayAmount(parsedUriDisplayAmount || '')
+  //       setCurrencyCode(parsedUri.currencyCode || '')
+  //       setName(parsedUri.metadata?.name || '')
+  //       setNotes(parsedUri.metadata?.notes || '')
+  //       setCategory(parsedUri.metadata?.category || '')
+  //     })
+  //     .catch((error: Error) => console.log(error))
 
   const { data: transaction, error } = useNewTransaction(wallet, spendInfo)
 
@@ -85,20 +84,12 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
       </FormGroup>
 
       <FormGroup>
-        <FlipInput currencyCode={currencyCode} fiatCurrencyCode={fiatCurrencyCode} onChange={setNativeAmount} />
+        <FlipInput
+          currencyCode={selected.currencyCode}
+          fiatCurrencyCode={fiatCurrencyCode}
+          onChange={setNativeAmount}
+        />
       </FormGroup>
-
-      <Select
-        title={'CurrencyCode'}
-        id={'sendCurrencyCode'}
-        onSelect={(event) => setCurrencyCode(event.currentTarget.value)}
-        options={currencyCodes}
-        renderOption={(currencyCode: string) => (
-          <option key={currencyCode} value={currencyCode}>
-            {currencyCode}
-          </option>
-        )}
-      />
 
       <FormGroup>
         <FormLabel>Name</FormLabel>
@@ -127,19 +118,19 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
         Confirm
       </Button>
 
-      <Button onClick={() => setScan((scan) => !scan)}>Scan</Button>
+      {/* <Button onClick={() => setScan((scan) => !scan)}>Scan</Button> */}
 
-      {scan && <Scanner onScan={!parsedUri ? onScan : () => undefined} show={!parsedUri} />}
+      {/* {scan && <Scanner onScan={!parsedUri ? onScan : () => undefined} show={!parsedUri} />} */}
 
       <JSONPretty
         data={{
           displayAmount: String(displayAmount),
-          displayDenomination: useDisplayDenomination(account, currencyCode)[0],
+          displayDenomination: useDisplayDenomination(account, selected.currencyCode)[0],
           nativeAmount: String(nativeAmount),
           fiatCurrencyCode,
           parsedUri: String(parsedUri),
           parsedUriDisplayAmount: String(parsedUriDisplayAmount),
-          currencyCode: String(currencyCode),
+          currencyCode: String(selected.currencyCode),
           publicAddress: String(publicAddress),
           spendInfo: spendInfo,
           maxSpendable: String(maxSpendable),

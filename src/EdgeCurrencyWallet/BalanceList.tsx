@@ -5,7 +5,6 @@ import { Card, ListGroup } from 'react-bootstrap'
 import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
 import { useBalance, useEnabledTokens, useFiatCurrencyCode, useName } from '../hooks'
-import { useSelectedWallet } from '../SelectedWallet'
 
 export const BalanceList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => (
   <Card>
@@ -18,14 +17,13 @@ export const BalanceList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }
       </ListGroup.Item>
 
       <ListGroup.Item>
-        <TokenList />
+        <TokenList wallet={wallet} />
       </ListGroup.Item>
     </ListGroup>
   </Card>
 )
 
-const TokenList = () => {
-  const wallet = useSelectedWallet()
+const TokenList = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
   const tokens = useEnabledTokens(wallet)
 
   return tokens.length <= 0 ? (

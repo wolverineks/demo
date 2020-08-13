@@ -26,11 +26,14 @@ import {
   nativeToDenominated,
 } from '../utils'
 import { optimisticMutationOptions } from './optimisticMutationOptions'
-import { useWatch } from './watch'
+import { useWatch, useWatchAll } from './watch'
 
 // EDGE CONTEXT
-export const useLocalUsers = (context: EdgeContext) => useWatch(context, 'localUsers')
-export const usePaused = (context: EdgeContext) => useWatch(context, 'paused')
+export const useLocalUsers = (context: EdgeContext) => {
+  useWatch(context, 'localUsers')
+
+  return context.localUsers
+}
 
 // ACCOUNTS WITH PIN LOGIN
 export const useAccountsWithPinLogin = (context: EdgeContext) =>
@@ -71,62 +74,71 @@ export const useLoginWithPassword = (
   )
 
 // EDGE ACCOUNT
-export const useActiveWalletIds = (account: EdgeAccount) => useWatch(account, 'activeWalletIds')
-export const useAllKeys = (account: EdgeAccount) => useWatch(account, 'allKeys')
-export const useArchivedWalletIds = (account: EdgeAccount) => useWatch(account, 'archivedWalletIds')
-export const useCurrencyWallets = (account: EdgeAccount) => useWatch(account, 'currencyWallets')
-export const useHiddenWalletIds = (account: EdgeAccount) => useWatch(account, 'hiddenWalletIds')
-export const useOtpResetDate = (account: EdgeAccount) => useWatch(account, 'otpResetDate')
-export const useLoggedIn = (account: EdgeAccount) => useWatch(account, 'loggedIn')
+export const useActiveWalletIds = (account: EdgeAccount) => {
+  useWatch(account, 'activeWalletIds')
 
-export const useActiveWalletIds_optimisticUpdates = (account: EdgeAccount, config?: QueryConfig<string[]>) => {
-  const { data, refetch } = useQuery({
-    queryKey: [account.username, 'activeWalletIds'],
-    queryFn: () => Promise.resolve(account.activeWalletIds),
-    config: { initialData: account.activeWalletIds, initialStale: true, ...config },
-  })
-
-  useWatch(account, 'activeWalletIds', refetch)
-
-  return data!
+  return account.activeWalletIds
 }
 
-export const useArchivedWalletIds_optimisticUpdates = (account: EdgeAccount, config?: QueryConfig<string[]>) => {
-  const { data, refetch } = useQuery({
-    queryKey: [account.username, 'archivedWalletIds'],
-    queryFn: () => Promise.resolve(account.archivedWalletIds),
-    config: { initialData: account.archivedWalletIds, initialStale: true, ...config },
-  })
+export const useAllKeys = (account: EdgeAccount) => {
+  useWatch(account, 'allKeys')
 
-  useWatch(account, 'archivedWalletIds', refetch)
-
-  return data!
+  return account.allKeys
 }
 
-export const useDeletedWalletIds_optimisticUpdates = (account: EdgeAccount, config?: QueryConfig<string[]>) => {
-  const deletedWalletIds = account.allKeys.filter(({ deleted }) => deleted).map(({ id }) => id)
+export const useArchivedWalletIds = (account: EdgeAccount) => {
+  useWatch(account, 'archivedWalletIds')
 
-  const { data, refetch } = useQuery({
-    queryKey: [account.username, 'deletedWalletIds'],
-    queryFn: () => Promise.resolve(deletedWalletIds),
-    config: { initialData: deletedWalletIds, initialStale: true, ...config },
+  return account.archivedWalletIds
+}
+
+export const useCurrencyWallets = (account: EdgeAccount) => {
+  useWatch(account, 'currencyWallets')
+
+  return account.currencyWallets
+}
+
+export const useDeletedWalletIds = (account: EdgeAccount) => {
+  useAllKeys(account)
+
+  return account.allKeys.filter(({ deleted }) => deleted).map(({ id }) => id)
+}
+
+export const useAccountTotal = (account: EdgeAccount) => {
+  const wallets = useSortedCurrencyWallets(account)
+  const fiatCurrencyCode = useDefaultFiatCurrencyCode(account)[0]
+  const displayDenomination = useDisplayDenomination(account, fiatCurrencyCode)[0]
+
+  const getTotal = () =>
+    Promise.all(
+      wallets.map(({ balances }) =>
+        Promise.all(
+          Object.entries(balances).map(([currencyCode, nativeAmount]) => {
+            const exchangeDenomination = getExchangeDenomination(account, currencyCode)
+            const exchangeAmount = nativeToDenominated({
+              nativeAmount: nativeAmount || String(0),
+              denomination: exchangeDenomination,
+            })
+
+            return account.rateCache.convertCurrency(currencyCode, fiatCurrencyCode, Number(exchangeAmount))
+          }),
+        ),
+      ),
+    ).then((balances) => balances.flat().reduce((result, current) => result + current, 0))
+
+  const { data } = useQuery({
+    queryKey: [account.username, 'accountTotal'],
+    queryFn: () => getTotal(),
+    config: { refetchInterval: 1000 },
   })
 
-  useWatch(account, 'archivedWalletIds', refetch)
-
-  return data!
+  return { total: data!, denomination: displayDenomination }
 }
 
 export const useOtpKey = (account: EdgeAccount, config?: QueryConfig<string>) => {
-  const { data, refetch } = useQuery({
-    queryKey: [account.username, 'otpKey'],
-    queryFn: () => Promise.resolve(account.otpKey || ''),
-    config: { initialData: account.otpKey, ...config },
-  })
+  useWatch(account, 'otpKey')
 
-  useWatch(account, 'otpKey', refetch)
-
-  return data!
+  return account.otpKey
 }
 
 export const useOtpEnabled = (account: EdgeAccount, config?: QueryConfig<boolean>) => {
@@ -214,29 +226,28 @@ export const useLoginMethod = (account: EdgeAccount) =>
     ? 'edgeLogin'
     : unknownLogin()
 
-export const useWallet = (account: EdgeAccount, walletId: string, config?: QueryConfig<EdgeCurrencyWallet>) =>
-  useQuery({
+class WalletNotFound extends Error {}
+
+export const useWallet = (
+  {
+    account,
+    walletId,
+    watch,
+  }: { account: EdgeAccount; walletId: string; watch?: readonly (keyof EdgeCurrencyWallet)[] },
+  config?: QueryConfig<EdgeCurrencyWallet>,
+) => {
+  const { data: wallet } = useQuery({
     queryKey: [walletId, 'wallet'],
     queryFn: () => account.waitForCurrencyWallet(walletId),
     config: { ...config },
-  }).data!
+  })
 
-// ACTIVE WALLET INFOS
-export const useActiveWalletInfos = (account: EdgeAccount) =>
-  useActiveWalletIds(account).map((id) => account.allKeys.find((walletInfo) => walletInfo.id === id)!)
+  if (!wallet) throw new WalletNotFound()
 
-// ARCHIVED WALLET INFOS
-export const useArchivedWalletInfos = (account: EdgeAccount) =>
-  useArchivedWalletIds(account).map((id) => account.allKeys.find((walletInfo) => walletInfo.id === id))
+  useWatchAll(wallet, watch)
 
-// DELETED WALLET INFOS
-export const useDeletedWalletInfos = (account: EdgeAccount) =>
-  useDeletedWalletIds(account).map((id) => account.allKeys.find((walletInfo) => walletInfo.id === id))
-
-export const useDeletedWalletIds = (account: EdgeAccount) =>
-  useAllKeys(account)
-    .filter(({ deleted }) => deleted)
-    .map(({ id }) => id)
+  return wallet!
+}
 
 // PIN LOGIN
 export const useReadPinLoginEnabled = (context: EdgeContext, account: EdgeAccount, config?: QueryConfig<boolean>) =>
@@ -266,9 +277,9 @@ export const useSortedCurrencyWallets = (account: EdgeAccount) => {
 // EDGE CURRENCY WALLET
 export const useBalance = (wallet: EdgeCurrencyWallet, currencyCode: string) => {
   const { refetch, data } = useQuery({
-    queryKey: [wallet.id, 'balance', currencyCode],
-    queryFn: () => waitForBalance(wallet, currencyCode),
-    config: {},
+    queryKey: [wallet!.id, 'balance', currencyCode],
+    queryFn: () => waitForBalance(wallet!, currencyCode),
+    config: { enabled: !!wallet },
   })
 
   useWatch(wallet, 'balances', () => refetch())
@@ -288,10 +299,51 @@ export const waitForBalance = (wallet: EdgeCurrencyWallet, code: string): Promis
         })
       })
 
-export const useBalances = (wallet: EdgeCurrencyWallet) => useWatch(wallet, 'balances')
-export const useBlockHeight = (wallet: EdgeCurrencyWallet) => useWatch(wallet, 'blockHeight')
-export const useName = (wallet: EdgeCurrencyWallet) => useWatch(wallet, 'name')
-export const useSyncRatio = (wallet: EdgeCurrencyWallet) => useWatch(wallet, 'syncRatio')
+export const useBalances = (wallet: EdgeCurrencyWallet) => {
+  useWatch(wallet, 'balances')
+
+  return wallet.balances
+}
+
+export const useBlockHeight = (wallet: EdgeCurrencyWallet) => {
+  useWatch(wallet, 'blockHeight')
+
+  return wallet.blockHeight
+}
+
+export const useName = (wallet: EdgeCurrencyWallet) => {
+  useWatch(wallet, 'name')
+
+  return wallet.name
+}
+
+export const useSyncRatio = (wallet: EdgeCurrencyWallet) => {
+  useWatch(wallet, 'syncRatio')
+
+  return wallet.syncRatio
+}
+
+export const useWalletTotal = ({ account, wallet }: { account: EdgeAccount; wallet: EdgeCurrencyWallet }) => {
+  const balances = useBalances(wallet)
+  const fiatCurrencyCode = useFiatCurrencyCode(wallet)[0]
+  const displayDenomination = useDisplayDenomination(account, fiatCurrencyCode)
+  const [total, setTotal] = React.useState(0)
+
+  React.useEffect(() => {
+    Promise.all(
+      Object.entries(balances).map(([currencyCode, nativeAmount]) => {
+        const exchangeDenomination = getExchangeDenomination(account, currencyCode)
+        const exchangeAmount = nativeToDenominated({ denomination: exchangeDenomination, nativeAmount })
+
+        return account.rateCache.convertCurrency(currencyCode, fiatCurrencyCode, Number(exchangeAmount))
+      }),
+    )
+      .then((balances) => balances.reduce((result, current) => result + current, 0))
+      .then(setTotal)
+  }, [account, balances, fiatCurrencyCode])
+
+  return { total, denomination: displayDenomination[0] }
+}
 
 // ENABLED TOKEN INFOS
 export const useEnabledTokenInfos = (wallet: EdgeCurrencyWallet) => {
@@ -304,7 +356,11 @@ export const useCurrencyCodes = (wallet: EdgeCurrencyWallet) =>
   [wallet.currencyInfo.currencyCode, ...useEnabledTokens(wallet)].filter(isUnique)
 
 // FIAT CURRENCY CODE
-export const useReadFiatCurrencyCode = (wallet: EdgeCurrencyWallet) => useWatch(wallet, 'fiatCurrencyCode')
+export const useReadFiatCurrencyCode = (wallet: EdgeCurrencyWallet) => {
+  useWatch(wallet, 'fiatCurrencyCode')
+
+  return wallet.fiatCurrencyCode
+}
 export const useWriteFiatCurrencyCode = (wallet: EdgeCurrencyWallet) => useMutation(wallet.setFiatCurrencyCode)
 export const useFiatCurrencyCode = (wallet: EdgeCurrencyWallet) =>
   [useReadFiatCurrencyCode(wallet), useWriteFiatCurrencyCode(wallet)[0]] as const

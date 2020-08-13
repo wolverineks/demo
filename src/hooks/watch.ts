@@ -1,50 +1,44 @@
 import React from 'react'
 import { CallbackRemover } from 'yaob'
 
-type Watch<EdgeObject, Property extends keyof EdgeObject> = (
-  property: Property,
-  callback: (property: EdgeObject[Property]) => any,
-) => CallbackRemover
+type Cleanup = () => void
 
-export const useWatch = <EdgeObject extends { watch: Watch<EdgeObject, Property> }, Property extends keyof EdgeObject>(
-  object: EdgeObject,
-  property: Property,
-  callback?: (data: EdgeObject[Property]) => any,
-): EdgeObject[Property] => {
-  const [, rerender] = React.useState(object[property])
-  React.useEffect(() => {
-    const unsub = object.watch(property, () => {
-      if (callback) {
-        callback(object[property])
-      } else {
-        rerender(object[property])
-      }
-    })
-
-    return () => {
-      unsub()
-    }
-  }, [callback, object, property])
-
-  return object[property]
+type Callback<T, U extends keyof T> = (data: T[U]) => any
+type Watch<T, U extends keyof T = keyof T> = (property: U, callback: Callback<T, U>) => CallbackRemover
+interface Watchable<T> {
+  watch: Watch<T>
 }
 
-export const useWatchAll = <
-  EdgeObject extends { watch: Watch<EdgeObject, keyof EdgeObject> },
-  Properties extends Readonly<(keyof EdgeObject)[]>
->(
-  object: EdgeObject,
-  properties: Properties = (Object.keys(object) as unknown) as Properties,
+export type Maybe<T> = T | undefined | null
+
+type UseWatch = <T extends Watchable<T>, U extends keyof T>(
+  object: Maybe<T>,
+  property: U,
+  callback?: Callback<T, U>,
+) => void
+
+export const useWatch: UseWatch = (object, property, callback) => {
+  const [, rerender] = React.useState(object ? object[property] : undefined)
+  React.useEffect(() => {
+    if (!object) return
+
+    return object.watch(property, () => {
+      callback && callback(object[property])
+      rerender(object[property])
+    }) as Cleanup
+  }, [callback, object, property])
+}
+
+export const useWatchAll = <T extends Watchable<T>, U extends readonly (keyof T)[]>(
+  object: T | undefined,
+  properties = ((object ? Object.keys(object) : []) as unknown) as U,
 ) => {
   const [, rerender] = React.useState({})
   React.useEffect(() => {
-    const subscribe = (key: keyof EdgeObject) => object.watch(key, () => rerender({}))
-    const unsubs = properties.map(subscribe)
+    if (!object) return
 
-    return () => {
-      unsubs.forEach((unsub) => unsub())
-    }
+    const unsubs = properties.map((key) => object.watch(key, () => rerender({})))
+
+    return () => unsubs.forEach((unsub) => unsub())
   }, [object, properties])
-
-  return object
 }

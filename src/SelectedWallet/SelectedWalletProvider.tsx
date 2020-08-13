@@ -1,77 +1,98 @@
-import { EdgeCurrencyWallet } from 'edge-core-js'
+import { EdgeAccount } from 'edge-core-js'
 import React from 'react'
 import { FallbackProps } from 'react-error-boundary'
 
 import { useAccount } from '../auth'
-import { Boundary } from '../components'
-import { useActiveWalletIds, useCurrencyWallets } from '../hooks'
+import { useActiveWalletIds, useWallet, useWatch } from '../hooks'
 
-type SelectWallet = (id: string) => undefined
+export type SelectedWalletInfo = {
+  id: string
+  currencyCode: string
+}
 
-const SelectedWalletIdContext = React.createContext<string | undefined>(undefined)
-const SelectWalletContext = React.createContext<SelectWallet | undefined>(undefined)
+type SetSelectedWalletInfo = (selectedWalletInfo: SelectedWalletInfo) => void
 
-export const SelectedWalletProvider: React.FC = ({ children }) => {
-  // const account = useAccount()
-  const [selectedWalletId, setSelectedWalletId] = React.useState<string | undefined>()
-  // const [selectedWalletId, setSelectedWalletId] = React.useState<string>(account.activeWalletIds[0])
+const SelectedWalletInfoContext = React.createContext<
+  Readonly<[SelectedWalletInfo | undefined, SetSelectedWalletInfo]> | undefined
+>(undefined)
+
+export const SelectedWalletInfoProvider: React.FC = ({ children }) => {
+  const account = useAccount()
+  const activeWalletIds = useActiveWalletIds(account)
+  const [id, setWalletId] = React.useState<string>('')
+  const [currencyCode, setCurrencyCode] = React.useState<string>('')
+
+  const setSelectedWalletInfo: SetSelectedWalletInfo = React.useCallback(({ id, currencyCode }) => {
+    setWalletId(id)
+    setCurrencyCode(currencyCode)
+  }, [])
+
+  let selectedWalletInfo: SelectedWalletInfo | undefined // default: no active wallet ids
+
+  // SELECTED, ACTIVE
+  if (activeWalletIds.includes(id)) selectedWalletInfo = { id, currencyCode }
+
+  // SELECTED WALLET DEACTIVATED + SWITCH TO NEXT WALLET
+  if (!activeWalletIds.includes(id) && activeWalletIds.length > 0) {
+    selectedWalletInfo = {
+      id: activeWalletIds[0],
+      currencyCode: getCurrencyCodeFromWalletId(account, activeWalletIds[0]),
+    }
+
+    setSelectedWalletInfo({
+      id: activeWalletIds[0],
+      currencyCode: getCurrencyCodeFromWalletId(account, activeWalletIds[0]),
+    })
+  }
 
   return (
-    <SelectedWalletIdContext.Provider value={selectedWalletId}>
-      <SelectWalletContext.Provider value={setSelectedWalletId as (id: string) => undefined}>
-        {children}
-      </SelectWalletContext.Provider>
-    </SelectedWalletIdContext.Provider>
+    <SelectedWalletInfoContext.Provider value={[selectedWalletInfo, setSelectedWalletInfo] as const}>
+      {children}
+    </SelectedWalletInfoContext.Provider>
   )
 }
 
-export const SelectedWalletConsumer = ({ children }: { children: (wallet: EdgeCurrencyWallet) => any }) =>
-  children(useSelectedWallet())
-
-export const SetSelectedWalletConsumer = ({ children }: { children: (selectWallet: SelectWallet) => any }) =>
-  children(useSelectWallet())
-
-export class NoActiveWalletsError extends Error {}
-
 const missingProvider = () => {
-  throw new Error('useSelectWallet must be rendered inside a <SelectedWalletProvider>')
+  throw new Error('missing provider')
 }
 
-export const useSelectWallet = () => React.useContext(SelectWalletContext) || missingProvider()
+export const useSelectedWalletInfoContext = () => React.useContext(SelectedWalletInfoContext) || missingProvider()
+
+class NoActiveWallets extends Error {}
+
 export const useSelectedWallet = () => {
-  const pending = React.useRef(false)
-  const account = useAccount()
-  useActiveWalletIds(account)
-  useCurrencyWallets(account)
+  const [walletInfo, selectWallet] = useSelectedWalletInfoContext()
+  if (!walletInfo) throw new NoActiveWallets()
+  const wallet = useWallet({ account: useAccount(), walletId: walletInfo.id })
 
-  // no active wallets
-  // if (account.activeWalletIds.length <= 0 && options.suspense) throw new NoActiveWalletsError()
+  return [{ wallet, id: walletInfo.id, currencyCode: walletInfo.currencyCode }, selectWallet] as const
+}
 
-  const selectedWalletId = React.useContext(SelectedWalletIdContext) || ''
-  const fallbackWalletId = account.activeWalletIds[0]
+export const fallbackRender = (children: JSX.Element) => ({ error, resetErrorBoundary }: FallbackProps) => {
+  if (!(error instanceof NoActiveWallets)) {
+    throw error
+  }
+  const Fallback = () => {
+    useWatch(useAccount(), 'activeWalletIds', resetErrorBoundary)
 
-  // archived or deleted ?
-  const walletId = account.activeWalletIds.includes(selectedWalletId) ? selectedWalletId : fallbackWalletId
-  const wallet = account.currencyWallets[walletId]
-
-  const selectWallet = useSelectWallet()
-  if (!account.activeWalletIds.includes(selectedWalletId)) selectWallet(fallbackWalletId)
-
-  // loading
-  if (account.activeWalletIds.includes(walletId) && !wallet) {
-    if (!pending.current) {
-      pending.current = true
-      throw account.waitForCurrencyWallet(walletId)
-    }
+    return children
   }
 
-  // loaded
-  return wallet
+  return <Fallback />
 }
 
-export const SelectedWalletBoundary: React.FC = ({ children }) => (
-  <Boundary error={{ fallbackRender }}>{children}</Boundary>
-)
+const getCurrencyCodeFromWalletId = (account: EdgeAccount, id: string) => {
+  const { allKeys, currencyConfig } = account
+  const walletInfo = allKeys.find((walletInfo) => walletInfo.id === id)
+  const currencyCode = Object.values(currencyConfig).find(
+    ({ currencyInfo }) => currencyInfo.walletType === walletInfo?.type,
+  )?.currencyInfo.currencyCode
 
-export const fallbackRender = ({ error }: FallbackProps) =>
-  error instanceof NoActiveWalletsError ? <div>No Selected Wallet</div> : <div>Error: {error?.message}</div>
+  return currencyCode!
+}
+
+export const SelectedWalletInfoConsumer = ({
+  children,
+}: {
+  children: (selectedWalletInfo: ReturnType<typeof useSelectedWalletInfoContext>) => any
+}) => children(useSelectedWalletInfoContext())

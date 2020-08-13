@@ -9,6 +9,7 @@ export const Select = <T,>({
   title,
   id,
   defaultValue,
+  value,
 }: {
   options: T[]
   renderOption: (item: T) => React.ReactElement
@@ -22,7 +23,14 @@ export const Select = <T,>({
   return (
     <FormGroup>
       <FormLabel>{title}</FormLabel>
-      <FormControl as="select" id={id || title} disabled={disabled} onChange={onSelect} defaultValue={defaultValue}>
+      <FormControl
+        as="select"
+        id={id || title}
+        disabled={disabled}
+        onChange={onSelect}
+        defaultValue={defaultValue}
+        value={value}
+      >
         {options.map(renderOption)}
       </FormControl>
     </FormGroup>

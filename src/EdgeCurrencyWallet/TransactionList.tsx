@@ -1,31 +1,20 @@
 import { EdgeCurrencyWallet, EdgeTransaction } from 'edge-core-js'
 import React from 'react'
-import { Form, ListGroup } from 'react-bootstrap'
+import { ListGroup } from 'react-bootstrap'
 
-import { DisplayAmount, Select } from '../components'
-import { useCurrencyCodes, useTransactionCount, useTransactions } from '../hooks'
+import { DisplayAmount } from '../components'
+import { useTransactionCount, useTransactions } from '../hooks'
+import { useSelectedWallet } from '../SelectedWallet'
 
 export const TransactionList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
-  const [currencyCode, setCurrencyCode] = React.useState<string>(wallet.currencyInfo.currencyCode)
-  const currencyCodes = useCurrencyCodes(wallet)
+  const [selected] = useSelectedWallet()
   const transactionCount = useTransactionCount(wallet)
-  const transactions = useTransactions(wallet).filter((transaction) => transaction.currencyCode === currencyCode)
+  const transactions = useTransactions(wallet).filter(
+    (transaction) => transaction.currencyCode === selected.currencyCode,
+  )
 
   return (
     <ListGroup>
-      <Form>
-        <Select
-          title={'CurrencyCode'}
-          options={currencyCodes}
-          renderOption={(currencyCode) => (
-            <option key={currencyCode} value={currencyCode}>
-              {currencyCode}
-            </option>
-          )}
-          onSelect={(event) => setCurrencyCode(event.currentTarget.value)}
-        />
-      </Form>
-
       <ListGroup>
         Transactions: #:{String(transactionCount)}
         {transactionCount <= 0 && <div>No Transactions</div>}

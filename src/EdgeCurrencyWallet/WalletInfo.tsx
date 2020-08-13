@@ -5,13 +5,25 @@ import { Button, Card, Form, FormControl, FormGroup, FormLabel, ListGroup, Tab, 
 
 import { useAccount } from '../auth'
 import { Boundary, Logo } from '../components'
-import { fiatInfos } from '../Fiat'
-import { useFiatCurrencyCode, useName, useTokens } from '../hooks'
-import { Disklet } from '../Storage/Disklet'
+import { FiatAmount, fiatInfos } from '../Fiat'
+import { useBalance, useFiatCurrencyCode, useName, useTokens } from '../hooks'
+import { useSelectedWallet } from '../SelectedWallet'
 import { getTokenInfo } from '../utils'
 import { Request } from './Request'
 import { Send } from './Send'
 import { TransactionList } from './TransactionList'
+
+const Total: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
+  const [selected] = useSelectedWallet()
+  const balance = useBalance(wallet, selected.currencyCode)
+  const fiatCurrencyCode = useFiatCurrencyCode(wallet)[0]
+
+  return (
+    <div>
+      <FiatAmount nativeAmount={balance} fromCurrencyCode={selected.currencyCode} fiatCurrencyCode={fiatCurrencyCode} />
+    </div>
+  )
+}
 
 export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   useOnNewTransactions(
@@ -23,6 +35,7 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet })
     <Tabs id={'walletTabs'} defaultActiveKey={'history'} key={wallet.id}>
       <Tab eventKey={'history'} title={'History'}>
         <Boundary>
+          <Total wallet={wallet} />
           <TransactionList wallet={wallet} />
         </Boundary>
       </Tab>
@@ -36,16 +49,6 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet })
       <Tab eventKey={'request'} title={'Request'}>
         <Boundary>
           <Request wallet={wallet} />
-        </Boundary>
-      </Tab>
-
-      <Tab eventKey={'storage'} title={'Storage'}>
-        <Boundary>
-          <Disklet disklet={wallet.disklet} path={'/'} title={'Disklet'} />
-        </Boundary>
-
-        <Boundary>
-          <Disklet disklet={wallet.localDisklet} path={'/'} title={'Local Disklet'} />
         </Boundary>
       </Tab>
 
@@ -77,7 +80,7 @@ const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
         <Card.Text>No Tokens Available</Card.Text>
       ) : (
         <ListGroup>
-          {availableTokens.map((currencyCode) => (
+          {[...availableTokens].sort().map((currencyCode) => (
             <TokenRow
               key={currencyCode}
               currencyCode={currencyCode}

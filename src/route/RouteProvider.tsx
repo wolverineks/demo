@@ -3,6 +3,7 @@ import React from 'react'
 export enum Route {
   'account' = 'account',
   'settings' = 'settings',
+  'createWallet' = 'createWallet',
 }
 type SetRoute = (route: Route) => undefined
 

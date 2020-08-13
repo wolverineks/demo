@@ -1,7 +1,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css'
 
 import React from 'react'
-import { Button, Container, Image, Navbar } from 'react-bootstrap'
+import { Button, Container, Navbar } from 'react-bootstrap'
 import { queryCache } from 'react-query'
 import { ReactQueryDevtools } from 'react-query-devtools'
 
@@ -9,8 +9,9 @@ import { AccountConsumer, AccountProvider, Login, useAccount, useSetAccount } fr
 import { Boundary } from './components'
 import { Edge } from './Edge'
 import { AccountInfo } from './EdgeAccount'
-import { RouteProvider } from './route'
-import { SelectedWalletProvider, useSelectedWallet } from './SelectedWallet'
+import { useName } from './hooks'
+import { RouteProvider, useRoute } from './route'
+import { SelectedWalletInfoProvider, fallbackRender, useSelectedWallet } from './SelectedWallet'
 
 export const App = () => {
   return (
@@ -18,28 +19,26 @@ export const App = () => {
       <Boundary>
         <Edge>
           <AccountProvider>
-            <SelectedWalletProvider>
-              <AccountConsumer>
-                {(account) =>
-                  account ? (
+            <AccountConsumer>
+              {(account) =>
+                account ? (
+                  <SelectedWalletInfoProvider>
                     <RouteProvider>
                       <div>
-                        <Boundary>
-                          <Header />
-                        </Boundary>
+                        <Header />
                         <Boundary>
                           <AccountInfo />
                         </Boundary>
                       </div>
                     </RouteProvider>
-                  ) : (
-                    <Container style={{ top: '100px' }}>
-                      <Login />
-                    </Container>
-                  )
-                }
-              </AccountConsumer>
-            </SelectedWalletProvider>
+                  </SelectedWalletInfoProvider>
+                ) : (
+                  <Container style={{ top: '100px' }}>
+                    <Login />
+                  </Container>
+                )
+              }
+            </AccountConsumer>
           </AccountProvider>
         </Edge>
       </Boundary>
@@ -51,16 +50,17 @@ export const App = () => {
 export const Header = () => {
   const account = useAccount()
   const setAccount = useSetAccount()
-  const selectedWallet = useSelectedWallet()
 
   return (
     <Navbar>
       <Navbar.Brand>
-        <img src={'../logo.jpg'} style={{ height: '70px' }} />
+        <img alt={'logo'} src={'../logo.jpg'} style={{ height: '70px' }} />
       </Navbar.Brand>
       <Navbar.Toggle />
 
-      <Navbar.Text>{selectedWallet.name}</Navbar.Text>
+      <Boundary error={{ fallbackRender: fallbackRender(<RouteText />) }}>
+        <SelectedWalletName />
+      </Boundary>
 
       <Navbar.Collapse className="justify-content-end">
         <Navbar.Text>{account.username}</Navbar.Text>
@@ -78,3 +78,15 @@ export const Header = () => {
     </Navbar>
   )
 }
+
+const SelectedWalletName = () => {
+  const [selected] = useSelectedWallet()
+  const name = useName(selected.wallet)
+
+  return (
+    <Navbar.Text>
+      {name}:{selected.currencyCode}
+    </Navbar.Text>
+  )
+}
+const RouteText = () => <Navbar.Text>{useRoute()}</Navbar.Text>

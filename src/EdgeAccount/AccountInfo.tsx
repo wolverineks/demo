@@ -1,42 +1,40 @@
 import React from 'react'
-import { Button, Col, FormControl, Row } from 'react-bootstrap'
+import { Col, FormControl, ListGroup, Row } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
 import { Boundary } from '../components'
-import { WalletInfo } from '../EdgeCurrencyWallet/WalletInfo'
-import { useActiveWalletIds } from '../hooks'
+import { WalletInfo } from '../EdgeCurrencyWallet'
+import { useAccountTotal } from '../hooks'
 import { Route, useRoute, useSetRoute } from '../route'
 import { SearchQueryProvider, useSetSearchQuery } from '../search'
-import { useSelectWallet, useSelectedWallet } from '../SelectedWallet'
+import { fallbackRender, useSelectedWallet } from '../SelectedWallet'
 import { Settings } from '../Settings/Settings'
 import { ActiveWalletList, ArchivedWalletList, DeletedWalletList } from '../WalletLists'
 import { CreateWallet } from '.'
 
 export const AccountInfo = () => {
   const route = useRoute()
-  const selectedWallet = useSelectedWallet()
+  const account = useAccount()
 
   return (
     <Row>
-      <Col xl={3} lg={3} md={3} sm={3} xs={0}>
+      <Col xl={3} lg={3} md={3} sm={3}>
         <SearchQueryProvider>
           <Inner />
         </SearchQueryProvider>
       </Col>
 
-      <Col xl={6} lg={9} md={9} sm={9} xs={9}>
-        {route === 'account' ? (
-          selectedWallet ? (
-            <Boundary>
-              <WalletInfo wallet={selectedWallet} />
-            </Boundary>
-          ) : (
-            <div>No SelectedWallet</div>
-          )
-        ) : route === 'settings' ? (
+      <Col>
+        {route === Route.account ? (
+          <Boundary error={{ fallbackRender: fallbackRender(<div>No Selected Wallet</div>) }}>
+            <SelectedWalletInfo />
+          </Boundary>
+        ) : route === Route.settings ? (
           <SearchQueryProvider>
             <Settings />
           </SearchQueryProvider>
+        ) : route === Route.createWallet ? (
+          <CreateWallet key={account.activeWalletIds.length} />
         ) : (
           <div>404</div>
         )}
@@ -45,23 +43,31 @@ export const AccountInfo = () => {
   )
 }
 
+const SelectedWalletInfo = () => {
+  const [selected] = useSelectedWallet()
+
+  return <WalletInfo wallet={selected.wallet} />
+}
+
 const Inner = () => {
   const route = useRoute()
   const setRoute = useSetRoute()
-  const activeWalletIds = useActiveWalletIds(useAccount())
-  const selectWallet = useSelectWallet()
   const setSearchQuery = useSetSearchQuery()
+  const {
+    total,
+    denomination: { symbol, name },
+  } = useAccountTotal(useAccount())
 
   return (
     <div>
       <FormControl placeholder={'Search'} onChange={(event) => setSearchQuery(event.currentTarget.value)} />
+
+      <ListGroup.Item>
+        Account Total: {symbol} {total.toFixed(2)} {name}
+      </ListGroup.Item>
+
       <Boundary>
-        <ActiveWalletList
-          onSelect={(walletId: string) => {
-            selectWallet(walletId)
-            setRoute(Route.account)
-          }}
-        />
+        <ActiveWalletList />
       </Boundary>
 
       <Boundary>
@@ -72,11 +78,19 @@ const Inner = () => {
         <DeletedWalletList />
       </Boundary>
 
-      <Boundary>
-        <CreateWallet key={activeWalletIds.length} />
-      </Boundary>
+      <ListGroup.Item
+        variant={route === Route.createWallet ? 'primary' : undefined}
+        onClick={() => setRoute(Route.createWallet)}
+      >
+        New Wallet
+      </ListGroup.Item>
 
-      <Button onClick={() => setRoute(Route.settings)}>Settings</Button>
+      <ListGroup.Item
+        variant={route === Route.settings ? 'primary' : undefined}
+        onClick={() => setRoute(Route.settings)}
+      >
+        Settings
+      </ListGroup.Item>
     </div>
   )
 }
