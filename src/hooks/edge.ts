@@ -6,6 +6,7 @@ import {
   EdgeCurrencyWallet,
   EdgeDenomination,
   EdgeGetTransactionsOptions,
+  EdgeLoginMessages,
   EdgeMetaToken,
   EdgeReceiveAddress,
   EdgeSpendInfo,
@@ -40,16 +41,12 @@ export const useAccountsWithPinLogin = (context: EdgeContext) =>
   useLocalUsers(context).filter(({ pinLoginEnabled }) => pinLoginEnabled)
 
 // LOGIN MESSAGES
-export const useLoginMessages = (
-  context: EdgeContext,
-  username: string,
-  config?: QueryConfig<{ otpResetPending: boolean; recovery2Corrupt: boolean }>,
-) =>
+export const useLoginMessages = (context: EdgeContext, username: string, config?: QueryConfig<EdgeLoginMessages>) =>
   useQuery({
     queryKey: ['loginMessages'],
-    queryFn: () => context.fetchLoginMessages().then((loginMessages) => loginMessages[username] || []),
+    queryFn: () => context.fetchLoginMessages(),
     config: { ...config },
-  }).data!
+  }).data![username]
 
 // CREATE ACCOUNT
 export const useCreateAccount = (context: EdgeContext) =>
@@ -242,7 +239,7 @@ export const useWallet = (
     config: { ...config },
   })
 
-  if (!wallet) throw new WalletNotFound()
+  if (!wallet) throw new WalletNotFound(`404: wallet:${walletId} not found`)
 
   useWatchAll(wallet, watch)
 
@@ -504,7 +501,6 @@ export const useNewTransaction = (
   })
 
 // CONVERSIONS
-
 export const useExchangeToNative = ({
   account,
   currencyCode,

@@ -4,26 +4,28 @@ import { ListGroup } from 'react-bootstrap'
 
 import { DisplayAmount } from '../components'
 import { useTransactionCount, useTransactions } from '../hooks'
-import { useSelectedWallet } from '../SelectedWallet'
 
-export const TransactionList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
-  const [selected] = useSelectedWallet()
+export const TransactionList: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({
+  wallet,
+  currencyCode,
+}) => {
   const transactionCount = useTransactionCount(wallet)
-  const transactions = useTransactions(wallet).filter(
-    (transaction) => transaction.currencyCode === selected.currencyCode,
-  )
+  const transactions = useTransactions(wallet).filter((transaction) => transaction.currencyCode === currencyCode)
 
   return (
     <ListGroup>
       <ListGroup>
         Transactions: #:{String(transactionCount)}
-        {transactionCount <= 0 && <div>No Transactions</div>}
-        {transactions.map((transaction) => (
-          <TransactionListRow
-            transaction={transaction as EdgeTransaction}
-            key={(transaction as EdgeTransaction).txid}
-          />
-        ))}
+        {transactionCount <= 0 ? (
+          <div>No Transactions</div>
+        ) : (
+          transactions.map((transaction) => (
+            <TransactionListRow
+              transaction={transaction as EdgeTransaction}
+              key={(transaction as EdgeTransaction).txid}
+            />
+          ))
+        )}
       </ListGroup>
     </ListGroup>
   )

@@ -13,13 +13,11 @@ import {
   useNativeToDisplay,
   useNewTransaction,
 } from '../hooks'
-import { useSelectedWallet } from '../SelectedWallet'
 import { categories } from '../utils'
 
-export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
+export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
   const account = useAccount()
   const [parsedUri, setParsedUri] = React.useState<EdgeParsedUri>()
-  const [selected] = useSelectedWallet()
   const [publicAddress, setPublicAddress] = React.useState('')
   const [displayAmount, setDisplayAmount] = React.useState('0')
   const [name, setName] = React.useState('')
@@ -31,15 +29,15 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const parsedUriDisplayAmount = useNativeToDisplay({
     account,
     nativeAmount: parsedUri?.nativeAmount || '0',
-    currencyCode: selected.currencyCode,
+    currencyCode: currencyCode,
   })
   const spendInfo: EdgeSpendInfo = React.useMemo(
     () => ({
       metadata: { name, notes, category },
-      currencyCode: selected.currencyCode,
+      currencyCode: currencyCode,
       spendTargets: [{ publicAddress, nativeAmount }],
     }),
-    [name, notes, category, selected.currencyCode, publicAddress, nativeAmount],
+    [name, notes, category, currencyCode, publicAddress, nativeAmount],
   )
   const { data: maxSpendable } = useMaxSpendable(wallet, spendInfo)
 
@@ -84,11 +82,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
       </FormGroup>
 
       <FormGroup>
-        <FlipInput
-          currencyCode={selected.currencyCode}
-          fiatCurrencyCode={fiatCurrencyCode}
-          onChange={setNativeAmount}
-        />
+        <FlipInput currencyCode={currencyCode} fiatCurrencyCode={fiatCurrencyCode} onChange={setNativeAmount} />
       </FormGroup>
 
       <FormGroup>
@@ -125,12 +119,12 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
       <JSONPretty
         data={{
           displayAmount: String(displayAmount),
-          displayDenomination: useDisplayDenomination(account, selected.currencyCode)[0],
+          displayDenomination: useDisplayDenomination(account, currencyCode)[0],
           nativeAmount: String(nativeAmount),
           fiatCurrencyCode,
           parsedUri: String(parsedUri),
           parsedUriDisplayAmount: String(parsedUriDisplayAmount),
-          currencyCode: String(selected.currencyCode),
+          currencyCode: String(currencyCode),
           publicAddress: String(publicAddress),
           spendInfo: spendInfo,
           maxSpendable: String(maxSpendable),

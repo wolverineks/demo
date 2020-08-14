@@ -16,7 +16,7 @@ import {
   useWallet,
 } from '../hooks'
 import { useSearchQuery } from '../search'
-import { useSelectedWallet } from '../SelectedWallet'
+import { SelectedWalletBoundary, useSelectedWallet } from '../SelectedWallet'
 import { useFilteredWalletIds } from './filter'
 
 export const ActiveWalletList: React.FC<{ onSelect: () => void }> = ({ onSelect }) => {
@@ -36,7 +36,9 @@ export const ActiveWalletList: React.FC<{ onSelect: () => void }> = ({ onSelect 
         <ListGroup variant={'flush'}>
           {visibleWalletIds.map((id) => (
             <Boundary key={id} suspense={{ fallback: <ListGroup.Item>Loading...</ListGroup.Item> }}>
-              <ActiveWalletRow walletId={id} onSelect={onSelect} />
+              <SelectedWalletBoundary>
+                <ActiveWalletRow walletId={id} />
+              </SelectedWalletBoundary>
             </Boundary>
           ))}
         </ListGroup>
@@ -45,18 +47,14 @@ export const ActiveWalletList: React.FC<{ onSelect: () => void }> = ({ onSelect 
   )
 }
 
-const ActiveWalletRow: React.FC<{
-  walletId: string
-  onSelect: () => void
-}> = ({ walletId, onSelect }) => {
+const ActiveWalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
   const account = useAccount()
   const wallet = useWallet({ account, walletId })
   const currencyCode = wallet.currencyInfo.currencyCode
   const balance = useBalance(wallet, currencyCode)
   const name = useName(wallet)
 
-  const [selected, selectWallet] = useSelectedWallet()
-  const isSelected = wallet.id === selected.id && currencyCode === selected.currencyCode
+  const [selected, select] = useSelectedWallet()
 
   useOnNewTransactions(wallet, (transactions) =>
     alert(`${name} - ${transactions.length > 1 ? 'New Transactions' : 'New Transaction'}`),
@@ -64,14 +62,10 @@ const ActiveWalletRow: React.FC<{
 
   return (
     <>
-      <ListGroup.Item variant={isSelected ? 'primary' : undefined}>
-        <span
-          onClick={() => {
-            selectWallet({ id: wallet.id, currencyCode })
-            onSelect()
-          }}
-          className={'float-left'}
-        >
+      <ListGroup.Item
+        variant={wallet.id === selected.id && currencyCode === selected?.currencyCode ? 'primary' : undefined}
+      >
+        <span onClick={() => select({ id: wallet.id, currencyCode })} className={'float-left'}>
           <Logo currencyCode={currencyCode} /> {name}{' '}
           <DisplayAmount nativeAmount={balance} currencyCode={currencyCode} /> -{' '}
           <FiatAmount
@@ -84,7 +78,7 @@ const ActiveWalletRow: React.FC<{
         <WalletOptions walletId={wallet.id} />
       </ListGroup.Item>
 
-      <EnabledTokensList wallet={wallet} selectedWallet={selected.wallet} onSelect={selectWallet} />
+      <EnabledTokensList wallet={wallet} />
     </>
   )
 }
@@ -104,25 +98,15 @@ const WalletOptions = ({ walletId }: { walletId: string }) => {
   )
 }
 
-export const EnabledTokensList: React.FC<{
-  wallet: EdgeCurrencyWallet
-  selectedWallet: EdgeCurrencyWallet
-  onSelect: ({ id, currencyCode }: { id: string; currencyCode: string }) => any
-}> = ({ wallet, selectedWallet, onSelect }) => {
+export const EnabledTokensList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const tokenCodes = useEnabledTokens(wallet)
-  const [selected] = useSelectedWallet()
 
   return tokenCodes.length > 0 ? (
     <ListGroup.Item>
       <ListGroup variant={'flush'}>
         {tokenCodes.map((currencyCode) => (
           <Boundary key={currencyCode}>
-            <EnabledTokenRow
-              wallet={wallet}
-              currencyCode={currencyCode}
-              isSelected={wallet.id === selectedWallet.id && currencyCode === selected.currencyCode}
-              onSelect={() => onSelect({ id: wallet.id, currencyCode })}
-            />
+            <EnabledTokenRow wallet={wallet} currencyCode={currencyCode} />
           </Boundary>
         ))}
       </ListGroup>
@@ -130,14 +114,14 @@ export const EnabledTokensList: React.FC<{
   ) : null
 }
 
-const EnabledTokenRow: React.FC<{
-  wallet: EdgeCurrencyWallet
-  currencyCode: string
-  isSelected: boolean
-  onSelect: () => any
-}> = ({ wallet, currencyCode, isSelected, onSelect }) => {
+const EnabledTokenRow: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
+  const [selected, select] = useSelectedWallet()
+
   return (
-    <ListGroup.Item variant={isSelected ? 'primary' : undefined} onClick={() => onSelect()}>
+    <ListGroup.Item
+      variant={wallet.id === selected.id && currencyCode === selected?.currencyCode ? 'primary' : undefined}
+      onClick={() => select({ id: wallet.id, currencyCode })}
+    >
       <span className={'float-left'}>
         <Logo currencyCode={currencyCode} />
         <Boundary suspense={{ fallback: <span>Loading...</span> }}>

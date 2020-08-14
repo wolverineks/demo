@@ -4,28 +4,29 @@ import React from 'react'
 import { Button, Card, Form, FormControl, FormGroup, FormLabel, ListGroup, Tab, Tabs } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
-import { Boundary, Logo } from '../components'
+import { Boundary, Logo, Select } from '../components'
 import { FiatAmount, fiatInfos } from '../Fiat'
 import { useBalance, useFiatCurrencyCode, useName, useTokens } from '../hooks'
-import { useSelectedWallet } from '../SelectedWallet'
 import { getTokenInfo } from '../utils'
 import { Request } from './Request'
 import { Send } from './Send'
 import { TransactionList } from './TransactionList'
 
-const Total: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
-  const [selected] = useSelectedWallet()
-  const balance = useBalance(wallet, selected.currencyCode)
+const Total: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
+  const balance = useBalance(wallet, currencyCode)
   const fiatCurrencyCode = useFiatCurrencyCode(wallet)[0]
 
   return (
     <div>
-      <FiatAmount nativeAmount={balance} fromCurrencyCode={selected.currencyCode} fiatCurrencyCode={fiatCurrencyCode} />
+      <FiatAmount nativeAmount={balance} fromCurrencyCode={currencyCode} fiatCurrencyCode={fiatCurrencyCode} />
     </div>
   )
 }
 
-export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
+export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({
+  wallet,
+  currencyCode,
+}) => {
   useOnNewTransactions(
     wallet,
     (transactions) => transactions && alert(transactions.length > 1 ? 'New Transactions' : 'New Transaction'),
@@ -35,20 +36,20 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet })
     <Tabs id={'walletTabs'} defaultActiveKey={'history'}>
       <Tab eventKey={'history'} title={'History'}>
         <Boundary>
-          <Total wallet={wallet} />
-          <TransactionList wallet={wallet} />
+          <Total wallet={wallet} currencyCode={currencyCode} />
+          <TransactionList wallet={wallet} currencyCode={currencyCode} />
         </Boundary>
       </Tab>
 
       <Tab eventKey={'send'} title={'Send'}>
         <Boundary>
-          <Send wallet={wallet} />
+          <Send wallet={wallet} currencyCode={currencyCode} />
         </Boundary>
       </Tab>
 
       <Tab eventKey={'request'} title={'Request'}>
         <Boundary>
-          <Request wallet={wallet} />
+          <Request wallet={wallet} currencyCode={currencyCode} />
         </Boundary>
       </Tab>
 
@@ -75,21 +76,22 @@ const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
       <Card.Header>
         <Card.Title>Tokens</Card.Title>
       </Card.Header>
-
-      {availableTokens.length <= 0 ? (
-        <Card.Text>No Tokens Available</Card.Text>
-      ) : (
-        <ListGroup>
-          {[...availableTokens].sort().map((currencyCode) => (
-            <TokenRow
-              key={currencyCode}
-              currencyCode={currencyCode}
-              isEnabled={enabledTokens.includes(currencyCode)}
-              onClick={toggleToken}
-            />
-          ))}
-        </ListGroup>
-      )}
+      <ListGroup>
+        {availableTokens.length <= 0 ? (
+          <ListGroup.Item>No Tokens Available</ListGroup.Item>
+        ) : (
+          [...availableTokens]
+            .sort()
+            .map((currencyCode) => (
+              <TokenRow
+                key={currencyCode}
+                currencyCode={currencyCode}
+                isEnabled={enabledTokens.includes(currencyCode)}
+                onClick={toggleToken}
+              />
+            ))
+        )}
+      </ListGroup>
     </Card>
   )
 }
@@ -133,19 +135,18 @@ const SetFiatCurrencyCode: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet 
 
   return (
     <FormGroup>
-      <FormLabel htmlFor={'walletFiatCurrencyCode'}>FiatCurrencyCode</FormLabel>
-      <FormControl
-        as={'select'}
+      <Select
         defaultValue={fiatCurrencyCode}
-        id={'walletFiatCurrencyCode'}
-        onChange={(event) => _setFiatCurrencyCode(event.currentTarget.value)}
-      >
-        {fiatInfos.map(({ currencyCode, isoCurrencyCode, symbol }) => (
+        onSelect={(event) => _setFiatCurrencyCode(event.currentTarget.value)}
+        title={'FiatCurrencyCode'}
+        options={fiatInfos}
+        renderOption={({ currencyCode, isoCurrencyCode, symbol }) => (
           <option value={isoCurrencyCode} key={isoCurrencyCode}>
             {symbol} - {currencyCode}
           </option>
-        ))}
-      </FormControl>
+        )}
+      />
+
       <Button onClick={() => write(_fiatCurrencyCode)}>Set Fiat</Button>
     </FormGroup>
   )
@@ -180,7 +181,7 @@ const Settings: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
 
   return (
     <>
-      <FormControl placeholder={'filter'} onChange={(event) => setQuery(event.currentTarget.value)} />
+      <FormControl placeholder={'Search'} onChange={(event) => setQuery(event.currentTarget.value)} />
 
       <Matcher query={query} match={'rename wallet'}>
         <RenameWallet wallet={wallet} />

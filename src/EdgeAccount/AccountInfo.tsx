@@ -7,7 +7,7 @@ import { WalletInfo } from '../EdgeCurrencyWallet'
 import { useAccountTotal } from '../hooks'
 import { Route, useRoute, useSetRoute } from '../route'
 import { SearchQueryProvider, useSetSearchQuery } from '../search'
-import { fallbackRender, useSelectedWallet } from '../SelectedWallet'
+import { SelectedWalletBoundary, useSelectedWallet } from '../SelectedWallet'
 import { Settings } from '../Settings/Settings'
 import { ActiveWalletList, ArchivedWalletList, DeletedWalletList } from '../WalletLists'
 import { CreateWallet } from '.'
@@ -20,15 +20,15 @@ export const AccountInfo = () => {
     <Row>
       <Col xl={3} lg={3} md={3} sm={3}>
         <SearchQueryProvider>
-          <Inner />
+          <SideMenu />
         </SearchQueryProvider>
       </Col>
 
       <Col>
         {route === Route.account ? (
-          <Boundary error={{ fallbackRender: fallbackRender(<div>No Selected Wallet</div>) }}>
+          <SelectedWalletBoundary fallback={<div>No Selected Walllelt</div>}>
             <SelectedWalletInfo />
-          </Boundary>
+          </SelectedWalletBoundary>
         ) : route === Route.settings ? (
           <SearchQueryProvider>
             <Settings />
@@ -46,25 +46,38 @@ export const AccountInfo = () => {
 const SelectedWalletInfo = () => {
   const [selected] = useSelectedWallet()
 
-  return <WalletInfo wallet={selected.wallet} />
+  return selected ? (
+    <WalletInfo wallet={selected.wallet} currencyCode={selected.currencyCode} />
+  ) : (
+    <div>No Selected Wallet</div>
+  )
 }
 
-const Inner = () => {
-  const route = useRoute()
-  const setRoute = useSetRoute()
-  const setSearchQuery = useSetSearchQuery()
+const AccountTotal = () => {
   const {
     total,
     denomination: { symbol, name },
   } = useAccountTotal(useAccount())
 
   return (
+    <ListGroup.Item>
+      Account Total: {symbol} {total.toFixed(2)} {name}
+    </ListGroup.Item>
+  )
+}
+
+const SideMenu = () => {
+  const route = useRoute()
+  const setRoute = useSetRoute()
+  const setSearchQuery = useSetSearchQuery()
+
+  return (
     <div>
       <FormControl placeholder={'Search'} onChange={(event) => setSearchQuery(event.currentTarget.value)} />
 
-      <ListGroup.Item>
-        Account Total: {symbol} {total.toFixed(2)} {name}
-      </ListGroup.Item>
+      <Boundary>
+        <AccountTotal />
+      </Boundary>
 
       <Boundary>
         <ActiveWalletList onSelect={() => setRoute(Route.account)} />

@@ -8,10 +8,8 @@ import { useAccount } from '../auth'
 import { Boundary, FlipInput } from '../components'
 import { useDisplayDenomination } from '../hooks'
 import { useFiatCurrencyCode, useReceiveAddressAndEncodeUri } from '../hooks'
-import { useSelectedWallet } from '../SelectedWallet'
 
-export const Request: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
-  const [{ currencyCode }] = useSelectedWallet()
+export const Request: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
   const [nativeAmount, setNativeAmount] = React.useState('0')
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
   const { data, error } = useReceiveAddressAndEncodeUri({ wallet, nativeAmount, options: { currencyCode } })
@@ -36,7 +34,6 @@ export const Request: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) =>
       {error && <Alert variant={'danger'}>{(error as Error).message}</Alert>}
       <JSONPretty
         data={{
-          // displayAmount: String(displayAmount),
           nativeAmount,
           fiatCurrencyCode,
           displayDenomination: useDisplayDenomination(useAccount(), currencyCode)[0],

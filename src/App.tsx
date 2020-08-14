@@ -11,7 +11,7 @@ import { Edge } from './Edge'
 import { AccountInfo } from './EdgeAccount'
 import { useName } from './hooks'
 import { RouteProvider, useRoute } from './route'
-import { SelectedWalletInfoProvider, fallbackRender, useSelectedWallet } from './SelectedWallet'
+import { SelectedWalletBoundary, SelectedWalletInfoProvider, useSelectedWallet } from './SelectedWallet'
 
 export const App = () => {
   return (
@@ -24,12 +24,11 @@ export const App = () => {
                 account ? (
                   <SelectedWalletInfoProvider>
                     <RouteProvider>
-                      <div>
-                        <Header />
-                        <Boundary>
-                          <AccountInfo />
-                        </Boundary>
-                      </div>
+                      <Header />
+
+                      <Boundary>
+                        <AccountInfo />
+                      </Boundary>
                     </RouteProvider>
                   </SelectedWalletInfoProvider>
                 ) : (
@@ -58,9 +57,11 @@ export const Header = () => {
       </Navbar.Brand>
       <Navbar.Toggle />
 
-      <Boundary error={{ fallbackRender: fallbackRender(<RouteText />) }}>
-        <SelectedWalletName />
-      </Boundary>
+      <SelectedWalletBoundary fallback={<Navbar.Text>{useRoute()}</Navbar.Text>}>
+        <Boundary>
+          <SelectedWalletName />
+        </Boundary>
+      </SelectedWalletBoundary>
 
       <Navbar.Collapse className="justify-content-end">
         <Navbar.Text>{account.username}</Navbar.Text>
@@ -89,4 +90,3 @@ const SelectedWalletName = () => {
     </Navbar.Text>
   )
 }
-const RouteText = () => <Navbar.Text>{useRoute()}</Navbar.Text>
