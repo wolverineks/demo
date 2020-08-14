@@ -26,15 +26,17 @@ export const BalanceList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }
 const TokenList = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
   const tokens = useEnabledTokens(wallet)
 
-  return tokens.length <= 0 ? (
-    <div>No Tokens</div>
-  ) : (
+  return (
     <div>
-      {tokens.map((currencyCode) => (
-        <Boundary key={currencyCode}>
-          <Balance wallet={wallet} currencyCode={currencyCode} />
-        </Boundary>
-      ))}
+      {tokens.length <= 0 ? (
+        <div>No Tokens</div>
+      ) : (
+        tokens.map((currencyCode) => (
+          <Boundary key={currencyCode}>
+            <Balance wallet={wallet} currencyCode={currencyCode} />
+          </Boundary>
+        ))
+      )}
     </div>
   )
 }

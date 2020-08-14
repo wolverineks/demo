@@ -24,12 +24,15 @@ export const Currencies: React.FC<{ query: string }> = ({ query }) => {
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       <FormControl placeholder={'Search'} onChange={(event) => setSearchQuery(event.currentTarget.value)} />
-
-      {visibleSettings.map((currencyInfo) => (
-        <Boundary key={currencyInfo.currencyCode}>
-          <CurrencySetting info={currencyInfo} />
-        </Boundary>
-      ))}
+      {visibleSettings.length <= 0 ? (
+        <div>No matching settings</div>
+      ) : (
+        visibleSettings.map((currencyInfo) => (
+          <Boundary key={currencyInfo.currencyCode}>
+            <CurrencySetting info={currencyInfo} />
+          </Boundary>
+        ))
+      )}
     </ListGroup>
   )
 }
@@ -61,14 +64,18 @@ const Denominations = ({
 }) => (
   <>
     <ListGroupItem>Denomination</ListGroupItem>
-    {denominations.map((denomination) => (
-      <Denomination
-        key={denomination.name}
-        denomination={denomination}
-        onSelect={() => onSelect(denomination)}
-        isSelected={denomination.multiplier === selectedDenomination.multiplier}
-      />
-    ))}
+    {denominations.length <= 0 ? (
+      <ListGroupItem>No Denominations</ListGroupItem>
+    ) : (
+      denominations.map((denomination) => (
+        <Denomination
+          key={denomination.name}
+          denomination={denomination}
+          onSelect={() => onSelect(denomination)}
+          isSelected={denomination.multiplier === selectedDenomination.multiplier}
+        />
+      ))
+    )}
   </>
 )
 

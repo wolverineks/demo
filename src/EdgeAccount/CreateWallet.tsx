@@ -8,7 +8,7 @@ import { FiatInfo, fiatInfos } from '../Fiat'
 import { useDefaultFiatInfo } from '../hooks'
 import { getWalletTypes } from '../utils'
 
-export const CreateWallet: React.FC = () => {
+export const CreateWallet = () => {
   const defaultFiatInfo = useDefaultFiatInfo(useAccount())
   const walletTypes = getWalletTypes(useAccount())
   const { execute: createCurrencyWallet, error, status } = useCreateCurrencyWallet(useAccount())

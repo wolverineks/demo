@@ -9,7 +9,7 @@ import { CreateAccount } from './CreateAccount'
 import { PasswordLogin } from './PasswordLogin'
 import { PinLogin } from './PinLogin'
 
-export const Login: React.FC = () => {
+export const Login = () => {
   const context = useEdgeContext()
   const setAccount = useSetAccount()
   const _onLogin = (account: EdgeAccount) => {

@@ -15,14 +15,14 @@ export const Select = <T,>({
   renderOption: (item: T) => React.ReactElement
   onSelect: (event: React.ChangeEvent<any>) => any
   disabled?: boolean
-  title: string
+  title?: string
   id?: string
   defaultValue?: string
   value?: string
 }) => {
   return (
     <FormGroup>
-      <FormLabel>{title}</FormLabel>
+      {title && <FormLabel>{title}</FormLabel>}
       <FormControl
         as="select"
         id={id || title}

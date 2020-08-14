@@ -17,41 +17,26 @@ export const Settings = () => {
     <Tabs id={'accountSettings'} defaultActiveKey={'account'}>
       <Tab title={'Account'} eventKey={'account'}>
         <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
-          <Boundary
-            error={{ fallbackRender: ({ error }) => <div>Error: {error?.message}</div> }}
-            suspense={{ fallback: <div>OTP loading...</div> }}
-          >
+          <Boundary>
             <OTP />
           </Boundary>
 
-          <Boundary
-            error={{ fallbackRender: ({ error }) => <div>Error: {error?.message}</div> }}
-            suspense={{ fallback: <div>AutoLogout loading...</div> }}
-          >
+          <Boundary>
             <AutoLogout />
           </Boundary>
 
-          <Boundary
-            error={{ fallbackRender: ({ error }) => <div>Error: {error?.message}</div> }}
-            suspense={{ fallback: <div>Default Fiat loading...</div> }}
-          >
+          <Boundary>
             <DefaultFiat />
           </Boundary>
 
-          <Boundary
-            error={{ fallbackRender: ({ error }) => <div>Error: {error?.message}</div> }}
-            suspense={{ fallback: <div>PinLogin loading...</div> }}
-          >
+          <Boundary>
             <PinLogin />
           </Boundary>
         </ListGroup>
       </Tab>
 
       <Tab eventKey={'currencies'} title={'Currencies'}>
-        <Boundary
-          error={{ fallbackRender: ({ error }) => <div>Error: {error?.message}</div> }}
-          suspense={{ fallback: <div>Currencies loading...</div> }}
-        >
+        <Boundary>
           <Currencies query={searchQuery} />
         </Boundary>
       </Tab>

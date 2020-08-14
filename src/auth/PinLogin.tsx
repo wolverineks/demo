@@ -16,6 +16,7 @@ export const PinLogin: React.FC<{ context: EdgeContext; onLogin: (account: EdgeA
   return (
     <ListGroup>
       <Select
+        disabled={loginWithPin[1].isLoading}
         onSelect={(event) => setUsername(event.currentTarget.value)}
         title={'Accounts'}
         options={accountsWithPinLogin}

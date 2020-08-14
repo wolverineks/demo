@@ -4,7 +4,7 @@ import React from 'react'
 import { useAccount } from '../auth'
 import { useCurrencyWallets, useWriteInactiveWallet } from '../hooks'
 
-export const InactiveWallets: React.FC = () => {
+export const InactiveWallets = () => {
   const currencyWallets = useCurrencyWallets(useAccount())
 
   return (

@@ -9,7 +9,7 @@ import { useSearchQuery } from '../search'
 import { FallbackRender } from './FallbackRender'
 import { useFilteredWalletIds } from './filter'
 
-export const DeletedWalletList: React.FC = () => {
+export const DeletedWalletList = () => {
   const deletedWalletIds = useDeletedWalletIds(useAccount())
   const searchQuery = useSearchQuery()
   const inactiveWallets = useInactiveWallets(useAccount())
