@@ -60,7 +60,7 @@ const ExchangeRates = () => {
       ],
       [] as string[],
     )
-    .filter((currencyCode) => currencyCode.includes(searchQuery))
+    .filter((currencyCode) => currencyCode.toLowerCase().trim().includes(searchQuery.toLowerCase().trim()))
 
   return (
     <div>
