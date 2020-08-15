@@ -1,12 +1,12 @@
 import React from 'react'
 import { Form, FormGroup, ListGroup, ListGroupItem } from 'react-bootstrap'
 
-import { useAccount } from '../auth'
+import { useEdgeAccount } from '../auth'
 import { useEdgeContext } from '../Edge'
 import { usePinLoginEnabled } from '../hooks'
 
 export const PinLogin = () => {
-  const [enabled, write] = usePinLoginEnabled(useEdgeContext(), useAccount())
+  const [enabled, write] = usePinLoginEnabled(useEdgeContext(), useEdgeAccount())
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>

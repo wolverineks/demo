@@ -2,16 +2,16 @@ import { useCreateCurrencyWallet } from 'edge-react-hooks'
 import React from 'react'
 import { Alert, Button, Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
 
-import { useAccount } from '../auth'
+import { useEdgeAccount } from '../auth'
 import { Select } from '../components'
 import { FiatInfo, fiatInfos } from '../Fiat'
 import { useDefaultFiatInfo } from '../hooks'
 import { getWalletTypes } from '../utils'
 
 export const CreateWallet = () => {
-  const defaultFiatInfo = useDefaultFiatInfo(useAccount())
-  const walletTypes = getWalletTypes(useAccount())
-  const { execute: createCurrencyWallet, error, status } = useCreateCurrencyWallet(useAccount())
+  const defaultFiatInfo = useDefaultFiatInfo(useEdgeAccount())
+  const walletTypes = getWalletTypes(useEdgeAccount())
+  const { execute: createCurrencyWallet, error, status } = useCreateCurrencyWallet(useEdgeAccount())
 
   const [type, setType] = React.useState<string>(walletTypes[0].type)
   const [name, setName] = React.useState<string>('')

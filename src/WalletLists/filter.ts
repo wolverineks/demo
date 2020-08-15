@@ -2,7 +2,7 @@ import { EdgeCurrencyWallet } from 'edge-core-js'
 
 import { InactiveWallet } from '../hooks'
 
-export const useFilteredWalletIds = (
+export const getFilteredWalletIds = (
   currencyWallets: (EdgeCurrencyWallet | InactiveWallet)[],
   walletIds: string[],
   query: string,

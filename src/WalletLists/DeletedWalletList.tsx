@@ -1,19 +1,20 @@
 import React from 'react'
 import { Accordion, Button, ListGroup } from 'react-bootstrap'
 
-import { useAccount } from '../auth'
+import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
-import { useChangeWalletStates, useDeletedWalletIds, useInactiveWallets, useReadInactiveWallet } from '../hooks'
+import { useChangeWalletStates, useInactiveWallets, useReadInactiveWallet } from '../hooks'
 import { useSearchQuery } from '../search'
+import { getDeletedWalletIds } from '../utils'
 import { FallbackRender } from './FallbackRender'
-import { useFilteredWalletIds } from './filter'
+import { getFilteredWalletIds } from './filter'
 
 export const DeletedWalletList = () => {
-  const deletedWalletIds = useDeletedWalletIds(useAccount())
+  const deletedWalletIds = getDeletedWalletIds(useEdgeAccount())
   const searchQuery = useSearchQuery()
-  const inactiveWallets = useInactiveWallets(useAccount())
-  const visibleWalletIds = useFilteredWalletIds(inactiveWallets, deletedWalletIds, searchQuery)
+  const inactiveWallets = useInactiveWallets(useEdgeAccount())
+  const visibleWalletIds = getFilteredWalletIds(inactiveWallets, deletedWalletIds, searchQuery)
 
   return (
     <Accordion>
@@ -38,7 +39,7 @@ export const DeletedWalletList = () => {
 const WalletRow: React.FC<{
   walletId: string
 }> = ({ walletId }) => {
-  const inactiveWallet = useReadInactiveWallet(useAccount(), walletId)
+  const inactiveWallet = useReadInactiveWallet(useEdgeAccount(), walletId)
   const balance = inactiveWallet.balances[inactiveWallet.currencyInfo.currencyCode]
 
   return (
@@ -64,7 +65,7 @@ const WalletRow: React.FC<{
 }
 
 const WalletOptions = ({ walletId }: { walletId: string }) => {
-  const { activateWallet, archiveWallet, error, status } = useChangeWalletStates(useAccount())
+  const { activateWallet, archiveWallet, error, status } = useChangeWalletStates(useEdgeAccount())
 
   return (
     <>

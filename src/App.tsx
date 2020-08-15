@@ -5,11 +5,10 @@ import { Button, Container, Navbar } from 'react-bootstrap'
 import { queryCache } from 'react-query'
 import { ReactQueryDevtools } from 'react-query-devtools'
 
-import { AccountConsumer, AccountProvider, Login, useAccount, useSetAccount } from './auth'
+import { AccountConsumer, AccountProvider, Login, useEdgeAccount, useSetAccount } from './auth'
 import { Boundary } from './components'
 import { Edge } from './Edge'
 import { AccountInfo } from './EdgeAccount'
-import { useName } from './hooks'
 import { RouteProvider, useRoute } from './route'
 import { SelectedWalletBoundary, SelectedWalletInfoProvider, useSelectedWallet } from './SelectedWallet'
 
@@ -47,7 +46,7 @@ export const App = () => {
 }
 
 export const Header = () => {
-  const account = useAccount()
+  const account = useEdgeAccount()
   const setAccount = useSetAccount()
 
   return (
@@ -82,11 +81,10 @@ export const Header = () => {
 
 const SelectedWalletName = () => {
   const [selected] = useSelectedWallet()
-  const name = useName(selected.wallet)
 
   return (
     <Navbar.Text>
-      {name}:{selected.currencyCode}
+      {selected.wallet.name}:{selected.currencyCode}
     </Navbar.Text>
   )
 }

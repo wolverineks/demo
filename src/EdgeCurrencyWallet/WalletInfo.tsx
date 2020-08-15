@@ -4,16 +4,16 @@ import React from 'react'
 import { Button, Card, Form, FormControl, FormGroup, FormLabel, ListGroup, Tab, Tabs } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
 
-import { useAccount } from '../auth'
+import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo, Select } from '../components'
 import { FiatAmount, fiatInfos } from '../Fiat'
-import { useAllKeys, useBalance, useFiatCurrencyCode, useName, useTokens } from '../hooks'
+import { useBalance, useFiatCurrencyCode, useTokens } from '../hooks'
 import { getTokenInfo } from '../utils'
 import { Request } from './Request'
 import { Send } from './Send'
 import { TransactionList } from './TransactionList'
 
-const Total: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
+const Balance: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
   const balance = useBalance(wallet, currencyCode)
   const fiatCurrencyCode = useFiatCurrencyCode(wallet)[0]
 
@@ -43,7 +43,7 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: st
     <Tabs id={'walletTabs'} defaultActiveKey={'history'}>
       <Tab eventKey={'history'} title={'History'}>
         <Boundary>
-          <Total wallet={wallet} currencyCode={currencyCode} />
+          <Balance wallet={wallet} currencyCode={currencyCode} />
           <TransactionList wallet={wallet} currencyCode={currencyCode} />
         </Boundary>
       </Tab>
@@ -108,7 +108,7 @@ const TokenRow: React.FC<{
   isEnabled: boolean
   onClick: (currencyCode: string) => void
 }> = ({ currencyCode, isEnabled, onClick }) => {
-  const { currencyName } = getTokenInfo(useAccount(), currencyCode)
+  const { currencyName } = getTokenInfo(useEdgeAccount(), currencyCode)
 
   return (
     <ListGroup.Item
@@ -122,7 +122,7 @@ const TokenRow: React.FC<{
 }
 
 const RenameWallet: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
-  const [name, setName] = React.useState<string>(useName(wallet) || '')
+  const [name, setName] = React.useState<string>(wallet.name || '')
   const { execute, status } = useRenameWallet(wallet)
 
   return (
@@ -161,7 +161,7 @@ const SetFiatCurrencyCode: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet 
 
 const RawKey: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const [showRawKey, setShowRawKey] = React.useState(false)
-  const rawKey = useAllKeys(useAccount()).find(({ id }) => id === wallet.id)!
+  const rawKey = useEdgeAccount().allKeys.find(({ id }) => id === wallet.id)!
 
   return (
     <FormGroup>

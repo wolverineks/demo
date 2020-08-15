@@ -4,7 +4,7 @@ import { Alert, Button, Form, FormControl, FormGroup, FormLabel, InputGroup } fr
 import JSONPretty from 'react-json-pretty'
 import QrReader from 'react-qr-reader'
 
-import { useAccount } from '../auth'
+import { useEdgeAccount } from '../auth'
 import { FlipInput, Select } from '../components'
 import {
   useDisplayDenomination,
@@ -16,7 +16,7 @@ import {
 import { categories } from '../utils'
 
 export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
-  const account = useAccount()
+  const account = useEdgeAccount()
   const [parsedUri, setParsedUri] = React.useState<EdgeParsedUri>()
   const [publicAddress, setPublicAddress] = React.useState('')
   const [displayAmount, setDisplayAmount] = React.useState('0')

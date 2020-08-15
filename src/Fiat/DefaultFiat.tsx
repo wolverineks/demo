@@ -1,14 +1,14 @@
 import React from 'react'
 import { Form, FormGroup, ListGroup, ListGroupItem } from 'react-bootstrap'
 
-import { useAccount } from '../auth'
+import { useEdgeAccount } from '../auth'
 import { Select } from '../components'
 import { useDefaultFiatCurrencyCode, useDefaultFiatInfo } from '../hooks'
 import { FiatInfo, fiatInfos } from './fiatInfos'
 
 export const DefaultFiat = () => {
-  const [currencyCode, write] = useDefaultFiatCurrencyCode(useAccount())
-  const defaultFiatInfo = useDefaultFiatInfo(useAccount())
+  const [currencyCode, write] = useDefaultFiatCurrencyCode(useEdgeAccount())
+  const defaultFiatInfo = useDefaultFiatInfo(useEdgeAccount())
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>

@@ -1,15 +1,15 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 
-import { useAccount } from '../auth'
-import { useCurrencyWallets, useWriteInactiveWallet } from '../hooks'
+import { useEdgeAccount } from '../auth'
+import { useWriteInactiveWallet } from '../hooks'
 
 export const InactiveWallets = () => {
-  const currencyWallets = useCurrencyWallets(useAccount())
+  const account = useEdgeAccount()
 
   return (
     <>
-      {Object.values(currencyWallets).map((wallet) => (
+      {Object.values(account.currencyWallets).map((wallet) => (
         <InactiveWallet key={wallet.id} wallet={wallet} />
       ))}
     </>
@@ -17,7 +17,7 @@ export const InactiveWallets = () => {
 }
 
 const InactiveWallet: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
-  useWriteInactiveWallet(useAccount(), wallet)
+  useWriteInactiveWallet(useEdgeAccount(), wallet)
 
   return null
 }

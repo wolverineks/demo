@@ -2,9 +2,9 @@ import { EdgeCurrencyInfo, EdgeDenomination, EdgeMetaToken } from 'edge-core-js'
 import React from 'react'
 import { FormControl, ListGroup, ListGroupItem } from 'react-bootstrap'
 
-import { useAccount } from '../auth'
+import { useEdgeAccount } from '../auth'
 import { Boundary, Logo } from '../components'
-import { useActiveCurrencyInfos, useActiveTokenInfos, useDisplayDenomination } from '../hooks'
+import { useActiveInfos, useDisplayDenomination } from '../hooks'
 import { useSetSearchQuery } from '../search'
 
 const normalize = (text: string) => text.trim().toLowerCase()
@@ -16,9 +16,9 @@ const matches = (query: string) => (info: EdgeCurrencyInfo | EdgeMetaToken) =>
     : normalize(info.displayName).includes(normalize(query)))
 
 export const Currencies: React.FC<{ query: string }> = ({ query }) => {
-  const currencyInfos = useActiveCurrencyInfos(useAccount())
-  const tokenInfos = useActiveTokenInfos(useAccount())
-  const visibleSettings = [...currencyInfos, ...tokenInfos].filter(matches(query))
+  const account = useEdgeAccount()
+
+  const visibleSettings = useActiveInfos(account).filter(matches(query))
   const setSearchQuery = useSetSearchQuery()
 
   return (
@@ -40,7 +40,7 @@ export const Currencies: React.FC<{ query: string }> = ({ query }) => {
 const isToken = (info: EdgeCurrencyInfo | EdgeMetaToken): info is EdgeMetaToken => (info as any).currencyName != null
 
 const CurrencySetting: React.FC<{ info: EdgeCurrencyInfo | EdgeMetaToken }> = ({ info }) => {
-  const [denomination, write] = useDisplayDenomination(useAccount(), info.currencyCode)
+  const [denomination, write] = useDisplayDenomination(useEdgeAccount(), info.currencyCode)
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>

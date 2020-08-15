@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { useAccount } from '../auth'
+import { useEdgeAccount } from '../auth'
 import { AmountInput, Boundary } from '../components'
 import { useDisplayDenomination } from '../hooks'
 import { denominatedToNative, getExchangeDenomination, nativeToDenominated } from '../utils'
@@ -33,7 +33,7 @@ const useFlipInput = ({
   currencyCode: string
   fiatCurrencyCode: string
 }) => {
-  const account = useAccount()
+  const account = useEdgeAccount()
 
   const [direction, setDirection] = React.useState<'cryptoToFiat' | 'fiatToCrypto'>('cryptoToFiat')
 

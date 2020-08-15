@@ -1,13 +1,15 @@
+import { EdgeAccount } from 'edge-core-js'
 import React from 'react'
 import { Form, FormControl, FormGroup, FormLabel, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { useIdleTimer } from 'react-idle-timer'
+import { QueryConfig, useMutation, useQuery } from 'react-query'
 
-import { useAccount, useSetAccount } from '../auth'
-import { useAutoLogout } from '../hooks'
+import { useEdgeAccount, useSetAccount } from '../auth'
+import { optimisticMutationOptions } from '../hooks'
 
 export const AutoLogout = () => {
-  const account = useAccount()
-  const [{ enabled, delay }, write] = useAutoLogout(account)
+  const account = useEdgeAccount()
+  const [{ enabled, delay }, setAutologout] = useAutoLogout(account)
   const setAccount = useSetAccount()
 
   const onIdle = () => {
@@ -25,7 +27,7 @@ export const AutoLogout = () => {
               {enabled && delay >= 30 && <IdleTimeout delay={delay} onIdle={onIdle} />}
               <FormControl
                 onChange={(event) =>
-                  write({
+                  setAutologout({
                     delay: Math.max(Number(event.currentTarget.value), 30),
                     enabled: true,
                   })
@@ -37,7 +39,7 @@ export const AutoLogout = () => {
                 id={'autoLogoutEnabled'}
                 type={'switch'}
                 label={'enabled'}
-                onChange={() => write({ enabled: !enabled, delay: Math.max(delay, 30) })}
+                onChange={() => setAutologout({ enabled: !enabled, delay: Math.max(delay, 30) })}
                 checked={enabled}
               />
             </FormGroup>
@@ -58,4 +60,35 @@ const IdleTimeout: React.FC<{ onIdle: () => void; delay: number }> = ({ onIdle, 
   }, [])
 
   return <div>Remaining Time: {(remainingTime / 1000).toFixed(0)}</div>
+}
+
+const defaultAutoLogout = { enabled: true, delay: 3600 }
+
+type AutoLogoutSetting = {
+  enabled: boolean
+  delay: number
+}
+
+export const useReadAutoLogout = (account: EdgeAccount, config?: QueryConfig<AutoLogoutSetting>) => {
+  return useQuery({
+    queryKey: [account.username, 'autoLogout'],
+    queryFn: () =>
+      account.dataStore
+        .getItem('autoLogout', 'autoLogout.json')
+        .then(JSON.parse)
+        .catch(() => defaultAutoLogout) as Promise<AutoLogoutSetting>,
+    config: { ...config },
+  })
+}
+
+export const useWriteAutoLogout = (account: EdgeAccount) => {
+  return useMutation(
+    (autoLogout: AutoLogoutSetting) =>
+      account.dataStore.setItem('autoLogout', 'autoLogout.json', JSON.stringify(autoLogout)),
+    optimisticMutationOptions([account.username, 'autoLogout']),
+  )
+}
+
+export const useAutoLogout = (account: EdgeAccount) => {
+  return [useReadAutoLogout(account).data!, useWriteAutoLogout(account)[0]] as const
 }

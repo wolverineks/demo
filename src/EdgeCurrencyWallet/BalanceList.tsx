@@ -4,12 +4,13 @@ import { Card, ListGroup } from 'react-bootstrap'
 
 import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
-import { useBalance, useEnabledTokens, useFiatCurrencyCode, useName } from '../hooks'
+import { useEnabledTokens, useFiatCurrencyCode } from '../hooks'
+import { getBalance } from '../utils'
 
 export const BalanceList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => (
   <Card>
     <ListGroup>
-      <ListGroup.Item>{useName(wallet)}</ListGroup.Item>
+      <ListGroup.Item>{wallet.name}</ListGroup.Item>
       <ListGroup.Item>
         <Boundary>
           <Balance wallet={wallet} currencyCode={wallet.currencyInfo.currencyCode} />{' '}
@@ -45,7 +46,7 @@ const Balance: React.FC<{
   wallet: EdgeCurrencyWallet
   currencyCode: string
 }> = ({ currencyCode, wallet }) => {
-  const balance = useBalance(wallet, currencyCode)
+  const balance = getBalance(wallet, currencyCode)
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
 
   return (

@@ -1,22 +1,22 @@
 import React from 'react'
 import { Col, FormControl, ListGroup, Row } from 'react-bootstrap'
 
-import { useAccount } from '../auth'
+import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo } from '../components'
 import { WalletInfo } from '../EdgeCurrencyWallet'
 import { FiatAmount } from '../Fiat'
-import { useAccountTotal, useActiveCurrencyInfos, useDefaultFiatCurrencyCode } from '../hooks'
+import { useActiveInfos, useDefaultFiatCurrencyCode, useEdgeAccountTotal } from '../hooks'
 import { Route, useRoute, useSetRoute } from '../route'
 import { SearchQueryProvider, useSetSearchQuery } from '../search'
 import { SelectedWalletBoundary, useSelectedWallet } from '../SelectedWallet'
 import { Settings } from '../Settings/Settings'
-import { denominatedToNative, getExchangeDenomination } from '../utils'
+import { denominatedToNative, getActiveInfos, getExchangeDenomination, isUnique } from '../utils'
 import { ActiveWalletList, ArchivedWalletList, DeletedWalletList } from '../WalletLists'
 import { CreateWallet } from '.'
 
 export const AccountInfo = () => {
   const route = useRoute()
-  const account = useAccount()
+  const account = useEdgeAccount()
 
   return (
     <Row>
@@ -49,17 +49,13 @@ export const AccountInfo = () => {
   )
 }
 
+const watch = ['currencyWallets'] as const
+const requiredExchangeRates = ['BTC', 'BCH', 'LTC', 'ETH']
 const ExchangeRates = () => {
   const [searchQuery, setSearchQuery] = React.useState('')
-  const currencyCodes = useActiveCurrencyInfos(useAccount())
-    .reduce(
-      (result, current) => [
-        ...result,
-        current.currencyCode,
-        ...current.metaTokens.map(({ currencyCode }) => currencyCode),
-      ],
-      [] as string[],
-    )
+  const currencyCodes = useActiveInfos(useEdgeAccount(watch))
+    .reduce((result, current) => [...result, current.currencyCode], requiredExchangeRates as string[])
+    .filter(isUnique)
     .filter((currencyCode) => currencyCode.toLowerCase().trim().includes(searchQuery.toLowerCase().trim()))
 
   return (
@@ -82,7 +78,7 @@ const ExchangeRates = () => {
 }
 
 const ExchangeRate: React.FC<{ currencyCode: string }> = ({ currencyCode }) => {
-  const account = useAccount()
+  const account = useEdgeAccount()
   const [fiatCurrencyCode] = useDefaultFiatCurrencyCode(account)
   const exchangeDenomiation = getExchangeDenomination(account, currencyCode)
   const nativeAmount = denominatedToNative({ denomination: exchangeDenomiation, amount: '1' })
@@ -110,7 +106,7 @@ const AccountTotal = () => {
   const {
     total,
     denomination: { symbol, name },
-  } = useAccountTotal(useAccount())
+  } = useEdgeAccountTotal(useEdgeAccount())
 
   return (
     <ListGroup.Item>

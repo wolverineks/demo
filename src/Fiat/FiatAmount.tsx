@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { useAccount } from '../auth'
+import { useEdgeAccount } from '../auth'
 import { useFiatAmount } from '../hooks'
 import { getFiatInfo } from './getFiatInfo'
 
@@ -13,7 +13,7 @@ export const FiatAmount = ({
   fiatCurrencyCode: string
   fromCurrencyCode: string
 }) => {
-  const account = useAccount()
+  const account = useEdgeAccount()
   const fiatAmount = useFiatAmount({
     account,
     nativeAmount,

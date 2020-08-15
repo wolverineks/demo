@@ -4,7 +4,7 @@ import React from 'react'
 import { Alert, Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
 
-import { useAccount } from '../auth'
+import { useEdgeAccount } from '../auth'
 import { Boundary, FlipInput } from '../components'
 import { useDisplayDenomination } from '../hooks'
 import { useFiatCurrencyCode, useReceiveAddressAndEncodeUri } from '../hooks'
@@ -36,7 +36,7 @@ export const Request: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: strin
         data={{
           nativeAmount,
           fiatCurrencyCode,
-          displayDenomination: useDisplayDenomination(useAccount(), currencyCode)[0],
+          displayDenomination: useDisplayDenomination(useEdgeAccount(), currencyCode)[0],
           currencyCodeOptions: { currencyCode },
           uri: data?.uri,
           receiveAddress: data?.receiveAddress,

@@ -1,30 +1,22 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
 import { useOnNewTransactions } from 'edge-react-hooks'
 import React from 'react'
-import { Accordion, Button, ListGroup } from 'react-bootstrap'
+import { Accordion, Button, ListGroup, ProgressBar } from 'react-bootstrap'
 
-import { useAccount } from '../auth'
+import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
-import {
-  useActiveWalletIds,
-  useBalance,
-  useChangeWalletStates,
-  useEnabledTokens,
-  useName,
-  useSortedCurrencyWallets,
-  useWallet,
-} from '../hooks'
+import { useBalance, useChangeWalletStates, useEdgeCurrencyWallet, useEnabledTokens } from '../hooks'
 import { useSearchQuery } from '../search'
 import { SelectedWalletBoundary, useSelectedWallet } from '../SelectedWallet'
-import { useFilteredWalletIds } from './filter'
+import { getBalance, getSortedCurrencyWallets } from '../utils'
+import { getFilteredWalletIds } from './filter'
 
 export const ActiveWalletList: React.FC<{ onSelect: () => void }> = ({ onSelect }) => {
-  const account = useAccount()
+  const account = useEdgeAccount()
   const searchQuery = useSearchQuery()
-  const activeWalletIds = useActiveWalletIds(account)
-  const currencyWallets = useSortedCurrencyWallets(account)
-  const visibleWalletIds = useFilteredWalletIds(currencyWallets, activeWalletIds, searchQuery)
+  const currencyWallets = getSortedCurrencyWallets(account)
+  const visibleWalletIds = getFilteredWalletIds(currencyWallets, account.activeWalletIds, searchQuery)
 
   return (
     <Accordion defaultActiveKey={'0'}>
@@ -48,16 +40,14 @@ export const ActiveWalletList: React.FC<{ onSelect: () => void }> = ({ onSelect 
 }
 
 const ActiveWalletRow: React.FC<{ walletId: string; onSelect: () => void }> = ({ walletId, onSelect }) => {
-  const account = useAccount()
-  const wallet = useWallet({ account, walletId })
+  const account = useEdgeAccount()
+  const wallet = useEdgeCurrencyWallet({ account, walletId })
   const currencyCode = wallet.currencyInfo.currencyCode
-  const balance = useBalance(wallet, currencyCode)
-  const name = useName(wallet)
-
+  const balance = getBalance(wallet, currencyCode)
   const [selected, select] = useSelectedWallet()
 
   useOnNewTransactions(wallet, (transactions) =>
-    alert(`${name} - ${transactions.length > 1 ? 'New Transactions' : 'New Transaction'}`),
+    alert(`${wallet.name} - ${transactions.length > 1 ? 'New Transactions' : 'New Transaction'}`),
   )
 
   return (
@@ -65,6 +55,7 @@ const ActiveWalletRow: React.FC<{ walletId: string; onSelect: () => void }> = ({
       <ListGroup.Item
         variant={wallet.id === selected.id && currencyCode === selected.currencyCode ? 'primary' : undefined}
       >
+        {wallet.syncRatio < 1 && <ProgressBar min={0} now={Math.max(wallet.syncRatio, 0.1)} max={1} striped animated />}
         <span
           onClick={() => {
             select({ id: walletId, currencyCode })
@@ -72,7 +63,7 @@ const ActiveWalletRow: React.FC<{ walletId: string; onSelect: () => void }> = ({
           }}
           className={'float-left'}
         >
-          <Logo currencyCode={currencyCode} /> {name}{' '}
+          <Logo currencyCode={currencyCode} /> {wallet.name}{' '}
           <DisplayAmount nativeAmount={balance} currencyCode={currencyCode} /> -{' '}
           <FiatAmount
             nativeAmount={balance}
@@ -90,7 +81,7 @@ const ActiveWalletRow: React.FC<{ walletId: string; onSelect: () => void }> = ({
 }
 
 const WalletOptions = ({ walletId }: { walletId: string }) => {
-  const { archiveWallet, deleteWallet, status } = useChangeWalletStates(useAccount())
+  const { archiveWallet, deleteWallet, status } = useChangeWalletStates(useEdgeAccount())
 
   return (
     <span className={'float-right'}>
