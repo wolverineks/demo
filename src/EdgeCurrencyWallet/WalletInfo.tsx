@@ -2,11 +2,12 @@ import { EdgeCurrencyWallet } from 'edge-core-js'
 import { useOnNewTransactions, useRenameWallet } from 'edge-react-hooks'
 import React from 'react'
 import { Button, Card, Form, FormControl, FormGroup, FormLabel, ListGroup, Tab, Tabs } from 'react-bootstrap'
+import JSONPretty from 'react-json-pretty'
 
 import { useAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo, Select } from '../components'
 import { FiatAmount, fiatInfos } from '../Fiat'
-import { useBalance, useFiatCurrencyCode, useName, useTokens } from '../hooks'
+import { useAllKeys, useBalance, useFiatCurrencyCode, useName, useTokens } from '../hooks'
 import { getTokenInfo } from '../utils'
 import { Request } from './Request'
 import { Send } from './Send'
@@ -158,6 +159,20 @@ const SetFiatCurrencyCode: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet 
   )
 }
 
+const RawKey: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
+  const [showRawKey, setShowRawKey] = React.useState(false)
+  const rawKey = useAllKeys(useAccount()).find(({ id }) => id === wallet.id)!
+
+  return (
+    <FormGroup>
+      <FormLabel>Raw Key</FormLabel>
+      {showRawKey && <JSONPretty json={rawKey} />}
+      <br />
+      <Button onClick={() => setShowRawKey((x) => !x)}>Show Raw Key</Button>
+    </FormGroup>
+  )
+}
+
 const PrivateSeed: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const [showPrivateSeed, setShowPrivateSeed] = React.useState(false)
 
@@ -203,6 +218,10 @@ const Settings: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
 
       <Matcher query={query} match={'public seed'}>
         <PublicSeed wallet={wallet} />
+      </Matcher>
+
+      <Matcher query={query} match={'raw key'}>
+        <RawKey wallet={wallet} />
       </Matcher>
 
       <Tokens wallet={wallet} />
