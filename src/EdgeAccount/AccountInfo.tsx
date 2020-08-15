@@ -26,7 +26,7 @@ export const AccountInfo = () => {
 
       <Col>
         {route === Route.account ? (
-          <SelectedWalletBoundary fallback={<div>No Selected Walllelt</div>}>
+          <SelectedWalletBoundary fallback={<div>No Selected Wallet</div>}>
             <SelectedWalletInfo />
           </SelectedWalletBoundary>
         ) : route === Route.settings ? (
