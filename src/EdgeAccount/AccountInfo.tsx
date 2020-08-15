@@ -2,13 +2,15 @@ import React from 'react'
 import { Col, FormControl, ListGroup, Row } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
-import { Boundary } from '../components'
+import { Boundary, DisplayAmount, Logo } from '../components'
 import { WalletInfo } from '../EdgeCurrencyWallet'
-import { useAccountTotal } from '../hooks'
+import { FiatAmount } from '../Fiat'
+import { useAccountTotal, useActiveCurrencyInfos, useDefaultFiatCurrencyCode } from '../hooks'
 import { Route, useRoute, useSetRoute } from '../route'
 import { SearchQueryProvider, useSetSearchQuery } from '../search'
 import { SelectedWalletBoundary, useSelectedWallet } from '../SelectedWallet'
 import { Settings } from '../Settings/Settings'
+import { denominatedToNative, getExchangeDenomination } from '../utils'
 import { ActiveWalletList, ArchivedWalletList, DeletedWalletList } from '../WalletLists'
 import { CreateWallet } from '.'
 
@@ -39,7 +41,58 @@ export const AccountInfo = () => {
           <div>404</div>
         )}
       </Col>
+
+      <Col xl={3} lg={3} md={3} sm={3}>
+        <ExchangeRates />
+      </Col>
     </Row>
+  )
+}
+
+const ExchangeRates = () => {
+  const [searchQuery, setSearchQuery] = React.useState('')
+  const currencyCodes = useActiveCurrencyInfos(useAccount())
+    .reduce(
+      (result, current) => [
+        ...result,
+        current.currencyCode,
+        ...current.metaTokens.map(({ currencyCode }) => currencyCode),
+      ],
+      [] as string[],
+    )
+    .filter((currencyCode) => currencyCode.includes(searchQuery))
+
+  return (
+    <div>
+      <div>Exchange Rates</div>
+
+      <FormControl
+        placeholder={'Search'}
+        value={searchQuery}
+        onChange={(event) => setSearchQuery(event.currentTarget.value)}
+      />
+
+      {currencyCodes.map((currencyCode) => (
+        <Boundary key={currencyCode}>
+          <ExchangeRate key={currencyCode} currencyCode={currencyCode} />
+        </Boundary>
+      ))}
+    </div>
+  )
+}
+
+const ExchangeRate: React.FC<{ currencyCode: string }> = ({ currencyCode }) => {
+  const account = useAccount()
+  const [fiatCurrencyCode] = useDefaultFiatCurrencyCode(account)
+  const exchangeDenomiation = getExchangeDenomination(account, currencyCode)
+  const nativeAmount = denominatedToNative({ denomination: exchangeDenomiation, amount: '1' })
+
+  return (
+    <div>
+      <Logo currencyCode={currencyCode} />
+      <DisplayAmount nativeAmount={nativeAmount} currencyCode={currencyCode} /> ={' '}
+      <FiatAmount nativeAmount={nativeAmount} fromCurrencyCode={currencyCode} fiatCurrencyCode={fiatCurrencyCode} />
+    </div>
   )
 }
 
