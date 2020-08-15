@@ -63,7 +63,7 @@ const ActiveWalletRow: React.FC<{ walletId: string; onSelect: () => void }> = ({
   return (
     <>
       <ListGroup.Item
-        variant={wallet.id === selected.id && currencyCode === selected?.currencyCode ? 'primary' : undefined}
+        variant={wallet.id === selected.id && currencyCode === selected.currencyCode ? 'primary' : undefined}
       >
         <span
           onClick={() => {
@@ -132,7 +132,7 @@ const EnabledTokenRow: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: stri
 
   return (
     <ListGroup.Item
-      variant={wallet.id === selected.id && currencyCode === selected?.currencyCode ? 'primary' : undefined}
+      variant={wallet.id === selected.id && currencyCode === selected.currencyCode ? 'primary' : undefined}
       onClick={() => {
         onSelect()
         select({ id: wallet.id, currencyCode })
