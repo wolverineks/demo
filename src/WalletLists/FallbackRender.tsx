@@ -1,17 +1,16 @@
-import { useChangeWalletState } from 'edge-react-hooks'
 import React from 'react'
 import { Button } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
+import { useChangeWalletStates } from '../hooks'
 
 export const FallbackRender = ({ walletId }: { walletId: string }) => {
-  const { execute: changeWalletState, status } = useChangeWalletState(useAccount())
-  const activateWallet = () => changeWalletState({ walletId, walletState: { archived: false, deleted: false } })
+  const { activateWallet, status } = useChangeWalletStates(useAccount())
 
   return (
     <div>
       {walletId}{' '}
-      <Button variant={'warning'} disabled={status === 'loading'} onClick={activateWallet}>
+      <Button variant={'warning'} disabled={status === 'loading'} onClick={() => activateWallet(walletId)}>
         Activate
       </Button>
     </div>

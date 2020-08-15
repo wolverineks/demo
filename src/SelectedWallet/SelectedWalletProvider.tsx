@@ -2,7 +2,7 @@ import { EdgeAccount } from 'edge-core-js'
 import React from 'react'
 
 import { useAccount } from '../auth'
-import { useActiveWalletIds, useWallet, useWatch } from '../hooks'
+import { useActiveWalletIds, useWallet } from '../hooks'
 
 type SelectedWalletInfo = { id: string; currencyCode: string }
 type SetSelectedWalletInfo = (selectedWalletInfo: SelectedWalletInfo) => void

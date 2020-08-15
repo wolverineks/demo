@@ -10,12 +10,35 @@ export const FlipInput: React.FC<{
   currencyCode: string
   fiatCurrencyCode: string
 }> = ({ currencyCode, fiatCurrencyCode, onChange }) => {
+  const { top, bottom } = useFlipInput({ onChange, currencyCode, fiatCurrencyCode })
+
+  return (
+    <div>
+      <Boundary>
+        <AmountInput {...top} />
+      </Boundary>
+      <Boundary>
+        <AmountInput {...bottom} />
+      </Boundary>
+    </div>
+  )
+}
+
+const useFlipInput = ({
+  onChange,
+  currencyCode,
+  fiatCurrencyCode,
+}: {
+  onChange: (nativeAmount: string) => any
+  currencyCode: string
+  fiatCurrencyCode: string
+}) => {
   const account = useAccount()
 
   const [direction, setDirection] = React.useState<'cryptoToFiat' | 'fiatToCrypto'>('cryptoToFiat')
 
   const [topDisplayAmount, setTopDisplayAmount] = React.useState('0')
-  const [bottomDisplayAmount, setBottomDisplayAmoumt] = React.useState('0')
+  const [bottomDisplayAmount, setBottomDisplayAmount] = React.useState('0')
 
   const topDisplayDenomination = useDisplayDenomination(account, currencyCode)[0]
   const bottomDisplayDenomination = useDisplayDenomination(account, fiatCurrencyCode)[0]
@@ -48,7 +71,7 @@ export const FlipInput: React.FC<{
       })
 
       setTopDisplayAmount(topDisplayAmount)
-      setBottomDisplayAmoumt(String(bottomDisplayAmount))
+      setBottomDisplayAmount(String(bottomDisplayAmount))
 
       onChange(topNativeAmount)
     }
@@ -76,7 +99,7 @@ export const FlipInput: React.FC<{
         denomination: topDisplayDenomination,
       })
 
-      setBottomDisplayAmoumt(bottomDisplayAmount)
+      setBottomDisplayAmount(bottomDisplayAmount)
       setTopDisplayAmount(String(topDisplayAmount))
       onChange(topNativeAmount)
     }
@@ -96,29 +119,23 @@ export const FlipInput: React.FC<{
     topExchangeDenomination,
   ])
 
-  return (
-    <div>
-      <Boundary>
-        <AmountInput
-          amount={topDisplayAmount}
-          onChange={(displayAmount) => {
-            setDirection('cryptoToFiat')
-            setTopDisplayAmount(displayAmount)
-          }}
-          denomination={topDisplayDenomination}
-        />
-      </Boundary>
-
-      <Boundary>
-        <AmountInput
-          amount={bottomDisplayAmount}
-          onChange={(displayAmount) => {
-            setDirection('fiatToCrypto')
-            setBottomDisplayAmoumt(displayAmount)
-          }}
-          denomination={bottomDisplayDenomination}
-        />
-      </Boundary>
-    </div>
-  )
+  return {
+    top: {
+      amount: topDisplayAmount,
+      denomination: topDisplayDenomination,
+      setDisplayAmount: setTopDisplayAmount,
+      onChange: (displayAmount: string) => {
+        setDirection('cryptoToFiat')
+        setTopDisplayAmount(displayAmount)
+      },
+    },
+    bottom: {
+      amount: bottomDisplayAmount,
+      denomination: bottomDisplayDenomination,
+      onChange: (displayAmount: string) => {
+        setDirection('fiatToCrypto')
+        setBottomDisplayAmount(displayAmount)
+      },
+    },
+  }
 }
