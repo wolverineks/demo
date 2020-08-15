@@ -4,7 +4,7 @@ import React from 'react'
 import { Button, Card, Form, FormControl, FormGroup, FormLabel, ListGroup, Tab, Tabs } from 'react-bootstrap'
 
 import { useAccount } from '../auth'
-import { Boundary, Logo, Select } from '../components'
+import { Boundary, DisplayAmount, Logo, Select } from '../components'
 import { FiatAmount, fiatInfos } from '../Fiat'
 import { useBalance, useFiatCurrencyCode, useName, useTokens } from '../hooks'
 import { getTokenInfo } from '../utils'
@@ -18,7 +18,13 @@ const Total: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({
 
   return (
     <div>
-      <FiatAmount nativeAmount={balance} fromCurrencyCode={currencyCode} fiatCurrencyCode={fiatCurrencyCode} />
+      <div>
+        <DisplayAmount nativeAmount={balance} currencyCode={currencyCode} />
+      </div>
+
+      <div>
+        <FiatAmount nativeAmount={balance} fromCurrencyCode={currencyCode} fiatCurrencyCode={fiatCurrencyCode} />
+      </div>
     </div>
   )
 }
@@ -55,7 +61,7 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: st
 
       <Tab eventKey={'settings'} title={'Settings'}>
         <Boundary>
-          <Settings wallet={wallet} />
+          <Settings wallet={wallet} key={wallet.id} />
         </Boundary>
       </Tab>
     </Tabs>

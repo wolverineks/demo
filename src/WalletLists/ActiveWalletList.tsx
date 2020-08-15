@@ -37,7 +37,7 @@ export const ActiveWalletList: React.FC<{ onSelect: () => void }> = ({ onSelect 
           {visibleWalletIds.map((id) => (
             <Boundary key={id} suspense={{ fallback: <ListGroup.Item>Loading...</ListGroup.Item> }}>
               <SelectedWalletBoundary>
-                <ActiveWalletRow walletId={id} />
+                <ActiveWalletRow walletId={id} onSelect={onSelect} />
               </SelectedWalletBoundary>
             </Boundary>
           ))}
@@ -47,7 +47,7 @@ export const ActiveWalletList: React.FC<{ onSelect: () => void }> = ({ onSelect 
   )
 }
 
-const ActiveWalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
+const ActiveWalletRow: React.FC<{ walletId: string; onSelect: () => void }> = ({ walletId, onSelect }) => {
   const account = useAccount()
   const wallet = useWallet({ account, walletId })
   const currencyCode = wallet.currencyInfo.currencyCode
@@ -65,7 +65,13 @@ const ActiveWalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
       <ListGroup.Item
         variant={wallet.id === selected.id && currencyCode === selected?.currencyCode ? 'primary' : undefined}
       >
-        <span onClick={() => select({ id: wallet.id, currencyCode })} className={'float-left'}>
+        <span
+          onClick={() => {
+            select({ id: walletId, currencyCode })
+            onSelect()
+          }}
+          className={'float-left'}
+        >
           <Logo currencyCode={currencyCode} /> {name}{' '}
           <DisplayAmount nativeAmount={balance} currencyCode={currencyCode} /> -{' '}
           <FiatAmount
@@ -78,7 +84,7 @@ const ActiveWalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
         <WalletOptions walletId={wallet.id} />
       </ListGroup.Item>
 
-      <EnabledTokensList wallet={wallet} />
+      <EnabledTokensList wallet={wallet} onSelect={onSelect} />
     </>
   )
 }
@@ -98,7 +104,10 @@ const WalletOptions = ({ walletId }: { walletId: string }) => {
   )
 }
 
-export const EnabledTokensList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
+export const EnabledTokensList: React.FC<{ wallet: EdgeCurrencyWallet; onSelect: () => void }> = ({
+  wallet,
+  onSelect,
+}) => {
   const tokenCodes = useEnabledTokens(wallet)
 
   return tokenCodes.length > 0 ? (
@@ -106,7 +115,7 @@ export const EnabledTokensList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wa
       <ListGroup variant={'flush'}>
         {tokenCodes.map((currencyCode) => (
           <Boundary key={currencyCode}>
-            <EnabledTokenRow wallet={wallet} currencyCode={currencyCode} />
+            <EnabledTokenRow wallet={wallet} currencyCode={currencyCode} onSelect={onSelect} />
           </Boundary>
         ))}
       </ListGroup>
@@ -114,13 +123,20 @@ export const EnabledTokensList: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wa
   ) : null
 }
 
-const EnabledTokenRow: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
+const EnabledTokenRow: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string; onSelect: () => void }> = ({
+  wallet,
+  currencyCode,
+  onSelect,
+}) => {
   const [selected, select] = useSelectedWallet()
 
   return (
     <ListGroup.Item
       variant={wallet.id === selected.id && currencyCode === selected?.currencyCode ? 'primary' : undefined}
-      onClick={() => select({ id: wallet.id, currencyCode })}
+      onClick={() => {
+        onSelect()
+        select({ id: wallet.id, currencyCode })
+      }}
     >
       <span className={'float-left'}>
         <Logo currencyCode={currencyCode} />
