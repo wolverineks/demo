@@ -598,10 +598,14 @@ export const useTokens = (wallet: EdgeCurrencyWallet) => ({
   disableToken: useDisableToken(wallet),
 })
 
-export const useTransactions = (wallet: EdgeCurrencyWallet, config?: QueryConfig<EdgeTransaction[]>) => {
+export const useTransactions = (
+  wallet: EdgeCurrencyWallet,
+  options?: { currencyCode: string },
+  config?: QueryConfig<EdgeTransaction[]>,
+) => {
   const { data, refetch } = useQuery({
-    queryKey: [wallet.id, 'transactions'],
-    queryFn: () => wallet.getTransactions(),
+    queryKey: [wallet.id, 'transactions', options],
+    queryFn: () => wallet.getTransactions(options),
     config: { ...config },
   })
 

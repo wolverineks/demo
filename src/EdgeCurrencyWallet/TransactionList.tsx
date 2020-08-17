@@ -9,8 +9,8 @@ export const TransactionList: React.FC<{ wallet: EdgeCurrencyWallet; currencyCod
   wallet,
   currencyCode,
 }) => {
-  const transactionCount = useTransactionCount(wallet)
-  const transactions = useTransactions(wallet).filter((transaction) => transaction.currencyCode === currencyCode)
+  const transactionCount = useTransactionCount(wallet, { currencyCode })
+  const transactions = useTransactions(wallet, { currencyCode })
 
   return (
     <ListGroup>
