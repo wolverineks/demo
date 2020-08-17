@@ -476,8 +476,6 @@ export type InactiveWallet = Pick<
   | 'otherMethods'
 >
 
-class WalletNotFound extends Error {}
-
 export const useEdgeCurrencyWallet = (
   {
     account,
@@ -492,11 +490,11 @@ export const useEdgeCurrencyWallet = (
     config: { ...config },
   })
 
-  if (!wallet) throw new WalletNotFound(`404: wallet:${walletId} not found`)
+  if (!wallet) throw new Error(`404: wallet:${walletId} not found`)
 
   useWatchAll(wallet, watch)
 
-  return wallet!
+  return wallet
 }
 
 export const useBalance = (wallet: EdgeCurrencyWallet, currencyCode: string) => {

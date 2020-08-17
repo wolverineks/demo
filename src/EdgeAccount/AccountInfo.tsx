@@ -10,7 +10,7 @@ import { Route, useRoute, useSetRoute } from '../route'
 import { SearchQueryProvider, useSetSearchQuery } from '../search'
 import { SelectedWalletBoundary, useSelectedWallet } from '../SelectedWallet'
 import { Settings } from '../Settings/Settings'
-import { denominatedToNative, getActiveInfos, getExchangeDenomination, isUnique } from '../utils'
+import { denominatedToNative, getExchangeDenomination, isUnique } from '../utils'
 import { ActiveWalletList, ArchivedWalletList, DeletedWalletList } from '../WalletLists'
 import { CreateWallet } from '.'
 
@@ -95,11 +95,7 @@ const ExchangeRate: React.FC<{ currencyCode: string }> = ({ currencyCode }) => {
 const SelectedWalletInfo = () => {
   const [selected] = useSelectedWallet()
 
-  return selected ? (
-    <WalletInfo wallet={selected.wallet} currencyCode={selected.currencyCode} />
-  ) : (
-    <div>No Selected Wallet</div>
-  )
+  return <WalletInfo wallet={selected.wallet} currencyCode={selected.currencyCode} />
 }
 
 const AccountTotal = () => {

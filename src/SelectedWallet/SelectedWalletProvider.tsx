@@ -29,19 +29,6 @@ export const SelectedWalletInfoProvider: React.FC = ({ children }) => {
   // SELECTED, ACTIVE
   if (id && currencyCode && account.activeWalletIds.includes(id)) selectedWalletInfo = { id, currencyCode }
 
-  // SELECTED WALLET DEACTIVATED + SWITCH TO NEXT WALLET
-  if (!account.activeWalletIds.includes(id) && account.activeWalletIds.length > 0) {
-    selectedWalletInfo = {
-      id: account.activeWalletIds[0],
-      currencyCode: getCurrencyCodeFromWalletId(account, account.activeWalletIds[0]),
-    }
-
-    setSelectedWalletInfo({
-      id: account.activeWalletIds[0],
-      currencyCode: getCurrencyCodeFromWalletId(account, account.activeWalletIds[0]),
-    })
-  }
-
   return (
     <SelectedWalletInfoContext.Provider value={[selectedWalletInfo, setSelectedWalletInfo] as const}>
       {children}
@@ -53,15 +40,16 @@ const missingProvider = () => {
   throw new Error('missing provider')
 }
 
-export const useSelectedWalletInfoContext = () => React.useContext(SelectedWalletInfoContext) || missingProvider()
+export const useSelectedWalletInfo = () => React.useContext(SelectedWalletInfoContext) || missingProvider()
 
 export const useSelectedWallet = (watch?: readonly (keyof EdgeCurrencyWallet)[]) => {
-  const [walletInfo, selectWallet] = useSelectedWalletInfoContext()
-  if (!walletInfo) throw new Error('Missing <SelectedWalletBoundary>')
+  const [walletInfo, selectWallet] = useSelectedWalletInfo()
 
-  const wallet = useEdgeCurrencyWallet({ account: useEdgeAccount(), walletId: walletInfo.id, watch })
+  if (!walletInfo) throw new Error('Missing SelectedWallet Boundary')
 
-  return [{ wallet, ...walletInfo }, selectWallet] as const
+  const wallet = useEdgeCurrencyWallet({ account: useEdgeAccount(), walletId: walletInfo.id as string, watch })
+
+  return [{ wallet, id: walletInfo?.id, currencyCode: walletInfo?.currencyCode }, selectWallet] as const
 }
 
 const getCurrencyCodeFromWalletId = (account: EdgeAccount, id: string) => {
@@ -71,11 +59,13 @@ const getCurrencyCodeFromWalletId = (account: EdgeAccount, id: string) => {
     ({ currencyInfo }) => currencyInfo.walletType === walletInfo?.type,
   )?.currencyInfo.currencyCode
 
-  return currencyCode!
+  if (!currencyCode) throw new Error('Invalid wallet id')
+
+  return currencyCode
 }
 
 export const SelectedWalletBoundary: React.FC<{ fallback?: React.ReactNode }> = ({ children, fallback = null }) => {
-  const [walletInfo] = useSelectedWalletInfoContext()
+  const [walletInfo] = useSelectedWalletInfo()
 
   return <>{walletInfo ? children : fallback}</>
 }

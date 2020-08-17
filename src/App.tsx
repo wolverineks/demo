@@ -1,5 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css'
 
+import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 import { Button, Container, Navbar } from 'react-bootstrap'
 import { queryCache } from 'react-query'
@@ -9,8 +10,9 @@ import { AccountConsumer, AccountProvider, Login, useEdgeAccount, useSetAccount 
 import { Boundary } from './components'
 import { Edge } from './Edge'
 import { AccountInfo } from './EdgeAccount'
+import { useEdgeCurrencyWallet } from './hooks'
 import { RouteProvider, useRoute } from './route'
-import { SelectedWalletBoundary, SelectedWalletInfoProvider, useSelectedWallet } from './SelectedWallet'
+import { SelectedWalletInfoProvider, useSelectedWalletInfo } from './SelectedWallet'
 
 export const App = () => {
   return (
@@ -48,6 +50,8 @@ export const App = () => {
 export const Header = () => {
   const account = useEdgeAccount()
   const setAccount = useSetAccount()
+  const [walletInfo] = useSelectedWalletInfo()
+  const route = useRoute()
 
   return (
     <Navbar>
@@ -56,11 +60,13 @@ export const Header = () => {
       </Navbar.Brand>
       <Navbar.Toggle />
 
-      <SelectedWalletBoundary fallback={<Navbar.Text>{useRoute()}</Navbar.Text>}>
+      {walletInfo ? (
         <Boundary>
-          <SelectedWalletName />
+          <WalletName walletId={walletInfo.id} currencyCode={walletInfo.currencyCode} />
         </Boundary>
-      </SelectedWalletBoundary>
+      ) : (
+        <Navbar.Text>{route}</Navbar.Text>
+      )}
 
       <Navbar.Collapse className="justify-content-end">
         <Navbar.Text>{account.username}</Navbar.Text>
@@ -79,12 +85,12 @@ export const Header = () => {
   )
 }
 
-const SelectedWalletName = () => {
-  const [selected] = useSelectedWallet()
+const WalletName: React.FC<{ walletId: string; currencyCode: string }> = ({ walletId, currencyCode }) => {
+  const wallet = useEdgeCurrencyWallet({ account: useEdgeAccount(), walletId })
 
   return (
     <Navbar.Text>
-      {selected.wallet.name}:{selected.currencyCode}
+      {wallet.name}:{currencyCode}
     </Navbar.Text>
   )
 }

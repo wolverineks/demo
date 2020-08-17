@@ -8,7 +8,7 @@ import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
 import { useBalance, useChangeWalletStates, useEdgeCurrencyWallet, useEnabledTokens } from '../hooks'
 import { useSearchQuery } from '../search'
-import { SelectedWalletBoundary, useSelectedWallet } from '../SelectedWallet'
+import { useSelectedWalletInfo } from '../SelectedWallet'
 import { getBalance, getSortedCurrencyWallets } from '../utils'
 import { getFilteredWalletIds } from './filter'
 
@@ -28,9 +28,7 @@ export const ActiveWalletList: React.FC<{ onSelect: () => void }> = ({ onSelect 
         <ListGroup variant={'flush'}>
           {visibleWalletIds.map((id) => (
             <Boundary key={id} suspense={{ fallback: <ListGroup.Item>Loading...</ListGroup.Item> }}>
-              <SelectedWalletBoundary>
-                <ActiveWalletRow walletId={id} onSelect={onSelect} />
-              </SelectedWalletBoundary>
+              <ActiveWalletRow walletId={id} onSelect={onSelect} />
             </Boundary>
           ))}
         </ListGroup>
@@ -44,7 +42,7 @@ const ActiveWalletRow: React.FC<{ walletId: string; onSelect: () => void }> = ({
   const wallet = useEdgeCurrencyWallet({ account, walletId })
   const currencyCode = wallet.currencyInfo.currencyCode
   const balance = getBalance(wallet, currencyCode)
-  const [selected, select] = useSelectedWallet()
+  const [selected, select] = useSelectedWalletInfo()
 
   useOnNewTransactions(wallet, (transactions) =>
     alert(`${wallet.name} - ${transactions.length > 1 ? 'New Transactions' : 'New Transaction'}`),
@@ -53,7 +51,7 @@ const ActiveWalletRow: React.FC<{ walletId: string; onSelect: () => void }> = ({
   return (
     <>
       <ListGroup.Item
-        variant={wallet.id === selected.id && currencyCode === selected.currencyCode ? 'primary' : undefined}
+        variant={wallet.id === selected?.id && currencyCode === selected?.currencyCode ? 'primary' : undefined}
       >
         {wallet.syncRatio < 1 && <ProgressBar min={0} now={Math.max(wallet.syncRatio, 0.1)} max={1} striped animated />}
         <span
@@ -119,11 +117,11 @@ const EnabledTokenRow: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: stri
   currencyCode,
   onSelect,
 }) => {
-  const [selected, select] = useSelectedWallet()
+  const [selected, select] = useSelectedWalletInfo()
 
   return (
     <ListGroup.Item
-      variant={wallet.id === selected.id && currencyCode === selected.currencyCode ? 'primary' : undefined}
+      variant={wallet.id === selected?.id && currencyCode === selected?.currencyCode ? 'primary' : undefined}
       onClick={() => {
         onSelect()
         select({ id: wallet.id, currencyCode })
