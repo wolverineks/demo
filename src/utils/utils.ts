@@ -1,4 +1,4 @@
-import { EdgeAccount, EdgeContext, EdgeCurrencyWallet, EdgeDenomination } from 'edge-core-js'
+import { EdgeAccount, EdgeContext, EdgeCurrencyWallet, EdgeDenomination, EdgeTransaction } from 'edge-core-js'
 
 import { getFiatInfo } from '../Fiat'
 
@@ -85,6 +85,12 @@ export const getLogo = (account: EdgeAccount, currencyCode: string) => {
   return getInfo(account, currencyCode).symbolImage
 }
 
+export const getNativeDenomination = (account: EdgeAccount, currencyCode: string) => {
+  const denominations = getInfo(account, currencyCode).denominations
+
+  return denominations[denominations.length - 1]
+}
+
 export const getExchangeDenomination = (account: EdgeAccount, currencyCode: string) => {
   return getInfo(account, currencyCode).denominations[0]
 }
@@ -104,6 +110,10 @@ export const getCurrencyCodes = (wallet: EdgeCurrencyWallet) => {
 
 export const getBalance = (wallet: EdgeCurrencyWallet, currencyCode: string) => {
   return wallet.balances[currencyCode]
+}
+
+export const getTxUrl = (account: EdgeAccount, transaction: EdgeTransaction) => {
+  return getInfo(account, transaction.currencyCode).transactionExplorer.replace('%s', transaction.txid)
 }
 
 // DENOMINATIONS
@@ -149,4 +159,16 @@ export const exchangeToNative = ({
     denomination: getExchangeDenomination(account, currencyCode),
     amount: exchangeAmount,
   })
+}
+
+export const changeDenomination = ({
+  amount,
+  fromDenomination,
+  toDenomination,
+}: {
+  amount: string
+  fromDenomination: EdgeDenomination
+  toDenomination: EdgeDenomination
+}) => {
+  return (Number(amount) * Number(fromDenomination.multiplier)) / Number(toDenomination.multiplier)
 }
