@@ -29,6 +29,7 @@ import {
   getTokenInfo,
   isUnique,
   nativeToDenominated,
+  nativeToExchange,
 } from '../utils'
 import { optimisticMutationOptions } from './optimisticMutationOptions'
 import { useWatch, useWatchAll } from './watch'
@@ -407,12 +408,15 @@ export const useFiatAmount = (
   },
   config?: QueryConfig<number>,
 ) => {
-  const denomination = getExchangeDenomination(account, fromCurrencyCode)
-  const exchangeAmount = Number(nativeToDenominated({ denomination, nativeAmount }))
+  const exchangeAmount = nativeToExchange({
+    account,
+    currencyCode: fromCurrencyCode,
+    nativeAmount,
+  })
 
   const { data, refetch } = useQuery({
     queryKey: [{ fromCurrencyCode, fiatCurrencyCode, exchangeAmount }],
-    queryFn: () => account.rateCache.convertCurrency(fromCurrencyCode, fiatCurrencyCode, exchangeAmount),
+    queryFn: () => account.rateCache.convertCurrency(fromCurrencyCode, fiatCurrencyCode, Number(exchangeAmount)),
     config: { ...config },
   })
 
