@@ -98,9 +98,9 @@ export const useActiveTokenInfos = (account: EdgeAccount) => {
     wallets.forEach((wallet) => {
       const query = queryCache.getQuery([wallet.id, 'enabledTokens'])
 
-      const subscription = query?.subscribe(() => rerender({}))
+      const queryInstance = query?.subscribe(() => rerender({}))
 
-      return subscription?.unsubscribe
+      return queryInstance?.unsubscribe
     })
   }, [wallets])
 
