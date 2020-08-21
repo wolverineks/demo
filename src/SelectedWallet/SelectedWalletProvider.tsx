@@ -1,8 +1,10 @@
 import { EdgeAccount, EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
+import { queryCache } from 'react-query'
 
 import { useEdgeAccount } from '../auth'
 import { useEdgeCurrencyWallet } from '../hooks'
+import { getInfo } from '../utils'
 
 type SelectedWalletInfo = { id: string; currencyCode: string }
 type SetSelectedWalletInfo = (selectedWalletInfo: SelectedWalletInfo) => void
@@ -13,21 +15,43 @@ const SelectedWalletInfoContext = React.createContext<
 
 export const SelectedWalletInfoProvider: React.FC = ({ children }) => {
   const account = useEdgeAccount()
-  const [id, setWalletId] = React.useState<string>(account.activeWalletIds[0])
-  const [currencyCode, setCurrencyCode] = React.useState<string | undefined>(
-    id ? getCurrencyCodeFromWalletId(account, id) : undefined,
+  const [selectedWalletId, setSelectedWalletId] = React.useState<string | undefined>(account.activeWalletIds[0])
+  const [selectedCurrencyCode, setSelectedCurrencyCode] = React.useState<string | undefined>(
+    selectedWalletId ? getCurrencyCodeFromWalletId(account, selectedWalletId) : undefined,
   )
 
   const setSelectedWalletInfo: SetSelectedWalletInfo = React.useCallback(({ id, currencyCode }) => {
-    setWalletId(id)
-    setCurrencyCode(currencyCode)
+    setSelectedWalletId(id)
+    setSelectedCurrencyCode(currencyCode)
   }, [])
 
   // NO SELECTED WALLET / NO ACTIVE WALLET IDS
   let selectedWalletInfo: SelectedWalletInfo | undefined
 
   // SELECTED, ACTIVE
-  if (id && currencyCode && account.activeWalletIds.includes(id)) selectedWalletInfo = { id, currencyCode }
+  if (selectedWalletId && selectedCurrencyCode && account.activeWalletIds.includes(selectedWalletId))
+    selectedWalletInfo = { id: selectedWalletId, currencyCode: selectedCurrencyCode }
+
+  // if token is disabled while selected, clear
+  React.useEffect(() => {
+    if (!selectedWalletId || !selectedCurrencyCode) return
+
+    const enabledTokensQuery = queryCache.getQuery<string[]>([selectedWalletId, 'enabledTokens'])
+
+    const queryInstance = enabledTokensQuery?.subscribe(({ data: tokens }) => {
+      const currencyInfo = getInfo(account, getCurrencyCodeFromWalletId(account, selectedWalletId))
+      if (!tokens) return
+
+      if (![...tokens, currencyInfo.currencyCode].includes(selectedCurrencyCode)) {
+        setSelectedWalletId(undefined)
+        setSelectedCurrencyCode(undefined)
+      }
+    })
+
+    return () => {
+      queryInstance?.unsubscribe()
+    }
+  }, [account, selectedCurrencyCode, selectedWalletId])
 
   return (
     <SelectedWalletInfoContext.Provider value={[selectedWalletInfo, setSelectedWalletInfo] as const}>
@@ -69,3 +93,11 @@ export const SelectedWalletBoundary: React.FC<{ fallback?: React.ReactNode }> = 
 
   return <>{walletInfo ? children : fallback}</>
 }
+
+/* 
+
+iterate over each wallet
+subscribe to queryCache wallet enabled tokens
+
+if wallet is selected, but token is disabled, clear state
+*/
