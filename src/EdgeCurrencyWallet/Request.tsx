@@ -1,8 +1,8 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
-import QRCode from 'qrcode.react'
 import React from 'react'
 import { Alert, Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
+import QRCode from 'react-qr-code'
 
 import { useEdgeAccount } from '../auth'
 import { Boundary, FlipInput } from '../components'
