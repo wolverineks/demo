@@ -1,6 +1,3 @@
-import 'bootstrap/dist/css/bootstrap.min.css'
-
-import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 import { Button, Container, Navbar } from 'react-bootstrap'
 import { queryCache } from 'react-query'
