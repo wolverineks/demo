@@ -169,7 +169,7 @@ export const useOtpEnabled = (account: EdgeAccount, config?: QueryConfig<boolean
     config: { initialData: !!account.otpKey, ...config },
   })
 
-  useWatch(account, 'otpKey', refetch)
+  useWatch(account, 'otpKey', () => refetch())
 
   return data!
 }
@@ -602,7 +602,7 @@ export const useTokens = (wallet: EdgeCurrencyWallet) => ({
 
 export const useTransactions = (
   wallet: EdgeCurrencyWallet,
-  options?: { currencyCode: string },
+  options?: EdgeGetTransactionsOptions,
   config?: QueryConfig<EdgeTransaction[]>,
 ) => {
   const { data, refetch } = useQuery({
