@@ -8,7 +8,7 @@ export const currencyPlugins = {
   ripple: true,
   rsk: true,
   stellar: true,
-  // tezos: true,
+  tezos: true,
   // edge-currency-bitcoin:
   bitcoin: true,
   bitcoincash: true,
@@ -42,11 +42,11 @@ export const ratePlugins = {
   constantRate: true,
   coincapLegacy: false,
   xagau: true,
-  // wazirx: true,
+  wazirx: true,
 }
 
 export const swapPlugins = {
-  transfer: true,
+  // transfer: true,
 }
 
 export const contextOptions = {

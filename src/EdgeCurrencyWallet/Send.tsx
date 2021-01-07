@@ -2,7 +2,7 @@ import { EdgeCurrencyWallet, EdgeParsedUri, EdgeSpendInfo } from 'edge-core-js'
 import React from 'react'
 import { Alert, Button, Form, FormControl, FormGroup, FormLabel, InputGroup } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
-import QrReader from 'react-qr-reader'
+import QrReader from 'react-qr-scanner'
 
 import { useEdgeAccount } from '../auth'
 import { FlipInput, Select } from '../components'
