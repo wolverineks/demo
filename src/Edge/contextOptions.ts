@@ -41,7 +41,7 @@ export const ratePlugins = {
   coincap: true,
   constantRate: true,
   coincapLegacy: false,
-  xagau: true,
+  xagau: false,
   wazirx: true,
 }
 

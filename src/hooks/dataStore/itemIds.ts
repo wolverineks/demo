@@ -1,28 +1,32 @@
 import { EdgeDataStore } from 'edge-core-js'
 import React from 'react'
-import { QueryConfig, queryCache, useQuery } from 'react-query'
+import { FetchQueryOptions, QueryOptions, useQuery, useQueryClient } from 'react-query'
 
 interface ItemIdsQuery {
   dataStore: EdgeDataStore
   storeId: string
 }
 
-const itemIdsQueryKey = ({ storeId }: { storeId: string }) => [storeId] as const
-const itemIdsQueryFn = ({ dataStore, storeId }: ItemIdsQuery) => () => dataStore.listItemIds(storeId)
-const itemIdsQueryConfig = (config: QueryConfig<string[]>) => ({ cacheTime: 0, staleTime: Infinity, ...config })
+const queryFn = ({ dataStore, storeId }: ItemIdsQuery) => () => dataStore.listItemIds(storeId)
 
-export const useItemIds = ({ dataStore, storeId }: ItemIdsQuery, config?: QueryConfig<string[]>) =>
+export const useItemIds = ({ dataStore, storeId }: ItemIdsQuery, options?: QueryOptions<string[]>) =>
   useQuery({
-    queryKey: itemIdsQueryKey({ storeId }),
-    queryFn: itemIdsQueryFn({ dataStore, storeId }),
-    config: itemIdsQueryConfig({ suspense: true, ...config }),
+    queryKey: storeId,
+    queryFn: queryFn({ dataStore, storeId }),
+    suspense: true,
+    cacheTime: Infinity,
+    staleTime: Infinity,
+    ...options,
   }).data!
 
-export const usePrefetchItemIds = ({ dataStore, storeId }: ItemIdsQuery, config?: QueryConfig<string[]>) =>
+export const usePrefetchItemIds = ({ dataStore, storeId }: ItemIdsQuery, options?: FetchQueryOptions) => {
+  const queryClient = useQueryClient()
+
   React.useEffect(() => {
-    queryCache.prefetchQuery({
-      queryKey: itemIdsQueryKey({ storeId }),
-      queryFn: itemIdsQueryFn({ dataStore, storeId }),
-      config: itemIdsQueryConfig({ suspense: false, useErrorBoundary: false, ...config }),
+    queryClient.prefetchQuery(storeId, queryFn({ dataStore, storeId }), {
+      cacheTime: Infinity,
+      staleTime: Infinity,
+      ...options,
     })
-  }, [config, dataStore, storeId])
+  }, [options, dataStore, queryClient, storeId])
+}

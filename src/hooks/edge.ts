@@ -15,7 +15,7 @@ import {
 } from 'edge-core-js'
 import { useOnNewTransactions } from 'edge-react-hooks'
 import React from 'react'
-import { MutationConfig, QueryConfig, queryCache, useMutation, useQuery } from 'react-query'
+import { UseMutationOptions, UseQueryOptions, useMutation, useQuery, useQueryClient } from 'react-query'
 
 import { getFiatInfo } from '../Fiat/getFiatInfo'
 import {
@@ -26,20 +26,18 @@ import {
   getExchangeDenomination,
   getInfo,
   getSortedCurrencyWallets,
-  getTokenInfo,
   isUnique,
   nativeToDenominated,
   nativeToExchange,
 } from '../utils'
-import { optimisticMutationOptions } from './optimisticMutationOptions'
 import { useWatch, useWatchAll } from './watch'
 
-export const useLoginMessages = (context: EdgeContext, username: string, config?: QueryConfig<EdgeLoginMessages>) => {
-  return useQuery({
-    queryKey: ['loginMessages'],
-    queryFn: () => context.fetchLoginMessages(),
-    config: { ...config },
-  }).data![username]
+export const useLoginMessages = (
+  context: EdgeContext,
+  username: string,
+  queryOptions?: UseQueryOptions<EdgeLoginMessages>,
+) => {
+  return useQuery(['loginMessages'], () => context.fetchLoginMessages(), queryOptions).data![username]
 }
 
 export const useCreateAccount = (context: EdgeContext) => {
@@ -51,76 +49,59 @@ export const useCreateAccount = (context: EdgeContext) => {
 
 export const useLoginWithPin = (
   context: EdgeContext,
-  config?: MutationConfig<EdgeAccount, unknown, { username: string; pin: string }>,
+  mutationOptions?: UseMutationOptions<EdgeAccount, unknown, { username: string; pin: string }>,
 ) => {
-  return useMutation(
-    ({ username, pin }: { username: string; pin: string }) => context.loginWithPIN(username, pin),
-    config,
-  )
+  return useMutation(({ username, pin }) => context.loginWithPIN(username, pin), mutationOptions)
 }
 
 export const useLoginWithPassword = (
   context: EdgeContext,
-  config?: MutationConfig<EdgeAccount, unknown, { username: string; password: string }>,
+  mutationOptions?: UseMutationOptions<EdgeAccount, unknown, { username: string; password: string }>,
 ) => {
-  return useMutation(
-    ({ username, password }: { username: string; password: string }) => context.loginWithPassword(username, password),
-    config,
-  )
+  return useMutation(({ username, password }) => context.loginWithPassword(username, password), mutationOptions)
 }
 
-export const useReadPinLoginEnabled = (context: EdgeContext, account: EdgeAccount, config?: QueryConfig<boolean>) => {
-  return useQuery({
-    queryKey: [account.username, 'pinLoginEnabled'],
-    queryFn: () => context.pinLoginEnabled(account.username),
-    config: { ...config },
-  })
+export const useReadPinLoginEnabled = (
+  context: EdgeContext,
+  account: EdgeAccount,
+  queryOptions?: UseQueryOptions<boolean>,
+) => {
+  return useQuery([account.username, 'pinLoginEnabled'], () => context.pinLoginEnabled(account.username), queryOptions)
 }
 
 export const useActiveInfos = (account: EdgeAccount) => {
-  const [, rerender] = React.useState({})
+  const queryFn = () => getActiveInfos(account)
+  const queryKey = 'activeInfos'
+  const { refetch, data } = useQuery(queryKey, queryFn, { suspense: true })
 
   React.useEffect(() => {
-    const unsubs = getSortedCurrencyWallets(account).map((wallet) => wallet.watch('balances', () => rerender({})))
+    const unsub = account.watch('currencyWallets', () => refetch())
 
     return () => {
-      unsubs.forEach((unsub) => unsub())
+      unsub()
     }
+  }, [account, refetch])
+
+  return data!
+}
+
+export const useWritePinLoginEnabled = (
+  account: EdgeAccount,
+  mutationOptions?: UseMutationOptions<string, unknown, boolean>,
+) => {
+  const queryClient = useQueryClient()
+  const queryKey = [account.username, 'pinLoginEnabled']
+  const mutation = (enableLogin: boolean) => account.changePin({ enableLogin })
+
+  return useMutation(mutation, {
+    onMutate: () => queryClient.cancelQueries(queryKey),
+    onSettled: () => queryClient.invalidateQueries(queryKey),
+    ...mutationOptions,
   })
-
-  return getActiveInfos(account)
-}
-
-export const useActiveTokenInfos = (account: EdgeAccount) => {
-  const [, rerender] = React.useState({})
-  const wallets = getSortedCurrencyWallets(account)
-
-  React.useEffect(() => {
-    wallets.forEach((wallet) => {
-      const query = queryCache.getQuery([wallet.id, 'enabledTokens'])
-
-      const queryInstance = query?.subscribe(() => rerender({}))
-
-      return queryInstance?.unsubscribe
-    })
-  }, [wallets])
-
-  return wallets
-    .map((wallet) => queryCache.getQueryData([wallet.id, 'enabledTokens']) as string[])
-    .reduce((result, current = []) => [...result, ...current], [])
-    .filter(isUnique)
-    .map((currencyCode) => getTokenInfo(account, currencyCode))
-}
-
-export const useWritePinLoginEnabled = (account: EdgeAccount) => {
-  return useMutation(
-    (enableLogin: boolean) => account.changePin({ enableLogin }),
-    optimisticMutationOptions([account.username, 'pinLoginEnabled'], (enableLogin) => enableLogin),
-  )
 }
 
 export const usePinLoginEnabled = (context: EdgeContext, account: EdgeAccount) => {
-  return [useReadPinLoginEnabled(context, account).data!, useWritePinLoginEnabled(account)[0]] as const
+  return [useReadPinLoginEnabled(context, account).data!, useWritePinLoginEnabled(account).mutate] as const
 }
 
 export const useEdgeAccountTotal = (account: EdgeAccount) => {
@@ -148,7 +129,7 @@ export const useEdgeAccountTotal = (account: EdgeAccount) => {
   const { data, refetch } = useQuery({
     queryKey: [account.username, 'accountTotal'],
     queryFn: () => getTotal(),
-    config: { refetchInterval: 1000 },
+    refetchInterval: 1000,
   })
 
   React.useEffect(() => {
@@ -162,11 +143,12 @@ export const useEdgeAccountTotal = (account: EdgeAccount) => {
   return { total: data!, denomination: displayDenomination }
 }
 
-export const useOtpEnabled = (account: EdgeAccount, config?: QueryConfig<boolean>) => {
+export const useOtpEnabled = (account: EdgeAccount, queryOptions?: UseQueryOptions<boolean>) => {
   const { refetch, data } = useQuery({
     queryKey: [account.username, 'otpEnabled'],
     queryFn: () => Promise.resolve(!!account.otpKey),
-    config: { initialData: !!account.otpKey, ...config },
+    initialData: !!account.otpKey,
+    ...queryOptions,
   })
 
   useWatch(account, 'otpKey', () => refetch())
@@ -174,24 +156,44 @@ export const useOtpEnabled = (account: EdgeAccount, config?: QueryConfig<boolean
   return data!
 }
 
-export const useOTP = (account: EdgeAccount) => ({
-  otpKey: account.otpKey,
-  enabled: useOtpEnabled(account),
-  enableOTP: useMutation(
-    account.enableOtp,
-    optimisticMutationOptions([account.username, 'otpEnabled'], () => true),
-  )[0],
-  disableOTP: useMutation(
-    account.disableOtp,
-    optimisticMutationOptions([account.username, 'otpEnabled'], () => false),
-  )[0],
-})
+export const useEnableOTP = (account: EdgeAccount, mutationOptions?: UseMutationOptions) => {
+  const queryClient = useQueryClient()
+  const queryKey = [account.username, 'otpEnabled']
+  const queryFn = () => account.enableOtp()
+
+  return useMutation(queryFn, {
+    onMutate: () => queryClient.cancelQueries(queryKey),
+    onSettled: () => queryClient.invalidateQueries(queryKey),
+    ...mutationOptions,
+  }).mutate
+}
+
+export const useDisableOTP = (account: EdgeAccount, mutationOptions?: UseMutationOptions) => {
+  const queryClient = useQueryClient()
+  const queryKey = [account.username, 'otpEnabled']
+  const queryFn = () => account.disableOtp()
+
+  return useMutation(queryFn, {
+    onMutate: () => queryClient.cancelQueries(queryKey),
+    onSettled: () => queryClient.invalidateQueries(queryKey),
+    ...mutationOptions,
+  }).mutate
+}
+
+export const useOTP = (account: EdgeAccount) => {
+  return {
+    otpKey: account.otpKey,
+    enabled: useOtpEnabled(account),
+    enableOTP: useEnableOTP(account),
+    disableOTP: useDisableOTP(account),
+  }
+}
 
 export const useChangeWalletStates = (account: EdgeAccount) => {
-  const [
-    changeWalletStates,
-    rest,
-  ] = useMutation(({ walletId, walletState }: { walletId: string; walletState: EdgeWalletState }) =>
+  const {
+    mutate: changeWalletStates,
+    ...rest
+  } = useMutation(({ walletId, walletState }: { walletId: string; walletState: EdgeWalletState }) =>
     account.changeWalletStates({ [walletId]: walletState }),
   )
 
@@ -210,26 +212,6 @@ export const useChangeWalletStates = (account: EdgeAccount) => {
     ),
     ...rest,
   }
-}
-
-export const useLoginMethod = (account: EdgeAccount) => {
-  const unknownLogin = () => {
-    throw new Error('unknown login')
-  }
-
-  return account.pinLogin
-    ? 'pinLogin'
-    : account.passwordLogin
-    ? 'passwordLogin'
-    : account.newAccount
-    ? 'newAccount'
-    : account.keyLogin
-    ? 'keyLogin'
-    : account.recoveryLogin
-    ? 'recoveryLogin'
-    : account.edgeLogin
-    ? 'edgeLogin'
-    : unknownLogin()
 }
 
 export const useDisplayToNative = ({
@@ -289,7 +271,7 @@ export const useDisplayToExchange = ({
   return nativeToDenominated({ denomination, nativeAmount })
 }
 
-export const useReadDefaultFiatCurrencyCode = (account: EdgeAccount, config?: QueryConfig<string>) => {
+export const useReadDefaultFiatCurrencyCode = (account: EdgeAccount, queryOptions?: UseQueryOptions<string>) => {
   const defaultFiatCurrencyCode = 'iso:USD'
 
   return useQuery({
@@ -299,24 +281,24 @@ export const useReadDefaultFiatCurrencyCode = (account: EdgeAccount, config?: Qu
         .getItem('defaultFiatCurrencyCode', 'defaultFiatCurrencyCode.json')
         .then(JSON.parse)
         .catch(() => defaultFiatCurrencyCode) as Promise<string>,
-    config: { ...config },
+    ...queryOptions,
   })
 }
 
 export const useWriteDefaultFiatCurrencyCode = (account: EdgeAccount) => {
-  return useMutation(
-    (currencyCode: string) =>
-      account.dataStore.setItem(
-        'defaultFiatCurrencyCode',
-        'defaultFiatCurrencyCode.json',
-        JSON.stringify(currencyCode),
-      ),
-    optimisticMutationOptions([account.username, 'defaultFiatCurrencyCode']),
-  )
+  const queryClient = useQueryClient()
+  const queryKey = [account.username, 'defaultFiatCurrencyCode']
+  const queryFn = (currencyCode: string) =>
+    account.dataStore.setItem('defaultFiatCurrencyCode', 'defaultFiatCurrencyCode.json', JSON.stringify(currencyCode))
+
+  return useMutation(queryFn, {
+    onMutate: () => queryClient.cancelQueries(queryKey),
+    onSettled: () => queryClient.invalidateQueries(queryKey),
+  })
 }
 
 export const useDefaultFiatCurrencyCode = (account: EdgeAccount) => {
-  return [useReadDefaultFiatCurrencyCode(account).data!, useWriteDefaultFiatCurrencyCode(account)[0]] as const
+  return [useReadDefaultFiatCurrencyCode(account).data!, useWriteDefaultFiatCurrencyCode(account).mutate] as const
 }
 
 export const useDefaultFiatInfo = (account: EdgeAccount) => {
@@ -328,7 +310,7 @@ export const useDefaultFiatInfo = (account: EdgeAccount) => {
 export const useReadDisplayDenominationMultiplier = (
   account: EdgeAccount,
   currencyInfo: EdgeCurrencyInfo | EdgeMetaToken,
-  config?: QueryConfig<string | EdgeDenomination>,
+  queryOptions?: UseQueryOptions<string | EdgeDenomination>,
 ) => {
   return useQuery({
     queryKey: [currencyInfo.currencyCode, 'displayDenominationMultiplier'],
@@ -336,7 +318,7 @@ export const useReadDisplayDenominationMultiplier = (
       account.dataStore
         .getItem('displayDenominationMultiplier', currencyInfo.currencyCode)
         .catch(() => currencyInfo.denominations[0]),
-    config: { ...config },
+    ...queryOptions,
   })
 }
 
@@ -344,15 +326,15 @@ export const useWriteDisplayDenominationMultiplier = (
   account: EdgeAccount,
   currencyInfo: EdgeCurrencyInfo | EdgeMetaToken,
 ) => {
-  return useMutation(
-    (displayDenominationMultiplier: string) =>
-      account.dataStore.setItem(
-        'displayDenominationMultiplier',
-        currencyInfo.currencyCode,
-        displayDenominationMultiplier,
-      ),
-    optimisticMutationOptions([currencyInfo.currencyCode, 'displayDenominationMultiplier']),
-  )
+  const queryClient = useQueryClient()
+  const queryKey = [currencyInfo.currencyCode, 'displayDenominationMultiplier']
+  const queryFn = (displayDenominationMultiplier: string) =>
+    account.dataStore.setItem('displayDenominationMultiplier', currencyInfo.currencyCode, displayDenominationMultiplier)
+
+  return useMutation(queryFn, {
+    onMutate: () => queryClient.cancelQueries(queryKey),
+    onSettled: () => queryClient.invalidateQueries(queryKey),
+  })
 }
 
 export const useDisplayDenominationMultiplier = (
@@ -361,7 +343,7 @@ export const useDisplayDenominationMultiplier = (
 ) => {
   return [
     useReadDisplayDenominationMultiplier(account, currencyInfo).data,
-    useWriteDisplayDenominationMultiplier(account, currencyInfo)[0],
+    useWriteDisplayDenominationMultiplier(account, currencyInfo).mutate,
   ] as const
 }
 
@@ -406,7 +388,7 @@ export const useFiatAmount = (
     fromCurrencyCode: string
     fiatCurrencyCode: string
   },
-  config?: QueryConfig<number>,
+  queryOptions?: UseQueryOptions<number>,
 ) => {
   const exchangeAmount = nativeToExchange({
     account,
@@ -417,7 +399,7 @@ export const useFiatAmount = (
   const { data, refetch } = useQuery({
     queryKey: [{ fromCurrencyCode, fiatCurrencyCode, exchangeAmount }],
     queryFn: () => account.rateCache.convertCurrency(fromCurrencyCode, fiatCurrencyCode, Number(exchangeAmount)),
-    config: { ...config },
+    ...queryOptions,
   })
 
   React.useEffect(() => {
@@ -433,26 +415,34 @@ export const useFiatAmount = (
 
 export const useInactiveWallets = (account: EdgeAccount) => {
   const [, rerender] = React.useState({})
+  const queryCache = useQueryClient().getQueryCache()
+
   React.useEffect(() => {
-    queryCache.subscribe((_queryCache, query) => query?.queryKey[1] === 'inactiveWallet' && rerender({}))
-  }, [account])
+    queryCache.subscribe((query) => query?.queryKey[1] === 'inactiveWallet' && rerender({}))
+  }, [account, queryCache])
 
   return queryCache
-    .getQueries<InactiveWallet>(({ queryKey }) => queryKey[1] === 'inactiveWallet')
+    .findAll({ predicate: ({ queryKey }) => queryKey[1] === 'inactiveWallet' })
     .map((query) => query.state.data!)
-    .filter(Boolean)
+    .filter(Boolean) as InactiveWallet[]
 }
 
-export const useReadInactiveWallet = (account: EdgeAccount, walletId: string, config?: QueryConfig<InactiveWallet>) => {
+export const useReadInactiveWallet = (
+  account: EdgeAccount,
+  walletId: string,
+  queryOptions?: UseQueryOptions<InactiveWallet>,
+) => {
   return useQuery({
     queryKey: [walletId, 'inactiveWallet'],
     queryFn: () => account.dataStore.getItem('inactiveWallets', walletId).then(JSON.parse) as Promise<InactiveWallet>,
-    config: { ...config },
+    ...queryOptions,
   }).data!
 }
 
 export const useWriteInactiveWallet = (account: EdgeAccount, wallet: EdgeCurrencyWallet) => {
-  const [update] = useMutation(() => account.dataStore.setItem('inactiveWallets', wallet.id, JSON.stringify(wallet)))
+  const { mutate: update } = useMutation(() =>
+    account.dataStore.setItem('inactiveWallets', wallet.id, JSON.stringify(wallet)),
+  )
 
   React.useEffect(() => {
     const unsubs = (Object.keys(wallet) as (keyof EdgeCurrencyWallet)[]).map((key) => wallet.watch(key, () => update()))
@@ -486,12 +476,12 @@ export const useEdgeCurrencyWallet = (
     walletId,
     watch,
   }: { account: EdgeAccount; walletId: string; watch?: readonly (keyof EdgeCurrencyWallet)[] },
-  config?: QueryConfig<EdgeCurrencyWallet>,
+  queryOptions?: UseQueryOptions<EdgeCurrencyWallet>,
 ) => {
   const { data: wallet } = useQuery({
     queryKey: [walletId, 'wallet'],
     queryFn: () => account.waitForCurrencyWallet(walletId),
-    config: { ...config },
+    ...queryOptions,
   })
 
   if (!wallet) throw new Error(`404: wallet:${walletId} not found`)
@@ -516,9 +506,9 @@ export const useBalance = (wallet: EdgeCurrencyWallet, currencyCode: string) => 
   }
 
   const { refetch, data } = useQuery({
-    queryKey: [wallet!.id, 'balance', currencyCode],
-    queryFn: () => waitForBalance(wallet!, currencyCode),
-    config: { enabled: !!wallet },
+    queryKey: [wallet.id, 'balance', currencyCode],
+    queryFn: () => waitForBalance(wallet, currencyCode),
+    enabled: !!wallet,
   })
 
   useWatch(wallet, 'balances', () => refetch())
@@ -531,19 +521,19 @@ export const useWriteFiatCurrencyCode = (wallet: EdgeCurrencyWallet) => {
 }
 
 export const useFiatCurrencyCode = (wallet: EdgeCurrencyWallet) => {
-  return [wallet.fiatCurrencyCode, useWriteFiatCurrencyCode(wallet)[0]] as const
+  return [wallet.fiatCurrencyCode, useWriteFiatCurrencyCode(wallet).mutate] as const
 }
 
 export const useReceiveAddressAndEncodeUri = ({
   wallet,
   nativeAmount,
   options,
-  config,
+  queryOptions,
 }: {
   wallet: EdgeCurrencyWallet
   nativeAmount: string
   options?: EdgeCurrencyCodeOptions
-  config?: QueryConfig<{ receiveAddress: EdgeReceiveAddress; uri: string }>
+  queryOptions?: UseQueryOptions<{ receiveAddress: EdgeReceiveAddress; uri: string }>
 }) => {
   return useQuery({
     queryKey: [wallet.id, 'receiveAddressAndEncodeUri', nativeAmount, options],
@@ -558,39 +548,51 @@ export const useReceiveAddressAndEncodeUri = ({
 
       return Promise.all([receiveAddress, uri]).then(([receiveAddress, uri]) => ({ receiveAddress, uri }))
     },
-    config: { suspense: false, ...config },
+    suspense: false,
+    ...queryOptions,
   })
 }
 
-export const useEnabledTokens = (wallet: EdgeCurrencyWallet, config?: QueryConfig<string[]>) => {
-  return useQuery({
-    queryKey: [wallet.id, 'enabledTokens'],
-    queryFn: () =>
-      wallet
-        .getEnabledTokens()
-        // WTF? Why is the parent currencyCode in enabledTokens?
-        .then((tokens) => tokens.filter((tokenCode) => tokenCode !== wallet.currencyInfo.currencyCode)),
-    config: { ...config },
+export const useEnabledTokens = (wallet: EdgeCurrencyWallet, queryOptions?: UseQueryOptions<string[]>) => {
+  const queryFn = () =>
+    wallet
+      .getEnabledTokens()
+      // WTF? Why is the parent currencyCode in enabledTokens?
+      .then((tokens) => tokens.filter((tokenCode) => tokenCode !== wallet.currencyInfo.currencyCode))
+  const queryKey = [wallet.id, 'enabledTokens']
+
+  return useQuery(queryKey, queryFn, {
+    suspense: true,
+    ...queryOptions,
   }).data!
 }
 
 export const useEnableToken = (wallet: EdgeCurrencyWallet) => {
-  return useMutation(
-    (tokenCurrencyCode: string) => wallet.enableTokens([tokenCurrencyCode]),
-    optimisticMutationOptions([wallet.id, 'enabledTokens'], (tokenCurrencyCode: string, current: string[] = []) => [
-      ...current,
-      tokenCurrencyCode,
-    ]),
-  )[0]
+  const queryFn = (tokenCurrencyCode: string) => wallet.enableTokens([tokenCurrencyCode])
+  const queryClient = useQueryClient()
+  const queryKey = [wallet.id, 'enabledTokens']
+
+  return useMutation(queryFn, {
+    onMutate: () => queryClient.cancelQueries(queryKey),
+    onSettled: () => {
+      queryClient.invalidateQueries('activeInfos')
+      queryClient.invalidateQueries(queryKey)
+    },
+  }).mutate
 }
 
 export const useDisableToken = (wallet: EdgeCurrencyWallet) => {
-  return useMutation(
-    (tokenCurrencyCode: string) => wallet.disableTokens([tokenCurrencyCode]),
-    optimisticMutationOptions([wallet.id, 'enabledTokens'], (tokenCurrencyCode: string, current: string[] = []) =>
-      current.filter((currencyCode) => currencyCode !== tokenCurrencyCode),
-    ),
-  )[0]
+  const queryFn = (tokenCurrencyCode: string) => wallet.disableTokens([tokenCurrencyCode])
+  const queryClient = useQueryClient()
+  const queryKey = [wallet.id, 'enabledTokens']
+
+  return useMutation(queryFn, {
+    onMutate: () => queryClient.cancelQueries(queryKey),
+    onSettled: () => {
+      queryClient.invalidateQueries('activeInfos')
+      queryClient.invalidateQueries(queryKey)
+    },
+  }).mutate
 }
 
 export const useTokens = (wallet: EdgeCurrencyWallet) => ({
@@ -603,12 +605,12 @@ export const useTokens = (wallet: EdgeCurrencyWallet) => ({
 export const useTransactions = (
   wallet: EdgeCurrencyWallet,
   options?: EdgeGetTransactionsOptions,
-  config?: QueryConfig<EdgeTransaction[]>,
+  queryOptions?: UseQueryOptions<EdgeTransaction[]>,
 ) => {
   const { data, refetch } = useQuery({
     queryKey: [wallet.id, 'transactions', options],
     queryFn: () => wallet.getTransactions(options),
-    config: { ...config },
+    ...queryOptions,
   })
 
   useOnNewTransactions(
@@ -622,12 +624,13 @@ export const useTransactions = (
 export const useTransactionCount = (
   wallet: EdgeCurrencyWallet,
   options?: EdgeGetTransactionsOptions,
-  config?: QueryConfig<number>,
+  queryOptions?: UseQueryOptions<number>,
 ) => {
   const { data, refetch } = useQuery({
     queryKey: [wallet.id, 'transactionCount', options],
     queryFn: () => wallet.getNumTransactions(options),
-    config: { suspense: false, ...config },
+    suspense: false,
+    ...queryOptions,
   })
 
   useOnNewTransactions(
@@ -638,18 +641,23 @@ export const useTransactionCount = (
   return data!
 }
 
-export const useMaxSpendable = (wallet: EdgeCurrencyWallet, spendInfo: EdgeSpendInfo, config?: QueryConfig<string>) => {
+export const useMaxSpendable = (
+  wallet: EdgeCurrencyWallet,
+  spendInfo: EdgeSpendInfo,
+  queryOptions?: UseQueryOptions<string>,
+) => {
   return useQuery({
     queryKey: [wallet.id, 'maxSpendable', spendInfo],
     queryFn: () => wallet.getMaxSpendable(spendInfo),
-    config: { suspense: false, ...config },
+    suspense: false,
+    ...queryOptions,
   })
 }
 
 export const useMaxTransaction = (
   wallet: EdgeCurrencyWallet,
   spendInfo: EdgeSpendInfo,
-  config?: QueryConfig<EdgeTransaction>,
+  queryOptions?: UseQueryOptions<EdgeTransaction>,
 ) => {
   return useQuery({
     queryKey: [wallet.id, 'maxSpendableTransaction', spendInfo],
@@ -660,18 +668,19 @@ export const useMaxTransaction = (
 
       return wallet.makeSpend(maxSpendInfo)
     },
-    config: { ...config },
+    ...queryOptions,
   })
 }
 
 export const useNewTransaction = (
   wallet: EdgeCurrencyWallet,
   spendInfo: EdgeSpendInfo,
-  config?: QueryConfig<EdgeTransaction>,
+  queryOptions?: UseQueryOptions<EdgeTransaction>,
 ) => {
   return useQuery({
     queryKey: [wallet.id, 'transaction', spendInfo],
     queryFn: () => wallet.makeSpend(spendInfo),
-    config: { suspense: false, ...config },
+    suspense: false,
+    ...queryOptions,
   })
 }

@@ -43,7 +43,9 @@ export const AccountInfo = () => {
       </Col>
 
       <Col xl={3} lg={3} md={3} sm={3}>
-        <ExchangeRates />
+        <Boundary>
+          <ExchangeRates />
+        </Boundary>
       </Col>
     </Row>
   )
@@ -80,8 +82,8 @@ const ExchangeRates = () => {
 const ExchangeRate: React.FC<{ currencyCode: string }> = ({ currencyCode }) => {
   const account = useEdgeAccount()
   const [fiatCurrencyCode] = useDefaultFiatCurrencyCode(account)
-  const exchangeDenomiation = getExchangeDenomination(account, currencyCode)
-  const nativeAmount = denominatedToNative({ denomination: exchangeDenomiation, amount: '1' })
+  const exchangeDenomination = getExchangeDenomination(account, currencyCode)
+  const nativeAmount = denominatedToNative({ denomination: exchangeDenomination, amount: '1' })
 
   return (
     <div>
@@ -128,13 +130,13 @@ const SideMenu = () => {
         <ActiveWalletList onSelect={() => setRoute(Route.account)} />
       </Boundary>
 
-      <Boundary>
+      {/* <Boundary>
         <ArchivedWalletList />
       </Boundary>
 
       <Boundary>
         <DeletedWalletList />
-      </Boundary>
+      </Boundary> */}
 
       <ListGroup.Item
         variant={route === Route.createWallet ? 'primary' : undefined}

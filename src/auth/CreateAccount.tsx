@@ -10,7 +10,7 @@ export const CreateAccount: React.FC<{ context: EdgeContext; onLogin: (account: 
   onLogin,
   context,
 }) => {
-  const [createAccount, { status, error }] = useCreateAccount(context)
+  const { mutate: createAccount, status, error } = useCreateAccount(context)
   const pending = status === 'loading'
   const [username, setUsername] = React.useState('')
   const [password, setPassword] = React.useState('')

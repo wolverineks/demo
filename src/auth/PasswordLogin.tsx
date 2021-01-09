@@ -10,7 +10,7 @@ export const PasswordLogin: React.FC<{ context: EdgeContext; onLogin: (account: 
 }) => {
   const [username, setUsername] = React.useState('')
   const [password, setPassword] = React.useState('')
-  const [loginWithPassword, { error, status, reset }] = useLoginWithPassword(context, { onSuccess: onLogin })
+  const { mutate: loginWithPassword, error, status, reset } = useLoginWithPassword(context, { onSuccess: onLogin })
 
   const onUsernameChange = (username: string) => {
     reset()

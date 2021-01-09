@@ -17,7 +17,7 @@ export const PinLogin: React.FC<{ context: EdgeContext; onLogin: (account: EdgeA
   return (
     <ListGroup>
       <Select
-        disabled={loginWithPin[1].isLoading}
+        disabled={loginWithPin.isLoading}
         onSelect={(event) => setUsername(event.currentTarget.value)}
         title={'Accounts'}
         options={accountsWithPinLogin}
@@ -40,7 +40,7 @@ const LocalUserRow: React.FC<{
   loginWithPin: ReturnType<typeof useLoginWithPin>
   context: EdgeContext
   username: string
-}> = ({ username, context, loginWithPin: [loginWithPin, { reset, error, status }] }) => {
+}> = ({ username, context, loginWithPin: { mutate: loginWithPin, reset, error, status } }) => {
   const [pin, setPin] = React.useState('')
 
   return (

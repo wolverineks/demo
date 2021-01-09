@@ -10,12 +10,13 @@ export const getAccountsWithPinLogin = (context: EdgeContext) => {
 }
 
 // EDGE ACCOUNT
-export const getActiveInfos = (account: EdgeAccount) => {
-  return getSortedCurrencyWallets(account)
-    .map((wallet) => Object.keys(wallet.balances))
-    .flat()
-    .filter(isUnique)
-    .map((currencyCode) => getInfo(account, currencyCode))
+export const getActiveInfos = async (account: EdgeAccount) => {
+  const wallets = getSortedCurrencyWallets(account)
+  const walletCurrencyCodes = wallets.map((wallet) => wallet.currencyInfo.currencyCode)
+  const tokenCurrencyCodes = await Promise.all(wallets.map((wallet) => wallet.getEnabledTokens()))
+  const allCurrencyCodes = [...walletCurrencyCodes, ...tokenCurrencyCodes].flat().filter(isUnique)
+
+  return allCurrencyCodes.map((currencyCode) => getInfo(account, currencyCode))
 }
 
 export const getDeletedWalletIds = (account: EdgeAccount) => {

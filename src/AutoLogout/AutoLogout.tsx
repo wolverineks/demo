@@ -2,10 +2,9 @@ import { EdgeAccount } from 'edge-core-js'
 import React from 'react'
 import { Form, FormControl, FormGroup, FormLabel, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { useIdleTimer } from 'react-idle-timer'
-import { QueryConfig, useMutation, useQuery } from 'react-query'
+import { QueryOptions, useMutation, useQuery, useQueryClient } from 'react-query'
 
 import { useEdgeAccount, useSetAccount } from '../auth'
-import { optimisticMutationOptions } from '../hooks'
 
 export const AutoLogout = () => {
   const account = useEdgeAccount()
@@ -69,7 +68,7 @@ type AutoLogoutSetting = {
   delay: number
 }
 
-export const useReadAutoLogout = (account: EdgeAccount, config?: QueryConfig<AutoLogoutSetting>) => {
+export const useReadAutoLogout = (account: EdgeAccount, config?: QueryOptions<AutoLogoutSetting>) => {
   return useQuery({
     queryKey: [account.username, 'autoLogout'],
     queryFn: () =>
@@ -77,18 +76,22 @@ export const useReadAutoLogout = (account: EdgeAccount, config?: QueryConfig<Aut
         .getItem('autoLogout', 'autoLogout.json')
         .then(JSON.parse)
         .catch(() => defaultAutoLogout) as Promise<AutoLogoutSetting>,
-    config: { ...config },
+    ...config,
   })
 }
 
 export const useWriteAutoLogout = (account: EdgeAccount) => {
-  return useMutation(
-    (autoLogout: AutoLogoutSetting) =>
-      account.dataStore.setItem('autoLogout', 'autoLogout.json', JSON.stringify(autoLogout)),
-    optimisticMutationOptions([account.username, 'autoLogout']),
-  )
+  const mutationFn = (autoLogout: AutoLogoutSetting) =>
+    account.dataStore.setItem('autoLogout', 'autoLogout.json', JSON.stringify(autoLogout))
+  const queryClient = useQueryClient()
+  const queryKey = [account.username, 'autoLogout']
+
+  return useMutation(mutationFn, {
+    onMutate: () => queryClient.cancelQueries(queryKey),
+    onSettled: () => queryClient.invalidateQueries(queryKey),
+  })
 }
 
 export const useAutoLogout = (account: EdgeAccount) => {
-  return [useReadAutoLogout(account).data!, useWriteAutoLogout(account)[0]] as const
+  return [useReadAutoLogout(account).data!, useWriteAutoLogout(account).mutate] as const
 }

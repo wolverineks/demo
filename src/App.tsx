@@ -1,7 +1,6 @@
 import React from 'react'
-import { Button, Container, Navbar } from 'react-bootstrap'
-import { queryCache } from 'react-query'
-import { ReactQueryDevtools } from 'react-query-devtools'
+import { Button, Container, Image, Navbar } from 'react-bootstrap'
+import { useQueryClient } from 'react-query'
 
 import { AccountConsumer, AccountProvider, Login, useEdgeAccount, useSetAccount } from './auth'
 import { Boundary } from './components'
@@ -13,34 +12,31 @@ import { SelectedWalletInfoProvider, useSelectedWalletInfo } from './SelectedWal
 
 export const App = () => {
   return (
-    <>
-      <Boundary>
-        <Edge>
-          <AccountProvider>
-            <AccountConsumer>
-              {(account) =>
-                account ? (
-                  <SelectedWalletInfoProvider>
-                    <RouteProvider>
-                      <Header />
+    <Boundary>
+      <Edge>
+        <AccountProvider>
+          <AccountConsumer>
+            {(account) =>
+              account ? (
+                <SelectedWalletInfoProvider>
+                  <RouteProvider>
+                    <Header />
 
-                      <Boundary>
-                        <AccountInfo />
-                      </Boundary>
-                    </RouteProvider>
-                  </SelectedWalletInfoProvider>
-                ) : (
-                  <Container style={{ top: '100px' }}>
-                    <Login />
-                  </Container>
-                )
-              }
-            </AccountConsumer>
-          </AccountProvider>
-        </Edge>
-      </Boundary>
-      <ReactQueryDevtools initialIsOpen />
-    </>
+                    <Boundary>
+                      <AccountInfo />
+                    </Boundary>
+                  </RouteProvider>
+                </SelectedWalletInfoProvider>
+              ) : (
+                <Container style={{ top: '100px' }}>
+                  <Login />
+                </Container>
+              )
+            }
+          </AccountConsumer>
+        </AccountProvider>
+      </Edge>
+    </Boundary>
   )
 }
 
@@ -49,11 +45,12 @@ export const Header = () => {
   const setAccount = useSetAccount()
   const [walletInfo] = useSelectedWalletInfo()
   const route = useRoute()
+  const queryClient = useQueryClient()
 
   return (
     <Navbar>
       <Navbar.Brand>
-        <img alt={'logo'} src={'../logo.jpg'} style={{ height: '70px' }} />
+        <Image alt={'logo'} src={'../logo.jpg'} style={{ height: 80, width: 80 }} />
       </Navbar.Brand>
       <Navbar.Toggle />
 
@@ -72,7 +69,7 @@ export const Header = () => {
           onClick={() => {
             setAccount(undefined)
             account.logout()
-            queryCache.removeQueries(({ queryKey }) => queryKey[0] !== 'context')
+            queryClient.removeQueries({ predicate: ({ queryKey }) => queryKey[0] !== 'context' })
           }}
         >
           Logout

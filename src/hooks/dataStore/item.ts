@@ -1,6 +1,6 @@
 import { EdgeDataStore } from 'edge-core-js'
 import React from 'react'
-import { QueryConfig, queryCache, useQuery } from 'react-query'
+import { FetchQueryOptions, QueryOptions, useQuery, useQueryClient } from 'react-query'
 
 interface ItemQuery {
   dataStore: EdgeDataStore
@@ -8,27 +8,22 @@ interface ItemQuery {
   itemId: string
 }
 
-const itemQueryKey = ({ storeId, itemId }: { storeId: string; itemId: string }) => [storeId, itemId] as const
-const itemQueryFn = ({ dataStore, storeId, itemId }: ItemQuery) => () =>
+const queryKey = ({ storeId, itemId }: { storeId: string; itemId: string }) => [storeId, itemId]
+const queryFn = ({ dataStore, storeId, itemId }: ItemQuery) => () =>
   dataStore.getItem(storeId, itemId).then((data) => JSON.parse(data) as unknown)
-const itemQueryConfig = (config: QueryConfig<unknown>) => ({
-  cacheTime: 0,
-  staleTime: Infinity,
-  ...config,
-})
 
-export const useItem = ({ dataStore, storeId, itemId }: ItemQuery, config?: QueryConfig<unknown>) =>
-  useQuery({
-    queryKey: itemQueryKey({ storeId, itemId }),
-    queryFn: itemQueryFn({ dataStore, storeId, itemId }),
-    config: itemQueryConfig({ suspense: true, ...config }),
+export const useItem = ({ dataStore, storeId, itemId }: ItemQuery, options?: QueryOptions) =>
+  useQuery(queryKey({ storeId, itemId }), queryFn({ dataStore, storeId, itemId }), {
+    suspense: true,
+    ...options,
   }).data!
 
-export const usePrefetchItem = ({ dataStore, storeId, itemId }: ItemQuery, config?: QueryConfig<unknown>) =>
+export const usePrefetchItem = ({ dataStore, storeId, itemId }: ItemQuery, options?: FetchQueryOptions) => {
+  const queryClient = useQueryClient()
+
   React.useEffect(() => {
-    queryCache.prefetchQuery({
-      queryKey: itemQueryKey({ storeId, itemId }),
-      queryFn: itemQueryFn({ dataStore, storeId, itemId }),
-      config: itemQueryConfig({ suspense: false, useErrorBoundary: false, ...config }),
+    queryClient.prefetchQuery(queryKey({ storeId, itemId }), queryFn({ dataStore, storeId, itemId }), {
+      ...options,
     })
-  }, [config, dataStore, itemId, storeId])
+  }, [options, dataStore, itemId, queryClient, storeId])
+}

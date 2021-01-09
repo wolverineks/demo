@@ -71,7 +71,6 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: st
 
 const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const { availableTokens, enabledTokens, enableToken, disableToken } = useTokens(wallet)
-
   const toggleToken = React.useCallback(
     (currencyCode: string) =>
       enabledTokens.includes(currencyCode) ? disableToken(currencyCode) : enableToken(currencyCode),
@@ -224,7 +223,9 @@ const Settings: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
         <RawKey wallet={wallet} />
       </Matcher>
 
-      <Tokens wallet={wallet} />
+      <Boundary>
+        <Tokens wallet={wallet} />
+      </Boundary>
     </>
   )
 }
