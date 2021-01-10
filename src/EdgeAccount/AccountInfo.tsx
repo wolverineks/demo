@@ -5,12 +5,12 @@ import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo } from '../components'
 import { WalletInfo } from '../EdgeCurrencyWallet'
 import { FiatAmount } from '../Fiat'
-import { useActiveInfos, useDefaultFiatCurrencyCode, useEdgeAccountTotal } from '../hooks'
+import { useActiveInfos, useDefaultFiatCurrencyCode, useDisplayToNative, useEdgeAccountTotal } from '../hooks'
 import { Route, useRoute, useSetRoute } from '../route'
 import { SelectedWalletBoundary, useSelectedWallet } from '../SelectedWallet'
 import { Settings } from '../Settings/Settings'
-import { denominatedToNative, getExchangeDenomination, isUnique } from '../utils'
-import { ActiveWalletList, ArchivedWalletList, DeletedWalletList } from '../WalletLists'
+import { isUnique } from '../utils'
+import { ActiveWalletList } from '../WalletLists'
 import { CreateWallet } from '.'
 
 export const AccountInfo = () => {
@@ -77,8 +77,7 @@ const ExchangeRates = () => {
 const ExchangeRate: React.FC<{ currencyCode: string }> = ({ currencyCode }) => {
   const account = useEdgeAccount()
   const [fiatCurrencyCode] = useDefaultFiatCurrencyCode(account)
-  const exchangeDenomination = getExchangeDenomination(account, currencyCode)
-  const nativeAmount = denominatedToNative({ denomination: exchangeDenomination, amount: '1' })
+  const nativeAmount = useDisplayToNative({ account, displayAmount: '1', currencyCode })
 
   return (
     <div>
