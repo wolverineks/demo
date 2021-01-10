@@ -36,10 +36,7 @@ export const Folder: React.FC<{ disklet: DiskletType; path: string }> = ({ diskl
   )
 }
 
-const FolderContents: React.FC<{
-  disklet: DiskletType
-  folder: DiskletListing
-}> = ({ disklet, folder }) => {
+const FolderContents: React.FC<{ disklet: DiskletType; folder: DiskletListing }> = ({ disklet, folder }) => {
   if (Object.entries(folder).length <= 0) {
     return (
       <ListGroup>

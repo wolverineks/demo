@@ -7,7 +7,6 @@ import { WalletInfo } from '../EdgeCurrencyWallet'
 import { FiatAmount } from '../Fiat'
 import { useActiveInfos, useDefaultFiatCurrencyCode, useEdgeAccountTotal } from '../hooks'
 import { Route, useRoute, useSetRoute } from '../route'
-import { SearchQueryProvider, useSetSearchQuery } from '../search'
 import { SelectedWalletBoundary, useSelectedWallet } from '../SelectedWallet'
 import { Settings } from '../Settings/Settings'
 import { denominatedToNative, getExchangeDenomination, isUnique } from '../utils'
@@ -21,9 +20,7 @@ export const AccountInfo = () => {
   return (
     <Row>
       <Col xl={3} lg={3} md={3} sm={3}>
-        <SearchQueryProvider>
-          <SideMenu />
-        </SearchQueryProvider>
+        <SideMenu />
       </Col>
 
       <Col>
@@ -32,9 +29,7 @@ export const AccountInfo = () => {
             <SelectedWalletInfo />
           </SelectedWalletBoundary>
         ) : route === Route.settings ? (
-          <SearchQueryProvider>
-            <Settings />
-          </SearchQueryProvider>
+          <Settings />
         ) : route === Route.createWallet ? (
           <CreateWallet key={account.activeWalletIds.length} />
         ) : (
@@ -116,7 +111,7 @@ const AccountTotal = () => {
 const SideMenu = () => {
   const route = useRoute()
   const setRoute = useSetRoute()
-  const setSearchQuery = useSetSearchQuery()
+  const [searchQuery, setSearchQuery] = React.useState('')
 
   return (
     <div>
@@ -127,15 +122,15 @@ const SideMenu = () => {
       </Boundary>
 
       <Boundary>
-        <ActiveWalletList onSelect={() => setRoute(Route.account)} />
+        <ActiveWalletList onSelect={() => setRoute(Route.account)} searchQuery={searchQuery} />
       </Boundary>
 
       {/* <Boundary>
-        <ArchivedWalletList />
+        <ArchivedWalletList searchQuery={searchQuery} />
       </Boundary>
 
       <Boundary>
-        <DeletedWalletList />
+        <DeletedWalletList searchQuery={searchQuery} />
       </Boundary> */}
 
       <ListGroup.Item

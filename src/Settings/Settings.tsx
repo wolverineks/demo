@@ -7,12 +7,10 @@ import { Boundary } from '../components'
 import { DefaultFiat } from '../Fiat'
 import { OTP } from '../OTP'
 import { PinLogin } from '../PinLogin'
-import { useSearchQuery } from '../search'
+import { Storage } from '../Storage'
 import { Currencies } from './Currencies'
 
 export const Settings = () => {
-  const searchQuery = useSearchQuery()
-
   return (
     <Tabs id={'accountSettings'} defaultActiveKey={'account'}>
       <Tab title={'Account'} eventKey={'account'}>
@@ -37,7 +35,13 @@ export const Settings = () => {
 
       <Tab eventKey={'currencies'} title={'Currencies'}>
         <Boundary>
-          <Currencies query={searchQuery} />
+          <Currencies />
+        </Boundary>
+      </Tab>
+
+      <Tab eventKey={'storage'} title={'Storage'}>
+        <Boundary>
+          <Storage />
         </Boundary>
       </Tab>
     </Tabs>

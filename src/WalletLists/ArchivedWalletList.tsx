@@ -6,14 +6,12 @@ import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
 import { useChangeWalletStates, useInactiveWallets, useReadInactiveWallet } from '../hooks'
 import { InactiveWallets } from '../InactiveWallets'
-import { useSearchQuery } from '../search'
 import { FallbackRender } from './FallbackRender'
 import { getFilteredWalletIds } from './filter'
 
-export const ArchivedWalletList = () => {
+export const ArchivedWalletList = ({ searchQuery }: { searchQuery: string }) => {
   const account = useEdgeAccount()
-  const searchQuery = useSearchQuery()
-  const inactiveWallets = useInactiveWallets(useEdgeAccount())
+  const inactiveWallets = useInactiveWallets(account)
   const visibleWalletIds = getFilteredWalletIds(inactiveWallets, account.archivedWalletIds, searchQuery)
 
   return (

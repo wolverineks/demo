@@ -7,14 +7,15 @@ import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
 import { useBalance, useChangeWalletStates, useEdgeCurrencyWallet, useEnabledTokens } from '../hooks'
-import { useSearchQuery } from '../search'
 import { useSelectedWalletInfo } from '../SelectedWallet'
 import { getBalance, getSortedCurrencyWallets } from '../utils'
 import { getFilteredWalletIds } from './filter'
 
-export const ActiveWalletList: React.FC<{ onSelect: () => void }> = ({ onSelect }) => {
+export const ActiveWalletList: React.FC<{ onSelect: () => void; searchQuery: string }> = ({
+  onSelect,
+  searchQuery,
+}) => {
   const account = useEdgeAccount()
-  const searchQuery = useSearchQuery()
   const currencyWallets = getSortedCurrencyWallets(account)
   const visibleWalletIds = getFilteredWalletIds(currencyWallets, account.activeWalletIds, searchQuery)
 

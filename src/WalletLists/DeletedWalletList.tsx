@@ -5,14 +5,12 @@ import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
 import { useChangeWalletStates, useInactiveWallets, useReadInactiveWallet } from '../hooks'
-import { useSearchQuery } from '../search'
 import { getDeletedWalletIds } from '../utils'
 import { FallbackRender } from './FallbackRender'
 import { getFilteredWalletIds } from './filter'
 
-export const DeletedWalletList = () => {
+export const DeletedWalletList = ({ searchQuery }: { searchQuery: string }) => {
   const deletedWalletIds = getDeletedWalletIds(useEdgeAccount())
-  const searchQuery = useSearchQuery()
   const inactiveWallets = useInactiveWallets(useEdgeAccount())
   const visibleWalletIds = getFilteredWalletIds(inactiveWallets, deletedWalletIds, searchQuery)
 
@@ -36,9 +34,7 @@ export const DeletedWalletList = () => {
   )
 }
 
-const WalletRow: React.FC<{
-  walletId: string
-}> = ({ walletId }) => {
+const WalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
   const inactiveWallet = useReadInactiveWallet(useEdgeAccount(), walletId)
   const balance = inactiveWallet.balances[inactiveWallet.currencyInfo.currencyCode]
 
@@ -46,10 +42,7 @@ const WalletRow: React.FC<{
     <ListGroup.Item>
       <span className={'float-left'}>
         <Logo currencyCode={inactiveWallet.currencyInfo.currencyCode} /> {inactiveWallet.name}{' '}
-        <Boundary>
-          <DisplayAmount nativeAmount={balance} currencyCode={inactiveWallet.currencyInfo.currencyCode} />
-        </Boundary>{' '}
-        -{' '}
+        <DisplayAmount nativeAmount={balance} currencyCode={inactiveWallet.currencyInfo.currencyCode} /> -{' '}
         <FiatAmount
           nativeAmount={balance}
           fromCurrencyCode={inactiveWallet.currencyInfo.currencyCode}

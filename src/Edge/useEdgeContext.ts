@@ -1,5 +1,5 @@
 import { EdgeContext, makeEdgeContext } from 'edge-core-js'
-import { QueryOptions, useQuery } from 'react-query'
+import { UseQueryOptions, useQuery } from 'react-query'
 
 import { useWatchAll } from '../hooks'
 import { contextOptions } from './contextOptions'
@@ -7,12 +7,18 @@ import { contextOptions } from './contextOptions'
 const queryKey = 'context'
 const queryFn = () => makeEdgeContext(contextOptions)
 
-export const useEdgeContext = (config?: QueryOptions<EdgeContext>, watch?: readonly (keyof EdgeContext)[]) => {
+export const useEdgeContext = ({
+  watch,
+  queryOptions,
+}: {
+  watch?: readonly (keyof EdgeContext)[]
+  queryOptions?: UseQueryOptions<EdgeContext>
+} = {}) => {
   const { data: context } = useQuery(queryKey, queryFn, {
     suspense: true,
     cacheTime: Infinity,
     staleTime: Infinity,
-    ...config,
+    ...queryOptions,
   })
 
   useWatchAll(context, watch)

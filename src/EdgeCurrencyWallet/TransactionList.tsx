@@ -1,27 +1,45 @@
 import { EdgeCurrencyWallet, EdgeTransaction } from 'edge-core-js'
 import React from 'react'
-import { ListGroup, NavLink } from 'react-bootstrap'
+import { FormControl, ListGroup, NavLink } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount } from '../components'
 import { useDisplayDenomination, useTransactionCount, useTransactions } from '../hooks'
 import { exchangeToNative, getTxUrl, nativeToDenominated } from '../utils'
 
+const normalize = (text: string) => text.trim().toLowerCase()
+
+const matches = (query: string) => (transaction: EdgeTransaction): boolean => {
+  return (
+    transaction.txid.includes(query) ||
+    new Date(transaction.date).toLocaleString().includes(query) ||
+    normalize(transaction.currencyCode).includes(normalize(query)) ||
+    normalize(transaction.nativeAmount).includes(normalize(query)) ||
+    normalize(transaction.metadata?.name || '').includes(normalize(query)) ||
+    normalize(transaction.metadata?.category || '').includes(normalize(query)) ||
+    normalize(transaction.metadata?.notes || '').includes(normalize(query)) ||
+    normalize(String(transaction.metadata?.amountFiat) || '').includes(normalize(query))
+  )
+}
+
 export const TransactionList: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({
   wallet,
   currencyCode,
 }) => {
+  const [searchQuery, setSearchQuery] = React.useState('')
   const transactionCount = useTransactionCount(wallet, { currencyCode })
   const transactions = useTransactions(wallet, { currencyCode })
+  const visibleTransactions = transactions.filter(matches(searchQuery))
 
   return (
     <ListGroup>
       <ListGroup>
-        Transactions: #:{String(transactionCount)}
+        Transactions: {transactionCount} ({visibleTransactions.length})
+        <FormControl placeholder={'Search'} onChange={(event) => setSearchQuery(event.currentTarget.value)} />
         {transactionCount <= 0 ? (
           <div>No Transactions</div>
         ) : (
-          transactions.map((transaction) => (
+          visibleTransactions.map((transaction) => (
             <TransactionListRow
               transaction={transaction as EdgeTransaction}
               key={(transaction as EdgeTransaction).txid}
@@ -33,9 +51,7 @@ export const TransactionList: React.FC<{ wallet: EdgeCurrencyWallet; currencyCod
   )
 }
 
-const TransactionListRow: React.FC<{
-  transaction: EdgeTransaction
-}> = ({ transaction }) => {
+const TransactionListRow: React.FC<{ transaction: EdgeTransaction }> = ({ transaction }) => {
   const account = useEdgeAccount()
 
   return (

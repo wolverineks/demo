@@ -332,8 +332,14 @@ export const useWriteDisplayDenominationMultiplier = (
     account.dataStore.setItem('displayDenominationMultiplier', currencyInfo.currencyCode, displayDenominationMultiplier)
 
   return useMutation(queryFn, {
-    onMutate: () => queryClient.cancelQueries(queryKey),
-    onSettled: () => queryClient.invalidateQueries(queryKey),
+    onMutate: () => {
+      queryClient.cancelQueries(queryKey)
+      queryClient.cancelQueries(['displayDenominationMultiplier', currencyInfo.currencyCode]) // invalidate dataStore
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(queryKey)
+      queryClient.invalidateQueries(['displayDenominationMultiplier', currencyInfo.currencyCode]) // invalidate dataStore
+    },
   })
 }
 

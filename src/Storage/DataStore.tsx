@@ -6,10 +6,7 @@ import Json from 'react-json-pretty'
 import { Boundary } from '../components'
 import { useItem, useItemIds, usePrefetchItem, usePrefetchItemIds, usePrefetchStoreIds, useStoreIds } from '../hooks'
 
-export const DataStore: React.FC<{
-  dataStore: EdgeDataStore
-  title: string
-}> = ({ dataStore, title }) => {
+export const DataStore: React.FC<{ dataStore: EdgeDataStore; title: string }> = ({ dataStore, title }) => {
   usePrefetchStoreIds({ dataStore })
 
   return (
@@ -38,9 +35,7 @@ export const DataStore: React.FC<{
   )
 }
 
-export const DataStoreContents: React.FC<{
-  dataStore: EdgeDataStore
-}> = ({ dataStore }) => {
+export const DataStoreContents: React.FC<{ dataStore: EdgeDataStore }> = ({ dataStore }) => {
   const storeIds = useStoreIds({ dataStore })
 
   return (
@@ -54,10 +49,7 @@ export const DataStoreContents: React.FC<{
   )
 }
 
-export const Store: React.FC<{
-  dataStore: EdgeDataStore
-  storeId: string
-}> = ({ dataStore, storeId }) => {
+export const Store: React.FC<{ dataStore: EdgeDataStore; storeId: string }> = ({ dataStore, storeId }) => {
   usePrefetchItemIds({ dataStore, storeId })
 
   return (
@@ -77,10 +69,7 @@ export const Store: React.FC<{
   )
 }
 
-const StoreContents: React.FC<{
-  dataStore: EdgeDataStore
-  storeId: string
-}> = ({ dataStore, storeId }) => {
+const StoreContents: React.FC<{ dataStore: EdgeDataStore; storeId: string }> = ({ dataStore, storeId }) => {
   const itemIds = useItemIds({ dataStore, storeId })
 
   if (Object.entries(itemIds).length <= 0) {

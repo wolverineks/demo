@@ -2,7 +2,7 @@ import { EdgeAccount } from 'edge-core-js'
 import React from 'react'
 import { Form, FormControl, FormGroup, FormLabel, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { useIdleTimer } from 'react-idle-timer'
-import { QueryOptions, useMutation, useQuery, useQueryClient } from 'react-query'
+import { UseMutationOptions, UseQueryOptions, useMutation, useQuery, useQueryClient } from 'react-query'
 
 import { useEdgeAccount, useSetAccount } from '../auth'
 
@@ -68,7 +68,7 @@ type AutoLogoutSetting = {
   delay: number
 }
 
-export const useReadAutoLogout = (account: EdgeAccount, config?: QueryOptions<AutoLogoutSetting>) => {
+export const useReadAutoLogout = (account: EdgeAccount, queryConfig?: UseQueryOptions<AutoLogoutSetting>) => {
   return useQuery({
     queryKey: [account.username, 'autoLogout'],
     queryFn: () =>
@@ -76,19 +76,29 @@ export const useReadAutoLogout = (account: EdgeAccount, config?: QueryOptions<Au
         .getItem('autoLogout', 'autoLogout.json')
         .then(JSON.parse)
         .catch(() => defaultAutoLogout) as Promise<AutoLogoutSetting>,
-    ...config,
+    ...queryConfig,
   })
 }
 
-export const useWriteAutoLogout = (account: EdgeAccount) => {
+export const useWriteAutoLogout = (
+  account: EdgeAccount,
+  mutationOptions?: UseMutationOptions<void, unknown, AutoLogoutSetting>,
+) => {
   const mutationFn = (autoLogout: AutoLogoutSetting) =>
     account.dataStore.setItem('autoLogout', 'autoLogout.json', JSON.stringify(autoLogout))
   const queryClient = useQueryClient()
   const queryKey = [account.username, 'autoLogout']
 
   return useMutation(mutationFn, {
-    onMutate: () => queryClient.cancelQueries(queryKey),
-    onSettled: () => queryClient.invalidateQueries(queryKey),
+    onMutate: () => {
+      queryClient.cancelQueries(queryKey)
+      queryClient.cancelQueries(['autoLogout', 'autoLogout.json']) // invalidate datastore
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(queryKey)
+      queryClient.invalidateQueries(['autoLogout', 'autoLogout.json']) // invalidate datastore
+    },
+    ...mutationOptions,
   })
 }
 

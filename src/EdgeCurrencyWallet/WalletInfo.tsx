@@ -8,6 +8,7 @@ import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo, Select } from '../components'
 import { FiatAmount, fiatInfos } from '../Fiat'
 import { useBalance, useFiatCurrencyCode, useTokens } from '../hooks'
+import { Disklet } from '../Storage'
 import { getTokenInfo } from '../utils'
 import { Request } from './Request'
 import { Send } from './Send'
@@ -63,6 +64,13 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: st
       <Tab eventKey={'settings'} title={'Settings'}>
         <Boundary>
           <Settings wallet={wallet} key={wallet.id} />
+        </Boundary>
+      </Tab>
+
+      <Tab eventKey={'storage'} title={'Storage'}>
+        <Boundary>
+          <Disklet title={'Synced Storage'} disklet={wallet.disklet} key={wallet.id} />
+          <Disklet title={'Local Storage'} disklet={wallet.localDisklet} key={wallet.id} />
         </Boundary>
       </Tab>
     </Tabs>

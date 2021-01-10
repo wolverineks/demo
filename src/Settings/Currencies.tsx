@@ -5,7 +5,6 @@ import { FormControl, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { useEdgeAccount } from '../auth'
 import { Boundary, Logo } from '../components'
 import { useActiveInfos, useDisplayDenomination } from '../hooks'
-import { useSetSearchQuery } from '../search'
 
 const normalize = (text: string) => text.trim().toLowerCase()
 
@@ -15,11 +14,10 @@ const matches = (query: string) => (info: EdgeCurrencyInfo | EdgeMetaToken) =>
     ? normalize(info.currencyName).includes(normalize(query))
     : normalize(info.displayName).includes(normalize(query)))
 
-export const Currencies: React.FC<{ query: string }> = ({ query }) => {
+export const Currencies: React.FC = () => {
   const account = useEdgeAccount()
-
-  const visibleSettings = useActiveInfos(account).filter(matches(query))
-  const setSearchQuery = useSetSearchQuery()
+  const [searchQuery, setSearchQuery] = React.useState('')
+  const visibleSettings = useActiveInfos(account).filter(matches(searchQuery))
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>

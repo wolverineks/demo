@@ -1,6 +1,6 @@
 import { EdgeDataStore } from 'edge-core-js'
 import React from 'react'
-import { FetchQueryOptions, QueryOptions, useQuery, useQueryClient } from 'react-query'
+import { FetchQueryOptions, UseQueryOptions, useQuery, useQueryClient } from 'react-query'
 
 interface ItemQuery {
   dataStore: EdgeDataStore
@@ -12,7 +12,7 @@ const queryKey = ({ storeId, itemId }: { storeId: string; itemId: string }) => [
 const queryFn = ({ dataStore, storeId, itemId }: ItemQuery) => () =>
   dataStore.getItem(storeId, itemId).then((data) => JSON.parse(data) as unknown)
 
-export const useItem = ({ dataStore, storeId, itemId }: ItemQuery, options?: QueryOptions) =>
+export const useItem = ({ dataStore, storeId, itemId }: ItemQuery, options?: UseQueryOptions) =>
   useQuery(queryKey({ storeId, itemId }), queryFn({ dataStore, storeId, itemId }), {
     suspense: true,
     ...options,

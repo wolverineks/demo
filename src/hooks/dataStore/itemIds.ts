@@ -1,6 +1,6 @@
 import { EdgeDataStore } from 'edge-core-js'
 import React from 'react'
-import { FetchQueryOptions, QueryOptions, useQuery, useQueryClient } from 'react-query'
+import { FetchQueryOptions, UseQueryOptions, useQuery, useQueryClient } from 'react-query'
 
 interface ItemIdsQuery {
   dataStore: EdgeDataStore
@@ -9,7 +9,7 @@ interface ItemIdsQuery {
 
 const queryFn = ({ dataStore, storeId }: ItemIdsQuery) => () => dataStore.listItemIds(storeId)
 
-export const useItemIds = ({ dataStore, storeId }: ItemIdsQuery, options?: QueryOptions<string[]>) =>
+export const useItemIds = ({ dataStore, storeId }: ItemIdsQuery, options?: UseQueryOptions<string[]>) =>
   useQuery({
     queryKey: storeId,
     queryFn: queryFn({ dataStore, storeId }),
