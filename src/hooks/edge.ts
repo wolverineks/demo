@@ -26,7 +26,7 @@ import {
   getExchangeDenomination,
   getInfo,
   getSortedCurrencyWallets,
-  isUnique,
+  getTokenInfo,
   nativeToDenominated,
   nativeToExchange,
 } from '../utils'
@@ -601,11 +601,12 @@ export const useDisableToken = (wallet: EdgeCurrencyWallet) => {
   }).mutate
 }
 
-export const useTokens = (wallet: EdgeCurrencyWallet) => ({
+export const useTokens = (account: EdgeAccount, wallet: EdgeCurrencyWallet) => ({
   availableTokens: getAvailableTokens(wallet),
   enabledTokens: useEnabledTokens(wallet),
   enableToken: useEnableToken(wallet),
   disableToken: useDisableToken(wallet),
+  availableTokenInfos: getAvailableTokens(wallet).map((token) => getTokenInfo(account, token)),
 })
 
 export const useTransactions = (
