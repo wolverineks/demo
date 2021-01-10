@@ -69,22 +69,6 @@ export const useReadPinLoginEnabled = (
   return useQuery([account.username, 'pinLoginEnabled'], () => context.pinLoginEnabled(account.username), queryOptions)
 }
 
-export const useActiveInfos = (account: EdgeAccount) => {
-  const queryFn = () => getActiveInfos(account)
-  const queryKey = 'activeInfos'
-  const { refetch, data } = useQuery(queryKey, queryFn, { suspense: true })
-
-  React.useEffect(() => {
-    const unsub = account.watch('currencyWallets', () => refetch())
-
-    return () => {
-      unsub()
-    }
-  }, [account, refetch])
-
-  return data!
-}
-
 export const useWritePinLoginEnabled = (
   account: EdgeAccount,
   mutationOptions?: UseMutationOptions<string, unknown, boolean>,
@@ -415,6 +399,22 @@ export const useFiatAmount = (
       unsub()
     }
   }, [account.rateCache, exchangeAmount, fiatCurrencyCode, fromCurrencyCode, refetch])
+
+  return data!
+}
+
+export const useActiveInfos = (account: EdgeAccount) => {
+  const queryFn = () => getActiveInfos(account)
+  const queryKey = 'activeInfos'
+  const { refetch, data } = useQuery(queryKey, queryFn, { suspense: true })
+
+  React.useEffect(() => {
+    const unsub = account.watch('currencyWallets', () => refetch())
+
+    return () => {
+      unsub()
+    }
+  }, [account, refetch])
 
   return data!
 }
