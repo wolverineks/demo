@@ -56,7 +56,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
   //     })
   //     .catch((error: Error) => console.log(error))
 
-  const { data: transaction, error } = useNewTransaction(wallet, spendInfo)
+  const { data: transaction, error } = useNewTransaction(wallet, spendInfo, { enabled: !!publicAddress })
 
   const onConfirm = () => {
     if (!transaction) return
