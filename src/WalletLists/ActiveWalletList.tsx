@@ -1,12 +1,17 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
-import { useOnNewTransactions } from 'edge-react-hooks'
 import React from 'react'
 import { Accordion, Button, ListGroup, ProgressBar } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
-import { useBalance, useChangeWalletStates, useEdgeCurrencyWallet, useEnabledTokens } from '../hooks'
+import {
+  useBalance,
+  useChangeWalletStates,
+  useEdgeCurrencyWallet,
+  useEnabledTokens,
+  useOnNewTransactions,
+} from '../hooks'
 import { useSelectedWalletInfo } from '../SelectedWallet'
 import { getBalance, getSortedCurrencyWallets } from '../utils'
 import { getFilteredWalletIds } from './filter'

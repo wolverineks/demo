@@ -4,10 +4,19 @@ import { useEdgeAccount } from '../auth'
 import { DataStore } from './DataStore'
 import { Disklet } from './Disklet'
 
-export const Storage = () => (
-  <div>
-    <Disklet disklet={useEdgeAccount().disklet} path={'/'} title={'Disklet'} />
-    <Disklet disklet={useEdgeAccount().localDisklet} path={'/'} title={'Local Disklet'} />
-    <DataStore dataStore={useEdgeAccount().dataStore} title={'DataStore'} />
-  </div>
-)
+export const Storage = () => {
+  const account = useEdgeAccount()
+
+  return (
+    <div>
+      <Disklet id={[account.username, 'disklet']} disklet={account.disklet} path={'/'} title={'Disklet'} />
+      <Disklet
+        id={[account.username, 'localDisklet']}
+        disklet={account.localDisklet}
+        path={'/'}
+        title={'Local Disklet'}
+      />
+      <DataStore dataStore={account.dataStore} title={'DataStore'} />
+    </div>
+  )
+}

@@ -1,5 +1,4 @@
 import { EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
-import { useRenameWallet } from 'edge-react-hooks'
 import React from 'react'
 import { Button, Card, Form, FormControl, FormGroup, FormLabel, ListGroup } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
@@ -7,18 +6,18 @@ import JSONPretty from 'react-json-pretty'
 import { useEdgeAccount } from '../auth'
 import { Boundary, Logo, Select } from '../components'
 import { fiatInfos } from '../Fiat'
-import { useFiatCurrencyCode, useTokens } from '../hooks'
+import { useFiatCurrencyCode, useRenameWallet, useTokens } from '../hooks'
 import { useFilter } from './useFilter'
 
 const RenameWallet: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const [name, setName] = React.useState<string>(wallet.name || '')
-  const { execute, status } = useRenameWallet(wallet)
+  const { mutate: renameWallet, status } = useRenameWallet(wallet)
 
   return (
     <FormGroup>
       <Form.Label>Wallet Name</Form.Label>
       <FormControl value={name} onChange={(event) => setName(event.currentTarget.value)} />
-      <Button onClick={() => execute({ name })} disabled={status === 'loading'}>
+      <Button onClick={() => renameWallet({ name })} disabled={status === 'loading'}>
         Rename
       </Button>
     </FormGroup>

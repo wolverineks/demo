@@ -1613,11 +1613,6 @@
     estree-walker "^1.0.1"
     picomatch "^2.2.2"
 
-"@scarf/scarf@^1.0.6":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@scarf/scarf/-/scarf-1.1.0.tgz#b84b4a91cd938a688d36245b7a7db6fbc476a499"
-  integrity sha512-b2iE8kjjzzUo2WZ0xuE2N77kfnTds7ClrDxcz3Atz7h2XrNVoAPUoT75i7CY0st5x++70V91Y+c6RpBX9MX7Jg==
-
 "@sinonjs/commons@^1.7.0":
   version "1.8.1"
   resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-1.8.1.tgz#e7df00f98a203324f6dc7cc606cad9d4a8ab2217"
@@ -2989,11 +2984,6 @@ balanced-match@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.0.tgz#89b4d199ab2bee49de164ea02b89ce462d71b767"
   integrity sha1-ibTRmasr7kneFk6gK4nORi1xt2c=
-
-base-64@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/base-64/-/base-64-0.1.0.tgz#780a99c84e7d600260361511c4877613bf24f6bb"
-  integrity sha1-eAqZyE59YAJgNhURxId2E78k9rs=
 
 base-x@3.0.7:
   version "3.0.7"
@@ -4959,7 +4949,7 @@ ed25519@0.0.4:
     bindings "^1.2.1"
     nan "^2.0.9"
 
-edge-core-js@^0.17.6, edge-core-js@^0.17.9:
+edge-core-js@^0.17.9:
   version "0.17.19"
   resolved "https://registry.yarnpkg.com/edge-core-js/-/edge-core-js-0.17.19.tgz#c0f52f66e95bcd6022c5f0d76550ee3888c18531"
   integrity sha512-YGLeYCHVbtwHtsNlTpQ22hiGbCkSVA8NDMLh9lkZMYtXfJRSKspalNxnu8hSf/zD6gcR+6NNLOf2fSkGw0rX1A==
@@ -4985,7 +4975,7 @@ edge-core-js@^0.17.6, edge-core-js@^0.17.9:
     scrypt-js "^2.0.3"
     yaob "^0.3.6"
 
-edge-currency-accountbased@^0.7.16:
+edge-currency-accountbased@^0.7.42:
   version "0.7.42"
   resolved "https://registry.yarnpkg.com/edge-currency-accountbased/-/edge-currency-accountbased-0.7.42.tgz#5be4f592053765971e72f3b70a438866f596c619"
   integrity sha512-2se5+idHNBQVSkww23uhqKV8W5CaulmocPiHMMTl++Kkvs1T4d3Gq4LuiEV9SwNxru3yepvsA/YrRkCxqNgBPw==
@@ -5047,15 +5037,6 @@ edge-exchange-plugins@^0.11.5:
     hashjs "^1.2.0"
     iso4217 "^0.2.0"
     utf8 "^3.0.0"
-
-edge-react-hooks@^4.2.1:
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/edge-react-hooks/-/edge-react-hooks-4.2.1.tgz#b1d9ba7e2bc7887e26f95410b3cd4c1b4cce1375"
-  integrity sha512-6NLDMDgksBYQmhVEM/Rj+yTQgg6i5mlDcBTz/h4dqfcHhxvrj32uWoPcBlngf9fr/OqH2D16ecFZvoMTt4ging==
-  dependencies:
-    edge-core-js "^0.17.6"
-    react-native-fs "^2.16.6"
-    react-query "^1.5.3"
 
 ee-first@1.1.1:
   version "1.1.1"
@@ -10814,14 +10795,6 @@ react-lifecycles-compat@^3.0.4:
   resolved "https://registry.yarnpkg.com/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
   integrity sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==
 
-react-native-fs@^2.16.6:
-  version "2.16.6"
-  resolved "https://registry.yarnpkg.com/react-native-fs/-/react-native-fs-2.16.6.tgz#2901789a43210a35a0ef0a098019bbef3af395fd"
-  integrity sha512-ZWOooD1AuFoAGY3HS2GY7Qx2LZo4oIg6AK0wbC68detxwvX75R/q9lRqThXNKP6vIo2VHWa0fYUo/SrLw80E8w==
-  dependencies:
-    base-64 "^0.1.0"
-    utf8 "^3.0.0"
-
 react-overlays@^4.1.0:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/react-overlays/-/react-overlays-4.1.1.tgz#0060107cbe1c5171a744ccda3fbf0556d064bc5f"
@@ -10853,14 +10826,6 @@ react-qr-scanner@^0.0.11:
     jsqr "^1.3.1"
     prop-types "^15.7.2"
     webrtc-adapter "^7.7.0"
-
-react-query@^1.5.3:
-  version "1.5.10"
-  resolved "https://registry.yarnpkg.com/react-query/-/react-query-1.5.10.tgz#9b23af061e8171e95503e1932cc07d0cebe806eb"
-  integrity sha512-Kjgii5rK1g9kpLCUGBeGIqFG0IoAMe/oRKzpIfNQUyegJ/Lh5o9lmbmpTPMBWbP3gZDFfAC3081llqxg7QiqCg==
-  dependencies:
-    "@scarf/scarf" "^1.0.6"
-    ts-toolbelt "^6.9.4"
 
 react-query@^3.5.11:
   version "3.5.11"
@@ -12852,11 +12817,6 @@ ts-pnp@1.2.0, ts-pnp@^1.1.6:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/ts-pnp/-/ts-pnp-1.2.0.tgz#a500ad084b0798f1c3071af391e65912c86bca92"
   integrity sha512-csd+vJOb/gkzvcCHgTGSChYpy5f1/XKNsmvBGO4JXS+z1v2HobugDz4s1IeFXM3wZB44uczs+eazB5Q/ccdhQw==
-
-ts-toolbelt@^6.9.4:
-  version "6.15.5"
-  resolved "https://registry.yarnpkg.com/ts-toolbelt/-/ts-toolbelt-6.15.5.tgz#cb3b43ed725cb63644782c64fbcad7d8f28c0a83"
-  integrity sha512-FZIXf1ksVyLcfr7M317jbB67XFJhOO1YqdTcuGaq9q5jLUoTikukZ+98TPjKiP2jC5CgmYdWWYs0s2nLSU0/1A==
 
 tsconfig-paths@^3.9.0:
   version "3.9.0"

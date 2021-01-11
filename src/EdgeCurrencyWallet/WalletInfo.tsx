@@ -1,11 +1,10 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
-import { useOnNewTransactions } from 'edge-react-hooks'
 import React from 'react'
 import { Tab, Tabs } from 'react-bootstrap'
 
 import { Boundary, DisplayAmount } from '../components'
 import { FiatAmount } from '../Fiat'
-import { useBalance, useFiatCurrencyCode } from '../hooks'
+import { useBalance, useFiatCurrencyCode, useOnNewTransactions } from '../hooks'
 import { Disklet } from '../Storage'
 import { Request } from './Request'
 import { Send } from './Send'
@@ -67,12 +66,18 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: st
 
       <Tab eventKey={'storage'} title={'Storage'}>
         <Boundary>
-          <React.Fragment key={wallet.id}>
-            <Disklet title={'Synced Storage'} disklet={wallet.disklet} />
-            <Disklet title={'Local Storage'} disklet={wallet.localDisklet} />
-          </React.Fragment>
+          <Disklets wallet={wallet} />
         </Boundary>
       </Tab>
     </Tabs>
+  )
+}
+
+const Disklets = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
+  return (
+    <React.Fragment key={wallet.id}>
+      <Disklet id={[wallet.id, 'localDisklet']} title={'Local Storage'} disklet={wallet.localDisklet} />
+      <Disklet id={[wallet.id, 'disklet']} title={'Synced Storage'} disklet={wallet.disklet} />
+    </React.Fragment>
   )
 }

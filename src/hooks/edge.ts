@@ -1,6 +1,8 @@
+import { Disklet } from 'disklet'
 import {
   EdgeAccount,
   EdgeContext,
+  EdgeCreateCurrencyWalletOptions,
   EdgeCurrencyCodeOptions,
   EdgeCurrencyInfo,
   EdgeCurrencyWallet,
@@ -13,7 +15,6 @@ import {
   EdgeTransaction,
   EdgeWalletState,
 } from 'edge-core-js'
-import { useOnNewTransactions } from 'edge-react-hooks'
 import React from 'react'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery, useQueryClient } from 'react-query'
 
@@ -196,6 +197,32 @@ export const useChangeWalletStates = (account: EdgeAccount) => {
     ),
     ...rest,
   }
+}
+
+export const useCreateCurrencyWallet = (account: EdgeAccount) => {
+  const mutationFn = ({ type, options }: { type: string; options: EdgeCreateCurrencyWalletOptions }) =>
+    account.createCurrencyWallet(type, options)
+
+  return useMutation(mutationFn)
+}
+
+export const useRenameWallet = (wallet: EdgeCurrencyWallet) => {
+  const mutationFn = ({ name }: { name: string }) => wallet.renameWallet(name)
+
+  return useMutation(mutationFn)
+}
+
+export const useOnNewTransactions = (
+  wallet: EdgeCurrencyWallet,
+  callback: (transactions: Array<EdgeTransaction>) => any,
+) => {
+  React.useEffect(() => {
+    const unsubscribe = wallet.on('newTransactions', callback)
+
+    return () => {
+      unsubscribe()
+    }
+  }, [wallet, callback])
 }
 
 export const useDisplayToNative = ({
