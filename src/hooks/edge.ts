@@ -1,4 +1,3 @@
-import { Disklet } from 'disklet'
 import {
   EdgeAccount,
   EdgeContext,
@@ -18,13 +17,13 @@ import {
 import React from 'react'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery, useQueryClient } from 'react-query'
 
-import { getFiatInfo } from '../Fiat/getFiatInfo'
 import {
   denominatedToNative,
   exchangeToNative,
   getActiveInfos,
   getAvailableTokens,
   getExchangeDenomination,
+  getFiatInfo,
   getInfo,
   getSortedCurrencyWallets,
   getTokenInfo,

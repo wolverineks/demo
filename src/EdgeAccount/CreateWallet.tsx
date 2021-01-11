@@ -3,9 +3,8 @@ import { Alert, Button, Form, FormControl, FormGroup, FormLabel } from 'react-bo
 
 import { useEdgeAccount } from '../auth'
 import { Select } from '../components'
-import { FiatInfo, fiatInfos } from '../Fiat'
 import { useCreateCurrencyWallet, useDefaultFiatInfo } from '../hooks'
-import { getWalletTypes } from '../utils'
+import { FiatInfo, fiatInfos, getWalletTypes } from '../utils'
 
 export const CreateWallet = () => {
   const defaultFiatInfo = useDefaultFiatInfo(useEdgeAccount())

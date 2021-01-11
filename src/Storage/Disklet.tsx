@@ -2,7 +2,6 @@ import { Disklet as DiskletType } from 'disklet'
 import React from 'react'
 import { Button, Card, ListGroup } from 'react-bootstrap'
 import Json from 'react-json-pretty'
-import { useQueryClient } from 'react-query'
 
 import { Boundary } from '../components'
 import { useFile, useFolder, usePrefetchFile, usePrefetchFolder } from '../hooks'

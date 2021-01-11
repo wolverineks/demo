@@ -2,7 +2,7 @@ import React from 'react'
 
 import { useEdgeAccount } from '../auth'
 import { useFiatAmount } from '../hooks'
-import { getFiatInfo } from './getFiatInfo'
+import { getFiatInfo } from '../utils'
 
 export const FiatAmount = ({
   nativeAmount,

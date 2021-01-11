@@ -5,8 +5,8 @@ import JSONPretty from 'react-json-pretty'
 
 import { useEdgeAccount } from '../auth'
 import { Boundary, Logo, Select } from '../components'
-import { fiatInfos } from '../Fiat'
 import { useFiatCurrencyCode, useRenameWallet, useTokens } from '../hooks'
+import { fiatInfos } from '../utils'
 import { useFilter } from './useFilter'
 
 const RenameWallet: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
