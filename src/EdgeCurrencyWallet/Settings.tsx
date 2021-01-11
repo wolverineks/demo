@@ -185,9 +185,11 @@ export const Settings: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) =
         <RawKey wallet={wallet} />
       </Matcher>
 
-      <Boundary>
-        <Tokens wallet={wallet} />
-      </Boundary>
+      <Matcher query={query} match={'tokens'}>
+        <Boundary>
+          <Tokens wallet={wallet} />
+        </Boundary>
+      </Matcher>
     </>
   )
 }
