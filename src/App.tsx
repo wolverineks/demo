@@ -7,7 +7,7 @@ import { Boundary } from './components'
 import { Edge } from './Edge'
 import { AccountInfo } from './EdgeAccount'
 import { useEdgeCurrencyWallet } from './hooks'
-import { RouteProvider, useRoute } from './route'
+import { RouteProvider } from './route'
 import { SelectedWalletInfoProvider, useSelectedWalletInfo } from './SelectedWallet'
 
 export const App = () => {
@@ -44,7 +44,6 @@ export const Header = () => {
   const account = useEdgeAccount()
   const setAccount = useSetAccount()
   const [walletInfo] = useSelectedWalletInfo()
-  const route = useRoute()
   const queryClient = useQueryClient()
 
   return (
@@ -59,7 +58,7 @@ export const Header = () => {
           <WalletName walletId={walletInfo.id} currencyCode={walletInfo.currencyCode} />
         </Boundary>
       ) : (
-        <Navbar.Text>{route}</Navbar.Text>
+        <Navbar.Text>No Selected Wallet </Navbar.Text>
       )}
 
       <Navbar.Collapse className="justify-content-end">
