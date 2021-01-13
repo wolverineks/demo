@@ -66,7 +66,7 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: st
 
       <Tab eventKey={'storage'} title={'Storage'}>
         <Boundary>
-          <Disklets wallet={wallet} />
+          <Disklets wallet={wallet} key={wallet.id} />
         </Boundary>
       </Tab>
     </Tabs>
@@ -75,7 +75,7 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: st
 
 const Disklets = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
   return (
-    <React.Fragment key={wallet.id}>
+    <React.Fragment>
       <Disklet id={[wallet.id, 'localDisklet']} title={'Local Storage'} disklet={wallet.localDisklet} />
       <Disklet id={[wallet.id, 'disklet']} title={'Synced Storage'} disklet={wallet.disklet} />
     </React.Fragment>
