@@ -10,6 +10,16 @@ export const getAccountsWithPinLogin = (context: EdgeContext) => {
 }
 
 // EDGE ACCOUNT
+export const getCurrencyCodeFromWalletId = (account: EdgeAccount, id: string) => {
+  const { allKeys, currencyConfig } = account
+  const walletInfo = allKeys.find((walletInfo) => walletInfo.id === id)
+  const currencyCode = Object.values(currencyConfig).find(
+    ({ currencyInfo }) => currencyInfo.walletType === walletInfo?.type,
+  )!.currencyInfo.currencyCode
+
+  return currencyCode
+}
+
 export const getActiveInfos = async (account: EdgeAccount) => {
   const wallets = getSortedCurrencyWallets(account)
   const walletCurrencyCodes = wallets.map((wallet) => wallet.currencyInfo.currencyCode)
@@ -57,13 +67,8 @@ export const getInfo = (account: EdgeAccount, currencyCode: string) => {
   return getCurrencyInfo(account, currencyCode) || getTokenInfo(account, currencyCode) || getFiatInfo(currencyCode)
 }
 
-export const getFiatInfo = (currencyCode: string): FiatInfo & { denominations: EdgeDenomination[] } => {
-  const info = fiatInfos.find((fiatInfo) => fiatInfo.isoCurrencyCode.includes(currencyCode))!
-
-  return {
-    ...info,
-    denominations: [{ name: info.currencyCode, symbol: info.symbol, multiplier: '1' }],
-  }
+export const getFiatInfo = (currencyCode: string): FiatInfo => {
+  return fiatInfos.find((fiatInfo) => fiatInfo.isoCurrencyCode.includes(currencyCode))!
 }
 
 export const getLogo = (account: EdgeAccount, currencyCode: string) => {

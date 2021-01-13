@@ -1,4 +1,11 @@
-export type FiatInfo = { currencyCode: string; isoCurrencyCode: string; symbol: string }
+import { EdgeDenomination } from 'edge-core-js'
+
+export type FiatInfo = {
+  currencyCode: string
+  isoCurrencyCode: string
+  symbol: string
+  denominations: EdgeDenomination[]
+}
 export const fiatInfos: FiatInfo[] = [
   { currencyCode: 'AED', isoCurrencyCode: 'iso:AED', symbol: 'Ø¯.Ø¥' },
   { currencyCode: 'AFN', isoCurrencyCode: 'iso:AFN', symbol: 'Ø' },
@@ -159,4 +166,7 @@ export const fiatInfos: FiatInfo[] = [
   { currencyCode: 'YER', isoCurrencyCode: 'iso:YER', symbol: 'ï·¼' },
   { currencyCode: 'ZAR', isoCurrencyCode: 'iso:ZAR', symbol: 'R' },
   { currencyCode: 'ZMW', isoCurrencyCode: 'iso:ZMW', symbol: 'ZK' },
-]
+].map((info) => ({
+  ...info,
+  denominations: [{ name: info.currencyCode, symbol: info.symbol, multiplier: '1' }],
+}))
