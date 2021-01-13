@@ -6,7 +6,7 @@ import { AutoLogout } from '../AutoLogout'
 import { Boundary } from '../components'
 import { DefaultFiat } from '../Fiat'
 import { OTP } from '../OTP'
-import { PinLogin } from '../PinLogin'
+import { Pin } from '../Pin'
 import { Storage } from '../Storage'
 import { Currencies } from './Currencies'
 
@@ -28,7 +28,7 @@ export const Settings = () => {
           </Boundary>
 
           <Boundary>
-            <PinLogin />
+            <Pin />
           </Boundary>
         </ListGroup>
       </Tab>
