@@ -1,10 +1,10 @@
-import { EdgeAccount, EdgeCurrencyWallet } from 'edge-core-js'
+import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 import { useQueryClient } from 'react-query'
 
 import { useEdgeAccount } from '../auth'
 import { useEdgeCurrencyWallet } from '../hooks'
-import { getInfo } from '../utils'
+import { getCurrencyCodeFromWalletId } from '../utils'
 
 type SelectedWalletInfo = { id: string; currencyCode: string }
 type SetSelectedWalletInfo = (selectedWalletInfo: SelectedWalletInfo) => void
@@ -39,11 +39,12 @@ export const SelectedWalletInfoProvider: React.FC = ({ children }) => {
 
     const unsubscribe = queryClient.getQueryCache().subscribe(async (query) => {
       if (!query) return
-      if (query.queryKey[0] === selectedWalletId && query.queryKey[1] === 'enabledTokens') {
-        const currencyInfo = getInfo(account, getCurrencyCodeFromWalletId(account, selectedWalletId))
-        const wallet = account.currencyWallets[selectedWalletId]
+      const match = query.queryKey[0] === selectedWalletId && query.queryKey[1] === 'enabledTokens'
+
+      if (match) {
+        const wallet = await account.waitForCurrencyWallet(selectedWalletId)
+        const currencyInfo = wallet.currencyInfo
         const tokens = await wallet.getEnabledTokens()
-        if (!tokens) return
 
         if (![...tokens, currencyInfo.currencyCode].includes(selectedCurrencyCode)) {
           setSelectedWalletId(undefined)
@@ -76,18 +77,6 @@ export const useSelectedWallet = (watch?: readonly (keyof EdgeCurrencyWallet)[])
   const wallet = useEdgeCurrencyWallet({ account: useEdgeAccount(), walletId: walletInfo.id as string, watch })
 
   return [{ wallet, id: walletInfo?.id, currencyCode: walletInfo?.currencyCode }, selectWallet] as const
-}
-
-const getCurrencyCodeFromWalletId = (account: EdgeAccount, id: string) => {
-  const { allKeys, currencyConfig } = account
-  const walletInfo = allKeys.find((walletInfo) => walletInfo.id === id)
-  const currencyCode = Object.values(currencyConfig).find(
-    ({ currencyInfo }) => currencyInfo.walletType === walletInfo?.type,
-  )?.currencyInfo.currencyCode
-
-  if (!currencyCode) throw new Error('Invalid wallet id')
-
-  return currencyCode
 }
 
 export const SelectedWalletBoundary: React.FC<{ fallback?: React.ReactNode }> = ({ children, fallback = null }) => {
