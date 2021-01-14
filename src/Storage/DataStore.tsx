@@ -7,7 +7,7 @@ import { Boundary } from '../components'
 import { useItem, useItemIds, usePrefetchItem, usePrefetchItemIds, usePrefetchStoreIds, useStoreIds } from '../hooks'
 
 export const DataStore: React.FC<{ dataStore: EdgeDataStore; title: string }> = ({ dataStore, title }) => {
-  usePrefetchStoreIds({ dataStore })
+  const prefetch = usePrefetchStoreIds({ dataStore })
 
   return (
     <Card>
@@ -16,15 +16,7 @@ export const DataStore: React.FC<{ dataStore: EdgeDataStore; title: string }> = 
       </Card.Header>
       <Card.Body>
         <div style={{ paddingLeft: '20px' }}>
-          <ToggleRow
-            title={title}
-            onDelete={() => {
-              return
-            }}
-            onOpen={() => {
-              return
-            }}
-          >
+          <ToggleRow onHover={prefetch} title={title}>
             <Boundary>
               <DataStoreContents dataStore={dataStore} />
             </Boundary>
@@ -36,31 +28,29 @@ export const DataStore: React.FC<{ dataStore: EdgeDataStore; title: string }> = 
 }
 
 export const DataStoreContents: React.FC<{ dataStore: EdgeDataStore }> = ({ dataStore }) => {
-  const storeIds = useStoreIds({ dataStore })
+  const { data: storeIds, refetch } = useStoreIds({ dataStore })
 
   return (
     <>
-      {storeIds.map((storeId) => (
+      {storeIds!.map((storeId) => (
         <ListGroup.Item key={storeId}>
-          <Store dataStore={dataStore} storeId={storeId} />
+          <Store dataStore={dataStore} storeId={storeId} onDelete={refetch} />
         </ListGroup.Item>
       ))}
     </>
   )
 }
 
-export const Store: React.FC<{ dataStore: EdgeDataStore; storeId: string }> = ({ dataStore, storeId }) => {
-  usePrefetchItemIds({ dataStore, storeId })
+export const Store: React.FC<{ dataStore: EdgeDataStore; storeId: string; onDelete: () => void }> = ({
+  dataStore,
+  storeId,
+  onDelete,
+}) => {
+  const prefetch = usePrefetchItemIds({ dataStore, storeId })
 
   return (
     <div style={{ paddingLeft: '20px' }}>
-      <ToggleRow
-        title={storeId}
-        onOpen={() => {
-          return
-        }}
-        onDelete={() => dataStore.deleteStore(storeId)}
-      >
+      <ToggleRow title={storeId} onDelete={() => dataStore.deleteStore(storeId).then(onDelete)} onHover={prefetch}>
         <Boundary>
           <StoreContents dataStore={dataStore} storeId={storeId} />
         </Boundary>
@@ -70,9 +60,9 @@ export const Store: React.FC<{ dataStore: EdgeDataStore; storeId: string }> = ({
 }
 
 const StoreContents: React.FC<{ dataStore: EdgeDataStore; storeId: string }> = ({ dataStore, storeId }) => {
-  const itemIds = useItemIds({ dataStore, storeId })
+  const { data: itemIds, refetch } = useItemIds({ dataStore, storeId })
 
-  if (Object.entries(itemIds).length <= 0) {
+  if (Object.entries(itemIds!).length <= 0) {
     return (
       <ListGroup>
         <ListGroup.Item>Empty</ListGroup.Item>
@@ -82,9 +72,9 @@ const StoreContents: React.FC<{ dataStore: EdgeDataStore; storeId: string }> = (
 
   return (
     <ListGroup>
-      {itemIds.map((itemId) => (
+      {itemIds!.map((itemId) => (
         <ListGroup.Item key={itemId}>
-          <Item dataStore={dataStore} storeId={storeId} itemId={itemId} />
+          <Item dataStore={dataStore} storeId={storeId} itemId={itemId} onDelete={refetch} />
         </ListGroup.Item>
       ))}
     </ListGroup>
@@ -95,17 +85,16 @@ export const Item: React.FC<{
   dataStore: EdgeDataStore
   storeId: string
   itemId: string
-}> = ({ dataStore, storeId, itemId }) => {
-  usePrefetchItem({ dataStore, storeId, itemId })
+  onDelete: () => void
+}> = ({ dataStore, storeId, itemId, onDelete }) => {
+  const prefetch = usePrefetchItem({ dataStore, storeId, itemId })
 
   return (
     <div style={{ paddingLeft: '20px' }}>
       <ToggleRow
         title={itemId}
-        onOpen={() => {
-          return
-        }}
-        onDelete={() => dataStore.deleteItem(storeId, itemId)}
+        onDelete={() => dataStore.deleteItem(storeId, itemId).then(onDelete)}
+        onHover={prefetch}
       >
         <React.Suspense fallback={<div>Loading...</div>}>
           <Boundary>
@@ -129,17 +118,17 @@ const FileContents: React.FC<{
 
 const ToggleRow: React.FC<{
   title: string
-  onDelete: () => any
-  onOpen: () => any
-}> = ({ children, title, onDelete, onOpen }) => {
+  onDelete?: () => any
+  onHover: () => any
+}> = ({ children, title, onDelete, onHover }) => {
   const [showContents, setShowContents] = React.useState(false)
 
   return (
     <div>
       <Button
+        onMouseEnter={onHover}
         onClick={(event: any) => {
           event.stopPropagation()
-          !showContents && onOpen()
           setShowContents((x) => !x)
         }}
       >
@@ -152,7 +141,7 @@ const ToggleRow: React.FC<{
           variant={'danger'}
           onClick={(event: React.MouseEvent) => {
             event.preventDefault()
-            onDelete()
+            onDelete && onDelete()
           }}
         >
           Delete

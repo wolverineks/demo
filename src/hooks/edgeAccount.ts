@@ -269,67 +269,6 @@ export const useActiveInfos = (account: EdgeAccount) => {
   return data!
 }
 
-export const useInactiveWallets = (account: EdgeAccount) => {
-  const [, rerender] = React.useState({})
-  const queryCache = useQueryClient().getQueryCache()
-
-  React.useEffect(() => {
-    const unsub = queryCache.subscribe((query) => query?.queryKey[1] === 'inactiveWallet' && rerender({}))
-
-    return () => {
-      unsub()
-    }
-  }, [account, queryCache])
-
-  return queryCache
-    .findAll({ predicate: ({ queryKey }) => queryKey[1] === 'inactiveWallet' })
-    .map((query) => query.state.data)
-    .filter(Boolean) as InactiveWallet[]
-}
-
-export const useReadInactiveWallet = (
-  account: EdgeAccount,
-  walletId: string,
-  queryOptions?: UseQueryOptions<InactiveWallet>,
-) => {
-  return useQuery({
-    queryKey: [walletId, 'inactiveWallet'],
-    queryFn: () => account.dataStore.getItem('inactiveWallets', walletId).then(JSON.parse) as Promise<InactiveWallet>,
-    ...queryOptions,
-  }).data!
-}
-
-export const useWriteInactiveWallet = (account: EdgeAccount, wallet: EdgeCurrencyWallet) => {
-  const { mutate: update } = useMutation(() =>
-    account.dataStore.setItem('inactiveWallets', wallet.id, JSON.stringify(wallet)),
-  )
-
-  React.useEffect(() => {
-    const unsubs = (Object.keys(wallet) as (keyof EdgeCurrencyWallet)[]).map((key) => wallet.watch(key, () => update()))
-
-    update()
-
-    return () => unsubs.forEach((unsub) => unsub())
-  }, [account, wallet, update])
-}
-
-export type InactiveWallet = Pick<
-  EdgeCurrencyWallet,
-  | 'id'
-  | 'type'
-  | 'keys'
-  | 'name'
-  | 'fiatCurrencyCode'
-  | 'currencyInfo'
-  | 'balances'
-  | 'blockHeight'
-  | 'displayPrivateSeed'
-  | 'displayPublicSeed'
-  | 'publicWalletInfo'
-  | 'syncRatio'
-  | 'otherMethods'
->
-
 export const useEdgeCurrencyWallet = (
   {
     account,

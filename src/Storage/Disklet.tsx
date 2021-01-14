@@ -34,7 +34,7 @@ export const Folder: React.FC<{
   onDelete?: () => any
 }> = ({ disklet, path = '/', id, onDelete = () => null }) => {
   const queryKey = Array.isArray(id) ? [...id, path] : [id, path]
-  const prefetch = usePrefetchFolder(disklet, { path, queryKey })
+  const prefetch = usePrefetchFolder({ disklet, path, queryKey })
 
   return (
     <div style={{ paddingLeft: '20px' }}>
@@ -52,7 +52,7 @@ const FolderContents: React.FC<{ disklet: DiskletType; path: string; id: string 
   path,
   id,
 }) => {
-  const folder = useFolder(disklet, { path, queryKey: Array.isArray(id) ? [...id, path] : [id, path] })
+  const folder = useFolder({ disklet, path, queryKey: Array.isArray(id) ? [...id, path] : [id, path] })
 
   if (Object.entries(folder.data!).length <= 0) {
     return (
@@ -86,7 +86,7 @@ export const File: React.FC<{ disklet: DiskletType; path: string; id: string | s
   onDelete,
 }) => {
   const queryKey = React.useMemo(() => (Array.isArray(id) ? [...id, path] : [id, path]), [id, path])
-  const prefetch = usePrefetchFile(disklet, { path, queryKey })
+  const prefetch = usePrefetchFile({ disklet, path, queryKey })
 
   return (
     <div style={{ paddingLeft: '20px' }}>
@@ -105,7 +105,7 @@ const FileContents: React.FC<{ disklet: DiskletType; path: string; id: string | 
   id,
 }) => {
   const queryKey = React.useMemo(() => (Array.isArray(id) ? [...id, path] : [id, path]), [id, path])
-  const file = useFile<Record<string, any>>(disklet, { path, queryKey })
+  const file = useFile<Record<string, any>>({ disklet, path, queryKey })
 
   return <Json data={file.data} />
 }

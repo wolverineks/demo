@@ -1,32 +1,39 @@
+import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 import { Accordion, Button, ListGroup } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
-import { useChangeWalletStates, useInactiveWallets, useReadInactiveWallet } from '../hooks'
-import { InactiveWallets } from '../InactiveWallets'
+import { InactiveWallet, useChangeWalletStates, useReadWalletSnapshot } from '../hooks'
+import { getBalance } from '../utils'
+import { WalletSnapshots } from '../WalletSnapshots'
 import { FallbackRender } from './FallbackRender'
-import { getFilteredWalletIds } from './filter'
+
+const normalize = (text: string) => text.trim().toLowerCase()
+const matches = (query: string) => (wallet: EdgeCurrencyWallet | InactiveWallet) =>
+  normalize(wallet.name || '').includes(normalize(query)) ||
+  normalize(wallet.currencyInfo.currencyCode).includes(normalize(query)) ||
+  normalize(wallet.fiatCurrencyCode).includes(normalize(query))
 
 export const ArchivedWalletList = ({ searchQuery }: { searchQuery: string }) => {
   const account = useEdgeAccount()
-  const inactiveWallets = useInactiveWallets(account)
-  const visibleWalletIds = getFilteredWalletIds(inactiveWallets, account.archivedWalletIds, searchQuery)
 
   return (
     <Accordion>
-      <InactiveWallets />
+      <WalletSnapshots />
       <Accordion.Toggle as={ListGroup.Item} eventKey={'0'}>
-        Archived Wallets ({visibleWalletIds.length})
+        Archived Wallets ({account.archivedWalletIds.length})
       </Accordion.Toggle>
 
       <Accordion.Collapse eventKey={'0'}>
         <ListGroup variant={'flush'}>
-          {visibleWalletIds.map((id) => (
+          {account.archivedWalletIds.map((id) => (
             // eslint-disable-next-line react/display-name
             <Boundary key={id} error={{ fallbackRender: () => <FallbackRender walletId={id} /> }}>
-              <WalletRow walletId={id} />
+              <Matcher walletId={id} searchQuery={searchQuery}>
+                <WalletRow walletId={id} searchQuery={searchQuery} />
+              </Matcher>
             </Boundary>
           ))}
         </ListGroup>
@@ -35,24 +42,31 @@ export const ArchivedWalletList = ({ searchQuery }: { searchQuery: string }) => 
   )
 }
 
-const WalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
-  const inactiveWallet = useReadInactiveWallet(useEdgeAccount(), walletId)
-  const balance = inactiveWallet.balances[inactiveWallet.currencyInfo.currencyCode]
+const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId, searchQuery, children }) => {
+  const snapshot = useReadWalletSnapshot(useEdgeAccount(), walletId)
+  const display = matches(searchQuery)(snapshot)
+
+  return display ? <>{children}</> : null
+}
+
+const WalletRow: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId, searchQuery }) => {
+  const snapshot = useReadWalletSnapshot(useEdgeAccount(), walletId)
+  const balance = getBalance(snapshot, snapshot.currencyInfo.currencyCode)
 
   return (
     <ListGroup.Item>
       <span className={'float-left'}>
-        <Logo currencyCode={inactiveWallet.currencyInfo.currencyCode} /> {inactiveWallet.name}{' '}
-        <DisplayAmount nativeAmount={balance} currencyCode={inactiveWallet.currencyInfo.currencyCode} /> -{' '}
+        <Logo currencyCode={snapshot.currencyInfo.currencyCode} /> {snapshot.name}{' '}
+        <DisplayAmount nativeAmount={balance} currencyCode={snapshot.currencyInfo.currencyCode} /> -{' '}
         <FiatAmount
           nativeAmount={balance}
-          fromCurrencyCode={inactiveWallet.currencyInfo.currencyCode}
-          fiatCurrencyCode={inactiveWallet.fiatCurrencyCode}
+          fromCurrencyCode={snapshot.currencyInfo.currencyCode}
+          fiatCurrencyCode={snapshot.fiatCurrencyCode}
         />
       </span>
 
       <span className={'float-right'}>
-        <WalletOptions walletId={inactiveWallet.id} />
+        <WalletOptions walletId={snapshot.id} />
       </span>
     </ListGroup.Item>
   )

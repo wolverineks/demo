@@ -1,18 +1,45 @@
-import { Disklet } from 'disklet'
-import { useQuery, useQueryClient } from 'react-query'
+import { Disklet, DiskletListing } from 'disklet'
+import { FetchQueryOptions, UseQueryOptions, useQuery, useQueryClient } from 'react-query'
 
-export const useFolder = (storage: Disklet, { path, queryKey }: { path: string; queryKey?: string | string[] }) => {
-  const queryFn = () => storage.list(path)
+export const useFolder = (
+  {
+    disklet,
+    path,
+    queryKey,
+  }: {
+    disklet: Disklet
+    path: string
+    queryKey?: string | string[]
+  },
+  queryOptions?: UseQueryOptions<DiskletListing>,
+) => {
+  const queryFn = () => disklet.list(path)
 
-  return useQuery(queryKey || path, queryFn, { suspense: true, staleTime: 0 })
+  return useQuery(queryKey || path, queryFn, {
+    suspense: true,
+    staleTime: 0,
+    ...queryOptions,
+  })
 }
 
 export const usePrefetchFolder = (
-  storage: Disklet,
-  { path, queryKey }: { path: string; queryKey?: string | string[] },
+  {
+    disklet,
+    path,
+    queryKey,
+  }: {
+    disklet: Disklet
+    path: string
+    queryKey?: string | string[]
+  },
+  queryOptions?: FetchQueryOptions,
 ) => {
   const queryClient = useQueryClient()
-  const queryFn = () => storage.list(path)
+  const queryFn = () => disklet.list(path)
 
-  return () => queryClient.prefetchQuery(queryKey || path, queryFn, { staleTime: 0 })
+  return () =>
+    queryClient.prefetchQuery(queryKey || path, queryFn, {
+      staleTime: 0,
+      ...queryOptions,
+    })
 }

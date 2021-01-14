@@ -15,15 +15,16 @@ const queryFn = ({ dataStore, storeId, itemId }: ItemQuery) => () =>
 export const useItem = ({ dataStore, storeId, itemId }: ItemQuery, options?: UseQueryOptions) =>
   useQuery(queryKey({ storeId, itemId }), queryFn({ dataStore, storeId, itemId }), {
     suspense: true,
+    staleTime: 0,
     ...options,
   }).data!
 
 export const usePrefetchItem = ({ dataStore, storeId, itemId }: ItemQuery, options?: FetchQueryOptions) => {
   const queryClient = useQueryClient()
 
-  React.useEffect(() => {
+  return () =>
     queryClient.prefetchQuery(queryKey({ storeId, itemId }), queryFn({ dataStore, storeId, itemId }), {
+      staleTime: 0,
       ...options,
     })
-  }, [options, dataStore, itemId, queryClient, storeId])
 }

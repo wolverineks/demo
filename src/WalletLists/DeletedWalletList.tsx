@@ -1,31 +1,35 @@
+import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 import { Accordion, Button, ListGroup } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
-import { useChangeWalletStates, useInactiveWallets, useReadInactiveWallet } from '../hooks'
-import { getDeletedWalletIds } from '../utils'
+import { InactiveWallet, useChangeWalletStates, useReadWalletSnapshot, useWalletSnapshots } from '../hooks'
+import { getBalance, getDeletedWalletIds } from '../utils'
 import { FallbackRender } from './FallbackRender'
-import { getFilteredWalletIds } from './filter'
+
+const normalize = (text: string) => text.trim().toLowerCase()
+const matches = (query: string) => (wallet: EdgeCurrencyWallet | InactiveWallet) =>
+  normalize(wallet.name || '').includes(normalize(query)) ||
+  normalize(wallet.currencyInfo.currencyCode).includes(normalize(query)) ||
+  normalize(wallet.fiatCurrencyCode).includes(normalize(query))
 
 export const DeletedWalletList = ({ searchQuery }: { searchQuery: string }) => {
   const deletedWalletIds = getDeletedWalletIds(useEdgeAccount())
-  const inactiveWallets = useInactiveWallets(useEdgeAccount())
-  const visibleWalletIds = getFilteredWalletIds(inactiveWallets, deletedWalletIds, searchQuery)
 
   return (
     <Accordion>
       <Accordion.Toggle as={ListGroup.Item} eventKey={'0'}>
-        Deleted Wallets ({visibleWalletIds.length})
+        Deleted Wallets ({deletedWalletIds.length})
       </Accordion.Toggle>
 
       <Accordion.Collapse eventKey={'0'}>
         <ListGroup variant={'flush'}>
-          {visibleWalletIds.map((id) => (
+          {deletedWalletIds.map((id) => (
             // eslint-disable-next-line react/display-name
             <Boundary key={id} error={{ fallbackRender: () => <FallbackRender walletId={id} /> }}>
-              <WalletRow walletId={id} />
+              <WalletRow walletId={id} searchQuery={searchQuery} />
             </Boundary>
           ))}
         </ListGroup>
@@ -34,27 +38,28 @@ export const DeletedWalletList = ({ searchQuery }: { searchQuery: string }) => {
   )
 }
 
-const WalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
-  const inactiveWallet = useReadInactiveWallet(useEdgeAccount(), walletId)
-  const balance = inactiveWallet.balances[inactiveWallet.currencyInfo.currencyCode]
+const WalletRow: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId, searchQuery }) => {
+  const snapshot = useReadWalletSnapshot(useEdgeAccount(), walletId)
+  const balance = getBalance(snapshot, snapshot.currencyInfo.currencyCode)
+  const display = matches(searchQuery)(snapshot)
 
-  return (
+  return display ? (
     <ListGroup.Item>
       <span className={'float-left'}>
-        <Logo currencyCode={inactiveWallet.currencyInfo.currencyCode} /> {inactiveWallet.name}{' '}
-        <DisplayAmount nativeAmount={balance} currencyCode={inactiveWallet.currencyInfo.currencyCode} /> -{' '}
+        <Logo currencyCode={snapshot.currencyInfo.currencyCode} /> {snapshot.name}{' '}
+        <DisplayAmount nativeAmount={balance} currencyCode={snapshot.currencyInfo.currencyCode} /> -{' '}
         <FiatAmount
           nativeAmount={balance}
-          fromCurrencyCode={inactiveWallet.currencyInfo.currencyCode}
-          fiatCurrencyCode={inactiveWallet.fiatCurrencyCode}
+          fromCurrencyCode={snapshot.currencyInfo.currencyCode}
+          fiatCurrencyCode={snapshot.fiatCurrencyCode}
         />
       </span>
 
       <span className={'float-right'}>
-        <WalletOptions walletId={inactiveWallet.id} />
+        <WalletOptions walletId={snapshot.id} />
       </span>
     </ListGroup.Item>
-  )
+  ) : null
 }
 
 const WalletOptions = ({ walletId }: { walletId: string }) => {

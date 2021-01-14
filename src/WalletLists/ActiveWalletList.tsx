@@ -6,6 +6,7 @@ import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, Logo } from '../components'
 import { FiatAmount } from '../Fiat'
 import {
+  InactiveWallet,
   useBalance,
   useChangeWalletStates,
   useEdgeCurrencyWallet,
@@ -14,33 +15,45 @@ import {
 } from '../hooks'
 import { useSelectedWalletInfo } from '../SelectedWallet'
 import { getBalance, getSortedCurrencyWallets } from '../utils'
-import { getFilteredWalletIds } from './filter'
+
+const normalize = (text: string) => text.trim().toLowerCase()
+const matches = (query: string) => (wallet: EdgeCurrencyWallet | InactiveWallet) =>
+  normalize(wallet.name || '').includes(normalize(query)) ||
+  normalize(wallet.currencyInfo.currencyCode).includes(normalize(query)) ||
+  normalize(wallet.fiatCurrencyCode).includes(normalize(query))
 
 export const ActiveWalletList: React.FC<{ onSelect: () => void; searchQuery: string }> = ({
   onSelect,
   searchQuery,
 }) => {
   const account = useEdgeAccount()
-  const currencyWallets = getSortedCurrencyWallets(account)
-  const visibleWalletIds = getFilteredWalletIds(currencyWallets, account.activeWalletIds, searchQuery)
 
   return (
     <Accordion defaultActiveKey={'0'}>
       <Accordion.Toggle as={ListGroup.Item} eventKey={'0'}>
-        Active Wallets ({visibleWalletIds.length})
+        Active Wallets ({account.activeWalletIds.length})
       </Accordion.Toggle>
 
       <Accordion.Collapse eventKey={'0'}>
         <ListGroup variant={'flush'}>
-          {visibleWalletIds.map((id) => (
+          {account.activeWalletIds.map((id) => (
             <Boundary key={id} suspense={{ fallback: <ListGroup.Item>Loading...</ListGroup.Item> }}>
-              <ActiveWalletRow walletId={id} onSelect={onSelect} />
+              <Matcher walletId={id} searchQuery={searchQuery}>
+                <ActiveWalletRow walletId={id} onSelect={onSelect} />
+              </Matcher>
             </Boundary>
           ))}
         </ListGroup>
       </Accordion.Collapse>
     </Accordion>
   )
+}
+
+const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId, searchQuery, children }) => {
+  const wallet = useEdgeCurrencyWallet({ account: useEdgeAccount(), walletId })
+  const display = matches(searchQuery)(wallet)
+
+  return display ? <>{children}</> : null
 }
 
 const ActiveWalletRow: React.FC<{ walletId: string; onSelect: () => void }> = ({ walletId, onSelect }) => {

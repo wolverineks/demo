@@ -10,7 +10,7 @@ import { Route, useRoute, useSetRoute } from '../route'
 import { SelectedWalletBoundary, useSelectedWallet } from '../SelectedWallet'
 import { Settings } from '../Settings/Settings'
 import { isUnique } from '../utils'
-import { ActiveWalletList } from '../WalletLists'
+import { ActiveWalletList, ArchivedWalletList, DeletedWalletList } from '../WalletLists'
 import { CreateWallet } from '.'
 
 export const AccountInfo = () => {
@@ -124,13 +124,13 @@ const SideMenu = () => {
         <ActiveWalletList onSelect={() => setRoute(Route.account)} searchQuery={searchQuery} />
       </Boundary>
 
-      {/* <Boundary>
+      <Boundary>
         <ArchivedWalletList searchQuery={searchQuery} />
       </Boundary>
 
       <Boundary>
         <DeletedWalletList searchQuery={searchQuery} />
-      </Boundary> */}
+      </Boundary>
 
       <ListGroup.Item
         variant={route === Route.createWallet ? 'primary' : undefined}

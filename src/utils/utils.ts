@@ -1,5 +1,6 @@
 import { EdgeAccount, EdgeContext, EdgeCurrencyWallet, EdgeDenomination, EdgeTransaction } from 'edge-core-js'
 
+import { InactiveWallet } from '../hooks'
 import { FiatInfo, fiatInfos } from './fiatInfos'
 
 export const isUnique = (value: any, index: number, array: any[]) => array.indexOf(value) === index
@@ -84,7 +85,7 @@ export const getAvailableTokens = (wallet: EdgeCurrencyWallet) => {
   return wallet.currencyInfo.metaTokens.map(({ currencyCode }) => currencyCode)
 }
 
-export const getBalance = (wallet: EdgeCurrencyWallet, currencyCode: string) => {
+export const getBalance = (wallet: EdgeCurrencyWallet | InactiveWallet, currencyCode: string) => {
   return wallet.balances[currencyCode]
 }
 

@@ -1,5 +1,4 @@
 import { EdgeDataStore } from 'edge-core-js'
-import React from 'react'
 import { FetchQueryOptions, UseQueryOptions, useQuery, useQueryClient } from 'react-query'
 
 interface StoreIdsQuery {
@@ -8,21 +7,19 @@ interface StoreIdsQuery {
 const queryKey = 'dataStore'
 const queryFn = ({ dataStore }: StoreIdsQuery) => () => dataStore.listStoreIds()
 
-export const useStoreIds = ({ dataStore }: StoreIdsQuery, options?: UseQueryOptions) =>
+export const useStoreIds = ({ dataStore }: StoreIdsQuery, queryOptions?: UseQueryOptions<string[]>) =>
   useQuery(queryKey, queryFn({ dataStore }), {
     suspense: true,
-    cacheTime: Infinity,
-    staleTime: Infinity,
-  }).data!
+    staleTime: 0,
+    ...queryOptions,
+  })
 
-export const usePrefetchStoreIds = ({ dataStore }: StoreIdsQuery, options?: FetchQueryOptions) => {
+export const usePrefetchStoreIds = ({ dataStore }: StoreIdsQuery, queryOptions?: FetchQueryOptions) => {
   const queryClient = useQueryClient()
 
-  React.useEffect(() => {
+  return () =>
     queryClient.prefetchQuery(queryKey, queryFn({ dataStore }), {
-      cacheTime: Infinity,
-      staleTime: Infinity,
-      ...options,
+      staleTime: 0,
+      ...queryOptions,
     })
-  }, [options, dataStore, queryClient])
 }
