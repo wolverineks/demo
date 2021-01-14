@@ -60,9 +60,14 @@ export const useFiatCurrencyCode = (wallet: EdgeCurrencyWallet) => {
 }
 
 export const useRenameWallet = (wallet: EdgeCurrencyWallet) => {
+  const queryClient = useQueryClient()
+  const queryKey = [wallet.id, 'disklet', 'WalletName.json']
   const mutationFn = ({ name }: { name: string }) => wallet.renameWallet(name)
 
-  return useMutation(mutationFn)
+  return useMutation(mutationFn, {
+    onMutate: () => queryClient.cancelQueries(queryKey), // invalidate dataStore
+    onSettled: () => queryClient.invalidateQueries(queryKey), // invalidate dataStore
+  })
 }
 
 export const useReceiveAddressAndEncodeUri = ({
