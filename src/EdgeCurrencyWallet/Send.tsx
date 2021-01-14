@@ -41,20 +41,20 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
   )
   const { data: maxSpendable } = useMaxSpendable(wallet, spendInfo)
 
-  // const [scan, setScan] = React.useState(false)
-  // const onScan = (uri: string) =>
-  //   wallet
-  //     .parseUri(uri, currencyCode)
-  //     .then((parsedUri: EdgeParsedUri) => {
-  //       setParsedUri(parsedUri)
-  //       setPublicAddress(parsedUri.publicAddress || '')
-  //       setDisplayAmount(parsedUriDisplayAmount || '')
-  //       setCurrencyCode(parsedUri.currencyCode || '')
-  //       setName(parsedUri.metadata?.name || '')
-  //       setNotes(parsedUri.metadata?.notes || '')
-  //       setCategory(parsedUri.metadata?.category || '')
-  //     })
-  //     .catch((error: Error) => console.log(error))
+  const [scan, setScan] = React.useState(false)
+  const onScan = (uri: string) =>
+    wallet
+      .parseUri(uri, currencyCode)
+      .then((parsedUri: EdgeParsedUri) => {
+        setParsedUri(parsedUri)
+        setPublicAddress(parsedUri.publicAddress || '')
+        setDisplayAmount(parsedUriDisplayAmount || '')
+        // setCurrencyCode(parsedUri.currencyCode || '')
+        setName(parsedUri.metadata?.name || '')
+        setNotes(parsedUri.metadata?.notes || '')
+        setCategory(parsedUri.metadata?.category || '')
+      })
+      .catch((error: Error) => console.log(error))
 
   const { data: transaction, error } = useNewTransaction(wallet, spendInfo, { enabled: !!publicAddress })
 
@@ -73,11 +73,11 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
         <FormLabel>To:</FormLabel>
         <InputGroup>
           <FormControl value={publicAddress} onChange={(event) => setPublicAddress(event.currentTarget.value)} />
-          {/* <InputGroup.Append>
+          <InputGroup.Append>
             <Button variant="outline-secondary" onClick={() => setPublicAddress(parsedUri?.publicAddress || '')}>
               Reset
             </Button>
-          </InputGroup.Append> */}
+          </InputGroup.Append>
         </InputGroup>
       </FormGroup>
 
@@ -112,9 +112,9 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
         Confirm
       </Button>
 
-      {/* <Button onClick={() => setScan((scan) => !scan)}>Scan</Button> */}
+      <Button onClick={() => setScan((scan) => !scan)}>Scan</Button>
 
-      {/* {scan && <Scanner onScan={!parsedUri ? onScan : () => undefined} show={!parsedUri} />} */}
+      {scan && <Scanner onScan={!parsedUri ? onScan : () => undefined} show={!parsedUri} />}
 
       <JSONPretty
         data={{
@@ -122,7 +122,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
           displayDenomination: useDisplayDenomination(account, currencyCode)[0],
           nativeAmount: String(nativeAmount),
           fiatCurrencyCode,
-          parsedUri: String(parsedUri),
+          parsedUri: parsedUri,
           parsedUriDisplayAmount: String(parsedUriDisplayAmount),
           currencyCode: String(currencyCode),
           publicAddress: String(publicAddress),
