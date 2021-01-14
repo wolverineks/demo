@@ -27,14 +27,14 @@ export const useOnNewTransactions = (
 }
 
 export const useBalance = (wallet: EdgeCurrencyWallet, currencyCode: string) => {
-  const waitForBalance = (wallet: EdgeCurrencyWallet, code: string): Promise<string> => {
-    return wallet.balances[code] != null
-      ? Promise.resolve(wallet.balances[code])
+  const waitForBalance = (wallet: EdgeCurrencyWallet): Promise<string> => {
+    return wallet.balances[currencyCode] != null
+      ? Promise.resolve(wallet.balances[currencyCode])
       : new Promise((resolve) => {
           const unsubscribe = wallet.watch('balances', (balances) => {
-            if (balances[code] != null) {
+            if (balances[currencyCode] != null) {
               unsubscribe()
-              resolve(balances[code])
+              resolve(balances[currencyCode])
             }
           })
         })
@@ -42,7 +42,7 @@ export const useBalance = (wallet: EdgeCurrencyWallet, currencyCode: string) => 
 
   const { refetch, data } = useQuery({
     queryKey: [wallet.id, 'balance', currencyCode],
-    queryFn: () => waitForBalance(wallet, currencyCode),
+    queryFn: () => waitForBalance(wallet),
     enabled: !!wallet,
   })
 

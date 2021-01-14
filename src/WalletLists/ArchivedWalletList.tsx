@@ -32,7 +32,7 @@ export const ArchivedWalletList = ({ searchQuery }: { searchQuery: string }) => 
             // eslint-disable-next-line react/display-name
             <Boundary key={id} error={{ fallbackRender: () => <FallbackRender walletId={id} /> }}>
               <Matcher walletId={id} searchQuery={searchQuery}>
-                <WalletRow walletId={id} searchQuery={searchQuery} />
+                <WalletRow walletId={id} />
               </Matcher>
             </Boundary>
           ))}
@@ -49,9 +49,9 @@ const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId
   return display ? <>{children}</> : null
 }
 
-const WalletRow: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId, searchQuery }) => {
+const WalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
   const snapshot = useReadWalletSnapshot(useEdgeAccount(), walletId)
-  const balance = getBalance(snapshot, snapshot.currencyInfo.currencyCode)
+  const balance = getBalance(snapshot, snapshot.currencyInfo.currencyCode) || '0'
 
   return (
     <ListGroup.Item>

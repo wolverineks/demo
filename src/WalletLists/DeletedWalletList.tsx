@@ -29,7 +29,9 @@ export const DeletedWalletList = ({ searchQuery }: { searchQuery: string }) => {
           {deletedWalletIds.map((id) => (
             // eslint-disable-next-line react/display-name
             <Boundary key={id} error={{ fallbackRender: () => <FallbackRender walletId={id} /> }}>
-              <WalletRow walletId={id} searchQuery={searchQuery} />
+              <Matcher walletId={id} searchQuery={searchQuery}>
+                <WalletRow walletId={id} />
+              </Matcher>
             </Boundary>
           ))}
         </ListGroup>
@@ -38,12 +40,18 @@ export const DeletedWalletList = ({ searchQuery }: { searchQuery: string }) => {
   )
 }
 
-const WalletRow: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId, searchQuery }) => {
+const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId, searchQuery, children }) => {
   const snapshot = useReadWalletSnapshot(useEdgeAccount(), walletId)
-  const balance = getBalance(snapshot, snapshot.currencyInfo.currencyCode)
   const display = matches(searchQuery)(snapshot)
 
-  return display ? (
+  return display ? <>{children}</> : null
+}
+
+const WalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
+  const snapshot = useReadWalletSnapshot(useEdgeAccount(), walletId)
+  const balance = getBalance(snapshot, snapshot.currencyInfo.currencyCode) || '0'
+
+  return (
     <ListGroup.Item>
       <span className={'float-left'}>
         <Logo currencyCode={snapshot.currencyInfo.currencyCode} /> {snapshot.name}{' '}
@@ -59,7 +67,7 @@ const WalletRow: React.FC<{ walletId: string; searchQuery: string }> = ({ wallet
         <WalletOptions walletId={snapshot.id} />
       </span>
     </ListGroup.Item>
-  ) : null
+  )
 }
 
 const WalletOptions = ({ walletId }: { walletId: string }) => {
