@@ -1,15 +1,17 @@
 import React from 'react'
 
 import { useEdgeAccount } from '../auth'
-import { WalletInfo } from '../EdgeCurrencyWallet'
+import { Exchange } from '../Exchange'
 import { Route, useRoute } from '../route'
 import { SelectedWalletBoundary, useSelectedWallet } from '../SelectedWallet'
 import { Settings } from '../Settings/Settings'
+import { SelectedWalletInfo } from './SelectedWalletInfo'
 import { CreateWallet } from '.'
 
 export const Main = () => {
   const route = useRoute()
   const account = useEdgeAccount()
+  const [{ wallet, currencyCode }] = useSelectedWallet()
 
   return (
     <>
@@ -21,15 +23,11 @@ export const Main = () => {
         <Settings />
       ) : route === Route.createWallet ? (
         <CreateWallet key={account.activeWalletIds.length} />
+      ) : route === Route.exchange ? (
+        <Exchange wallet={wallet} currencyCode={currencyCode} />
       ) : (
         <div>404</div>
       )}
     </>
   )
-}
-
-const SelectedWalletInfo = () => {
-  const [selected] = useSelectedWallet()
-
-  return <WalletInfo wallet={selected.wallet} currencyCode={selected.currencyCode} />
 }

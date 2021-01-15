@@ -4,6 +4,7 @@ import { InactiveWallet } from '../hooks'
 import { FiatInfo, fiatInfos } from './fiatInfos'
 
 export const isUnique = (value: any, index: number, array: any[]) => array.indexOf(value) === index
+export const normalize = (text: string) => text.trim().toLowerCase()
 
 // EDGE CONTEXT
 export const getAccountsWithPinLogin = (context: EdgeContext) => {

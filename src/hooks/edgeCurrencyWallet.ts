@@ -198,7 +198,7 @@ export const useMaxSpendable = (
     queryFn: () => wallet.getMaxSpendable(spendInfo),
     suspense: false,
     ...queryOptions,
-  })
+  }).data!
 }
 
 export const useMaxTransaction = (

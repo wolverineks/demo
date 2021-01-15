@@ -2,8 +2,7 @@ import React from 'react'
 import { FormControl } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
-import { Boundary, DisplayAmount, Logo } from '../components'
-import { FiatAmount } from '../Fiat'
+import { Boundary, DisplayAmount, FiatAmount, Logo } from '../components'
 import { useActiveInfos, useDefaultFiatCurrencyCode, useDisplayToNative } from '../hooks'
 import { isUnique } from '../utils'
 

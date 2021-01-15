@@ -5,7 +5,7 @@ import JSONPretty from 'react-json-pretty'
 import QRCode from 'react-qr-code'
 
 import { useEdgeAccount } from '../auth'
-import { Boundary, FlipInput } from '../components'
+import { Debug, FlipInput } from '../components'
 import { useDisplayDenomination } from '../hooks'
 import { useFiatCurrencyCode, useReceiveAddressAndEncodeUri } from '../hooks'
 
@@ -26,22 +26,22 @@ export const Request: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: strin
       </FormGroup>
 
       <FormGroup>
-        <Boundary>
-          <QRCode value={data?.uri || ''} />
-        </Boundary>
+        <QRCode value={data?.uri || ''} />
       </FormGroup>
 
       {error && <Alert variant={'danger'}>{(error as Error).message}</Alert>}
-      <JSONPretty
-        data={{
-          nativeAmount,
-          fiatCurrencyCode,
-          displayDenomination: useDisplayDenomination(useEdgeAccount(), currencyCode)[0],
-          currencyCodeOptions: { currencyCode },
-          uri: data?.uri,
-          receiveAddress: data?.receiveAddress,
-        }}
-      />
+      <Debug>
+        <JSONPretty
+          data={{
+            nativeAmount,
+            fiatCurrencyCode,
+            displayDenomination: useDisplayDenomination(useEdgeAccount(), currencyCode)[0],
+            currencyCodeOptions: { currencyCode },
+            uri: data?.uri,
+            receiveAddress: data?.receiveAddress,
+          }}
+        />
+      </Debug>
     </Form>
   )
 }

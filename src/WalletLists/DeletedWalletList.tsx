@@ -1,19 +1,11 @@
-import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 import { Accordion, Button, ListGroup } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
-import { Boundary, DisplayAmount, Logo } from '../components'
-import { FiatAmount } from '../Fiat'
-import { InactiveWallet, useChangeWalletStates, useReadWalletSnapshot, useWalletSnapshots } from '../hooks'
-import { getBalance, getDeletedWalletIds } from '../utils'
+import { Boundary, DisplayAmount, FiatAmount, Logo } from '../components'
+import { useChangeWalletStates, useReadWalletSnapshot, useWalletSnapshots } from '../hooks'
+import { getBalance, getDeletedWalletIds, normalize } from '../utils'
 import { FallbackRender } from './FallbackRender'
-
-const normalize = (text: string) => text.trim().toLowerCase()
-const matches = (query: string) => (wallet: EdgeCurrencyWallet | InactiveWallet) =>
-  normalize(wallet.name || '').includes(normalize(query)) ||
-  normalize(wallet.currencyInfo.currencyCode).includes(normalize(query)) ||
-  normalize(wallet.fiatCurrencyCode).includes(normalize(query))
 
 export const DeletedWalletList = ({ searchQuery }: { searchQuery: string }) => {
   const deletedWalletIds = getDeletedWalletIds(useEdgeAccount())
@@ -42,7 +34,9 @@ export const DeletedWalletList = ({ searchQuery }: { searchQuery: string }) => {
 
 const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId, searchQuery, children }) => {
   const snapshot = useReadWalletSnapshot(useEdgeAccount(), walletId)
-  const display = matches(searchQuery)(snapshot)
+  const display = [snapshot.name || '', snapshot.currencyInfo.currencyCode, snapshot.fiatCurrencyCode].some((target) =>
+    normalize(target).includes(normalize(searchQuery)),
+  )
 
   return display ? <>{children}</> : null
 }

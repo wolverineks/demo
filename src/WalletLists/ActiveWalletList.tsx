@@ -3,23 +3,10 @@ import React from 'react'
 import { Accordion, Button, ListGroup, ProgressBar } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
-import { Boundary, DisplayAmount, Logo } from '../components'
-import { FiatAmount } from '../Fiat'
-import {
-  InactiveWallet,
-  useBalance,
-  useChangeWalletStates,
-  useEdgeCurrencyWallet,
-  useEnabledTokens,
-  useOnNewTransactions,
-} from '../hooks'
+import { Balance, Boundary, Logo } from '../components'
+import { useChangeWalletStates, useEdgeCurrencyWallet, useEnabledTokens, useOnNewTransactions } from '../hooks'
 import { useSelectedWalletInfo } from '../SelectedWallet'
-
-const normalize = (text: string) => text.trim().toLowerCase()
-const matches = (query: string) => (wallet: EdgeCurrencyWallet | InactiveWallet) =>
-  normalize(wallet.name || '').includes(normalize(query)) ||
-  normalize(wallet.currencyInfo.currencyCode).includes(normalize(query)) ||
-  normalize(wallet.fiatCurrencyCode).includes(normalize(query))
+import { normalize } from '../utils'
 
 export const ActiveWalletList: React.FC<{ onSelect: () => void; searchQuery: string }> = ({
   onSelect,
@@ -50,7 +37,13 @@ export const ActiveWalletList: React.FC<{ onSelect: () => void; searchQuery: str
 
 const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId, searchQuery, children }) => {
   const wallet = useEdgeCurrencyWallet({ account: useEdgeAccount(), walletId })
-  const display = matches(searchQuery)(wallet)
+  const enabledTokens = useEnabledTokens(wallet)
+  const display = [
+    wallet.name || '',
+    wallet.currencyInfo.currencyCode,
+    wallet.fiatCurrencyCode,
+    ...enabledTokens,
+  ].some((target) => normalize(target).includes(normalize(searchQuery)))
 
   return display ? <>{children}</> : null
 }
@@ -78,7 +71,7 @@ const ActiveWalletRow: React.FC<{ walletId: string; onSelect: () => void }> = ({
           }}
           className={'float-left'}
         >
-          <Logo currencyCode={currencyCode} /> {wallet.name}
+          <Logo currencyCode={currencyCode} /> {wallet.name}{' '}
           <Boundary>
             <Balance wallet={wallet} currencyCode={currencyCode} />
           </Boundary>
@@ -88,17 +81,6 @@ const ActiveWalletRow: React.FC<{ walletId: string; onSelect: () => void }> = ({
       </ListGroup.Item>
 
       <EnabledTokensList wallet={wallet} onSelect={onSelect} />
-    </>
-  )
-}
-
-const Balance = ({ wallet, currencyCode }: { wallet: EdgeCurrencyWallet; currencyCode: string }) => {
-  const balance = useBalance(wallet, currencyCode)
-
-  return (
-    <>
-      <DisplayAmount nativeAmount={balance} currencyCode={currencyCode} /> -{' '}
-      <FiatAmount nativeAmount={balance} fromCurrencyCode={currencyCode} fiatCurrencyCode={wallet.fiatCurrencyCode} />
     </>
   )
 }
@@ -155,20 +137,9 @@ const EnabledTokenRow: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: stri
       <span className={'float-left'}>
         <Logo currencyCode={currencyCode} />
         <Boundary suspense={{ fallback: <span>Loading...</span> }}>
-          <Amounts wallet={wallet} currencyCode={currencyCode} />
+          <Balance wallet={wallet} currencyCode={currencyCode} />
         </Boundary>
       </span>
     </ListGroup.Item>
-  )
-}
-
-const Amounts: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
-  const balance = useBalance(wallet, currencyCode) || '0'
-
-  return (
-    <>
-      <DisplayAmount nativeAmount={balance} currencyCode={currencyCode} /> -{' '}
-      <FiatAmount nativeAmount={balance} fromCurrencyCode={currencyCode} fiatCurrencyCode={wallet.fiatCurrencyCode} />
-    </>
   )
 }
