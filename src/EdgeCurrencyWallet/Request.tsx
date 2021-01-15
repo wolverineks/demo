@@ -1,6 +1,6 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
-import { Alert, Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
+import { Alert, Button, Form, FormControl, FormGroup, FormLabel, InputGroup } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
 import QRCode from 'react-qr-code'
 
@@ -17,8 +17,18 @@ export const Request: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: strin
   return (
     <Form>
       <FormGroup>
-        <FormLabel>To:</FormLabel>
-        <FormControl value={data?.receiveAddress.publicAddress || ''} readOnly />
+        <FormLabel>Public Address:</FormLabel>
+        <InputGroup>
+          <FormControl value={data?.receiveAddress.publicAddress || ''} readOnly />
+          <InputGroup.Append>
+            <Button
+              variant="outline-secondary"
+              onClick={() => navigator.clipboard.writeText(data?.receiveAddress.publicAddress || '')}
+            >
+              Copy
+            </Button>
+          </InputGroup.Append>
+        </InputGroup>
       </FormGroup>
 
       <FormGroup>
@@ -27,6 +37,18 @@ export const Request: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: strin
 
       <FormGroup>
         <QRCode value={data?.uri || ''} />
+      </FormGroup>
+
+      <FormGroup>
+        <FormLabel>URI</FormLabel>
+        <InputGroup>
+          <FormControl value={data?.uri || ''} readOnly />
+          <InputGroup.Append>
+            <Button variant="outline-secondary" onClick={() => navigator.clipboard.writeText(data?.uri || '')}>
+              Copy
+            </Button>
+          </InputGroup.Append>
+        </InputGroup>
       </FormGroup>
 
       {error && <Alert variant={'danger'}>{(error as Error).message}</Alert>}

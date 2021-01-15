@@ -74,7 +74,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
   return (
     <Form>
       <FormGroup>
-        <FormLabel>To:</FormLabel>
+        <FormLabel>Public Address:</FormLabel>
         <InputGroup>
           <FormControl value={publicAddress} onChange={(event) => setPublicAddress(event.currentTarget.value)} />
           <InputGroup.Append>
