@@ -5,7 +5,7 @@ import JSONPretty from 'react-json-pretty'
 import QrReader from 'react-qr-scanner'
 
 import { useEdgeAccount } from '../auth'
-import { FlipInput, Select } from '../components'
+import { Debug, FlipInput, FlipInputRef, Select } from '../components'
 import {
   useDisplayDenomination,
   useFiatCurrencyCode,
@@ -39,7 +39,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
     }),
     [name, notes, category, currencyCode, publicAddress, nativeAmount],
   )
-  const { data: maxSpendable } = useMaxSpendable(wallet, spendInfo)
+  const maxSpendable = useMaxSpendable(wallet, spendInfo)
 
   const [scan, setScan] = React.useState(false)
   const onScan = (uri: string) =>
@@ -56,16 +56,18 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
       })
       .catch((error: Error) => console.log(error))
 
-  const { data: transaction, error } = useNewTransaction(wallet, spendInfo, { enabled: !!publicAddress })
+  const { data: transaction, error } = useNewTransaction(wallet, spendInfo, {
+    enabled: !!publicAddress,
+    initialData: undefined,
+  })
 
   const onConfirm = () => {
     if (!transaction) return
 
-    wallet
-      .signTx(transaction)
-      .then(() => wallet.broadcastTx(transaction))
-      .then(() => wallet.saveTx(transaction))
+    Promise.resolve(transaction).then(wallet.signTx).then(wallet.broadcastTx).then(wallet.saveTx)
   }
+
+  const flipInputRef = React.useRef<FlipInputRef>(null)
 
   return (
     <Form>
@@ -81,8 +83,15 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
         </InputGroup>
       </FormGroup>
 
+      <Button onClick={() => flipInputRef.current?.setNativeAmount(maxSpendable)}>Spend Max</Button>
+
       <FormGroup>
-        <FlipInput currencyCode={currencyCode} fiatCurrencyCode={fiatCurrencyCode} onChange={setNativeAmount} />
+        <FlipInput
+          currencyCode={currencyCode}
+          fiatCurrencyCode={fiatCurrencyCode}
+          onChange={setNativeAmount}
+          ref={flipInputRef}
+        />
       </FormGroup>
 
       <FormGroup>
@@ -116,21 +125,23 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
 
       {scan && <Scanner onScan={!parsedUri ? onScan : () => undefined} show={!parsedUri} />}
 
-      <JSONPretty
-        data={{
-          displayAmount: String(displayAmount),
-          displayDenomination: useDisplayDenomination(account, currencyCode)[0],
-          nativeAmount: String(nativeAmount),
-          fiatCurrencyCode,
-          parsedUri: parsedUri,
-          parsedUriDisplayAmount: String(parsedUriDisplayAmount),
-          currencyCode: String(currencyCode),
-          publicAddress: String(publicAddress),
-          spendInfo: spendInfo,
-          maxSpendable: String(maxSpendable),
-          transaction: String(transaction),
-        }}
-      />
+      <Debug>
+        <JSONPretty
+          data={{
+            displayAmount: String(displayAmount),
+            displayDenomination: useDisplayDenomination(account, currencyCode)[0],
+            nativeAmount: String(nativeAmount),
+            fiatCurrencyCode,
+            parsedUri: parsedUri,
+            parsedUriDisplayAmount: String(parsedUriDisplayAmount),
+            currencyCode: String(currencyCode),
+            publicAddress: String(publicAddress),
+            spendInfo: spendInfo,
+            maxSpendable: String(maxSpendable),
+            transaction: String(transaction),
+          }}
+        />
+      </Debug>
     </Form>
   )
 }
