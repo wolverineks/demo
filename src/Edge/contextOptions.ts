@@ -46,7 +46,7 @@ export const ratePlugins = {
 }
 
 export const swapPlugins = {
-  // transfer: true,
+  transfer: true,
 }
 
 export const contextOptions = {
