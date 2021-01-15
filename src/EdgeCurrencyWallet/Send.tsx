@@ -1,11 +1,11 @@
-import { EdgeCurrencyWallet, EdgeParsedUri, EdgeSpendInfo } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeParsedUri, EdgeSpendInfo, EdgeTransaction } from 'edge-core-js'
 import React from 'react'
 import { Alert, Button, Form, FormControl, FormGroup, FormLabel, InputGroup } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
 import QrReader from 'react-qr-scanner'
 
 import { useEdgeAccount } from '../auth'
-import { Debug, FlipInput, FlipInputRef, Select } from '../components'
+import { Debug, DisplayAmount, FlipInput, FlipInputRef, Select } from '../components'
 import {
   useDisplayDenomination,
   useFiatCurrencyCode,
@@ -23,6 +23,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
   const [name, setName] = React.useState('')
   const [notes, setNotes] = React.useState('')
   const [category, setCategory] = React.useState('')
+  const [networkFeeOption, setNetworkFeeOption] = React.useState<'high' | 'standard' | 'low'>('standard')
 
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
   const [nativeAmount, setNativeAmount] = React.useState('0')
@@ -36,8 +37,9 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
       metadata: { name, notes, category },
       currencyCode: currencyCode,
       spendTargets: [{ publicAddress, nativeAmount }],
+      networkFeeOption,
     }),
-    [name, notes, category, currencyCode, publicAddress, nativeAmount],
+    [name, notes, category, currencyCode, publicAddress, nativeAmount, networkFeeOption],
   )
   const maxSpendable = useMaxSpendable(wallet, spendInfo)
 
@@ -115,6 +117,24 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
         )}
       />
 
+      <Select
+        title={'Fee Option'}
+        onSelect={(event) => setNetworkFeeOption(event.currentTarget.value)}
+        options={[
+          { value: 'high', display: 'high' },
+          { value: 'standard', display: 'standard' },
+          { value: 'low', display: 'low' },
+        ]}
+        defaultValue={'standard'}
+        renderOption={(category) => (
+          <option value={category.value} key={category.value}>
+            {category.display}
+          </option>
+        )}
+      />
+
+      {transaction?.networkFee ? <Fee transaction={transaction} /> : null}
+
       {error && <Alert>{(error as Error).message}</Alert>}
 
       <Button disabled={!transaction} onClick={() => onConfirm()}>
@@ -138,11 +158,19 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
             publicAddress: String(publicAddress),
             spendInfo: spendInfo,
             maxSpendable: String(maxSpendable),
-            transaction: String(transaction),
+            transaction: transaction,
           }}
         />
       </Debug>
     </Form>
+  )
+}
+
+const Fee = ({ transaction }: { transaction: EdgeTransaction }) => {
+  return (
+    <div>
+      fee: <DisplayAmount nativeAmount={transaction.networkFee} currencyCode={transaction.currencyCode} />
+    </div>
   )
 }
 
