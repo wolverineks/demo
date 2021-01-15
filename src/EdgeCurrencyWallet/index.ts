@@ -1,4 +1,3 @@
-export * from './BalanceList'
 export * from './TransactionList'
 export * from './Send'
 export * from './Request'
