@@ -1,5 +1,4 @@
 import {
-  EdgeAccount,
   EdgeCurrencyCodeOptions,
   EdgeCurrencyWallet,
   EdgeGetTransactionsOptions,
@@ -10,21 +9,8 @@ import {
 import React from 'react'
 import { UseQueryOptions, useMutation, useQuery, useQueryClient } from 'react-query'
 
-import { getAvailableTokens, getTokenInfo } from '../utils'
+import { useInvalidateQueries } from './useInvalidateQueries'
 import { useWatch } from './watch'
-
-export const useOnNewTransactions = (
-  wallet: EdgeCurrencyWallet,
-  callback: (transactions: Array<EdgeTransaction>) => any,
-) => {
-  React.useEffect(() => {
-    const unsubscribe = wallet.on('newTransactions', callback)
-
-    return () => {
-      unsubscribe()
-    }
-  }, [wallet, callback])
-}
 
 export const useBalance = (wallet: EdgeCurrencyWallet, currencyCode: string) => {
   const waitForBalance = (wallet: EdgeCurrencyWallet): Promise<string> => {
@@ -60,13 +46,10 @@ export const useFiatCurrencyCode = (wallet: EdgeCurrencyWallet) => {
 }
 
 export const useRenameWallet = (wallet: EdgeCurrencyWallet) => {
-  const queryClient = useQueryClient()
-  const queryKey = [wallet.id, 'disklet', 'WalletName.json']
   const mutationFn = ({ name }: { name: string }) => wallet.renameWallet(name)
 
   return useMutation(mutationFn, {
-    onMutate: () => queryClient.cancelQueries(queryKey), // invalidate dataStore
-    onSettled: () => queryClient.invalidateQueries(queryKey), // invalidate dataStore
+    ...useInvalidateQueries([[wallet.id, 'disklet', 'WalletName.json']]), // invalidate dataStore
   })
 }
 
@@ -99,55 +82,18 @@ export const useReceiveAddressAndEncodeUri = ({
   })
 }
 
-export const useEnabledTokens = (wallet: EdgeCurrencyWallet, queryOptions?: UseQueryOptions<string[]>) => {
-  const queryFn = () =>
-    wallet
-      .getEnabledTokens()
-      // WTF? Why is the parent currencyCode in enabledTokens?
-      .then((tokens) => tokens.filter((tokenCode) => tokenCode !== wallet.currencyInfo.currencyCode))
-  const queryKey = [wallet.id, 'enabledTokens']
+export const useOnNewTransactions = (
+  wallet: EdgeCurrencyWallet,
+  callback: (transactions: Array<EdgeTransaction>) => any,
+) => {
+  React.useEffect(() => {
+    const unsubscribe = wallet.on('newTransactions', callback)
 
-  return useQuery(queryKey, queryFn, {
-    suspense: true,
-    ...queryOptions,
-  }).data!
+    return () => {
+      unsubscribe()
+    }
+  }, [wallet, callback])
 }
-
-export const useEnableToken = (wallet: EdgeCurrencyWallet) => {
-  const queryFn = (tokenCurrencyCode: string) => wallet.enableTokens([tokenCurrencyCode])
-  const queryClient = useQueryClient()
-  const queryKey = [wallet.id, 'enabledTokens']
-
-  return useMutation(queryFn, {
-    onMutate: () => queryClient.cancelQueries(queryKey),
-    onSettled: () => {
-      queryClient.invalidateQueries('activeInfos')
-      queryClient.invalidateQueries(queryKey)
-    },
-  }).mutate
-}
-
-export const useDisableToken = (wallet: EdgeCurrencyWallet) => {
-  const queryFn = (tokenCurrencyCode: string) => wallet.disableTokens([tokenCurrencyCode])
-  const queryClient = useQueryClient()
-  const queryKey = [wallet.id, 'enabledTokens']
-
-  return useMutation(queryFn, {
-    onMutate: () => queryClient.cancelQueries(queryKey),
-    onSettled: () => {
-      queryClient.invalidateQueries('activeInfos')
-      queryClient.invalidateQueries(queryKey)
-    },
-  }).mutate
-}
-
-export const useTokens = (account: EdgeAccount, wallet: EdgeCurrencyWallet) => ({
-  availableTokens: getAvailableTokens(wallet),
-  enabledTokens: useEnabledTokens(wallet),
-  enableToken: useEnableToken(wallet),
-  disableToken: useDisableToken(wallet),
-  availableTokenInfos: getAvailableTokens(wallet).map((token) => getTokenInfo(account, token)),
-})
 
 export const useTransactions = (
   wallet: EdgeCurrencyWallet,

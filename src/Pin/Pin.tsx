@@ -11,6 +11,7 @@ export const Pin = () => {
       <CheckPin />
       <ChangePin />
       <EnablePinLogin />
+      <DeletePin />
     </>
   )
 }
@@ -19,7 +20,7 @@ const CheckPin = () => {
   const context = useEdgeContext()
   const account = useEdgeAccount()
   const {
-    checkPin: { mutate: checkPin, data: isCorrect, error, reset, isLoading },
+    checkPin: { mutateAsync: checkPin, data: isCorrect, error, reset, isLoading },
   } = usePin(context, account)
   const [pin, setPin] = React.useState('')
 
@@ -40,13 +41,18 @@ const CheckPin = () => {
           id={`checkPin`}
           onSubmit={(event: React.FormEvent) => {
             event.preventDefault()
-            setPin('')
-            checkPin(pin)
+            checkPin(pin).finally(() => {
+              setTimeout(() => {
+                reset()
+                setPin('')
+              }, 3000)
+            })
           }}
         >
           <FormGroup>
             <Form.Row>
               <Form.Control
+                value={pin}
                 disabled={isLoading}
                 onChange={(event) => {
                   event.preventDefault()
@@ -115,7 +121,6 @@ const EnablePinLogin = () => {
   const context = useEdgeContext()
   const account = useEdgeAccount()
   const {
-    pinExists,
     pinLoginEnabled,
     changePinLogin: { mutate: changePinLogin, error, isLoading },
   } = usePin(context, account)
@@ -132,8 +137,33 @@ const EnablePinLogin = () => {
               label={'Enabled'}
               id={'pinLoginEnabled'}
               onChange={() => changePinLogin(!pinLoginEnabled)}
-              disabled={!pinExists || isLoading}
+              disabled={isLoading}
             />
+          </FormGroup>
+        </Form>
+        {error instanceof Error ? <div>{error.message}</div> : null}
+      </ListGroupItem>
+    </ListGroup>
+  )
+}
+
+const DeletePin = () => {
+  const context = useEdgeContext()
+  const account = useEdgeAccount()
+  const {
+    pinExists,
+    deletePin: { mutate: deletePin, error, isLoading },
+  } = usePin(context, account)
+
+  return (
+    <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
+      <ListGroupItem>
+        Delete Pin: {String(pinExists)}
+        <Form>
+          <FormGroup>
+            <Button disabled={isLoading} onClick={() => deletePin()}>
+              Confirm
+            </Button>
           </FormGroup>
         </Form>
         {error instanceof Error ? <div>{error.message}</div> : null}

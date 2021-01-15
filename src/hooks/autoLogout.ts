@@ -1,5 +1,7 @@
 import { EdgeAccount } from 'edge-core-js'
-import { UseMutationOptions, UseQueryOptions, useMutation, useQuery, useQueryClient } from 'react-query'
+import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
+
+import { useInvalidateQueries } from '.'
 
 const defaultAutoLogout = { enabled: true, delay: 3600 }
 
@@ -26,18 +28,9 @@ export const useWriteAutoLogout = (
 ) => {
   const mutationFn = (autoLogout: AutoLogoutSetting) =>
     account.dataStore.setItem('autoLogout', 'autoLogout.json', JSON.stringify(autoLogout))
-  const queryClient = useQueryClient()
-  const queryKey = [account.username, 'autoLogout']
 
   return useMutation(mutationFn, {
-    onMutate: () => {
-      queryClient.cancelQueries(queryKey)
-      queryClient.cancelQueries(['autoLogout', 'autoLogout.json']) // invalidate datastore
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries(queryKey)
-      queryClient.invalidateQueries(['autoLogout', 'autoLogout.json']) // invalidate datastore
-    },
+    ...useInvalidateQueries([[account.username, 'autoLogout']]),
     ...mutationOptions,
   })
 }

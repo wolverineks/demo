@@ -9,8 +9,6 @@ import { useEdgeContext } from './useEdgeContext'
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      cacheTime: Infinity,
-      staleTime: Infinity,
       retry: false,
       suspense: true,
     },

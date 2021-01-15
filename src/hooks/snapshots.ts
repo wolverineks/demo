@@ -2,6 +2,8 @@ import { EdgeAccount, EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 import { UseQueryOptions, useMutation, useQuery, useQueryClient } from 'react-query'
 
+import { useInvalidateQueries } from '.'
+
 export const useWalletSnapshots = (walletIds: string[]) => {
   const queryClient = useQueryClient()
   const snapshots = queryClient.getQueryCache().findAll(['snapshot'])
@@ -23,12 +25,9 @@ export const useReadWalletSnapshot = (
 }
 
 export const useWriteWalletSnapshot = (account: EdgeAccount, wallet: EdgeCurrencyWallet) => {
-  const queryClient = useQueryClient()
   const mutation = () => account.dataStore.setItem('snapshot', wallet.id, JSON.stringify(wallet))
   const { mutate: update } = useMutation(mutation, {
-    onSuccess: () => {
-      queryClient.invalidateQueries(['snapshot', wallet.id])
-    },
+    ...useInvalidateQueries([['snapshot', wallet.id]]),
   })
 
   React.useEffect(() => {
