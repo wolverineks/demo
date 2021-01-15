@@ -4,6 +4,7 @@ export enum Route {
   'account' = 'account',
   'settings' = 'settings',
   'createWallet' = 'createWallet',
+  'exchange' = 'exchange',
 }
 type SetRoute = (route: Route) => undefined
 

@@ -46,6 +46,13 @@ export const SideMenu = () => {
       </Boundary>
 
       <ListGroup.Item
+        variant={route === Route.exchange ? 'primary' : undefined}
+        onClick={() => setRoute(Route.exchange)}
+      >
+        Exchange
+      </ListGroup.Item>
+
+      <ListGroup.Item
         variant={route === Route.createWallet ? 'primary' : undefined}
         onClick={() => setRoute(Route.createWallet)}
       >
