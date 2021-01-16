@@ -6,11 +6,15 @@ import { AccountConsumer, AccountProvider, Login, useEdgeAccount, useSetAccount 
 import { Boundary } from './components'
 import { Edge } from './Edge'
 import { AccountInfo } from './EdgeAccount'
-import { useEdgeCurrencyWallet } from './hooks'
+import { useEdgeCurrencyWallet, useLogout } from './hooks'
 import { RouteProvider } from './route'
 import { SelectedWalletInfoProvider, useSelectedWalletInfo } from './SelectedWallet'
 
 export const App = () => {
+  React.useEffect(() => {
+    document.title = 'Edge'
+  }, [])
+
   return (
     <Boundary>
       <Edge>
@@ -42,9 +46,8 @@ export const App = () => {
 
 export const Header = () => {
   const account = useEdgeAccount()
-  const setAccount = useSetAccount()
   const [walletInfo] = useSelectedWalletInfo()
-  const queryClient = useQueryClient()
+  const logout = useLogout()
 
   return (
     <Navbar>
@@ -63,14 +66,7 @@ export const Header = () => {
 
       <Navbar.Collapse className="justify-content-end">
         <Navbar.Text>{account.username}</Navbar.Text>
-        <Button
-          variant={'warning'}
-          onClick={() => {
-            setAccount(undefined)
-            account.logout()
-            queryClient.removeQueries({ predicate: ({ queryKey }) => queryKey[0] !== 'context' })
-          }}
-        >
+        <Button variant={'warning'} onClick={() => logout()}>
           Logout
         </Button>
       </Navbar.Collapse>
