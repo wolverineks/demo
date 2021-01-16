@@ -95,6 +95,11 @@ export const useOnNewTransactions = (
   }, [wallet, callback])
 }
 
+const dedupe = (transactions: EdgeTransaction[]) =>
+  Object.values<EdgeTransaction>(
+    transactions.reduce((result, transaction) => ({ ...result, [transaction.txid]: transaction }), {}),
+  )
+
 export const useTransactions = (
   wallet: EdgeCurrencyWallet,
   options?: EdgeGetTransactionsOptions,
@@ -111,7 +116,7 @@ export const useTransactions = (
     React.useCallback(() => refetch(), [refetch]),
   )
 
-  return data!
+  return dedupe(data!)
 }
 
 export const useTransactionCount = (
