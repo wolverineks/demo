@@ -1,5 +1,5 @@
 import { EdgeAccount, EdgeCurrencyWallet } from 'edge-core-js'
-import { UseQueryOptions, useMutation, useQuery, useQueryClient } from 'react-query'
+import { UseQueryOptions, useMutation, useQuery } from 'react-query'
 
 import { getAvailableTokens, getTokenInfo } from '../utils'
 import { useInvalidateQueries } from './useInvalidateQueries'

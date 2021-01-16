@@ -6,7 +6,7 @@ module.exports = {
   },
   extends: [
     'eslint:recommended',
-    'plugin:@typescript-eslint/eslint-recommended',
+    // 'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:react/recommended',
     'plugin:import/errors',
@@ -26,7 +26,7 @@ module.exports = {
     sourceType: 'module',
   },
 
-  plugins: ['react', '@typescript-eslint', 'react-hooks'],
+  plugins: ['react', '@typescript-eslint', 'react-hooks', 'unused-imports'],
   rules: {
     'padding-line-between-statements': ['error', { blankLine: 'always', prev: '*', next: 'return' }],
     'react/prop-types': 0,
@@ -37,7 +37,6 @@ module.exports = {
     '@typescript-eslint/no-non-null-assertion': 0,
     '@typescript-eslint/explicit-module-boundary-types': 0,
     'import/no-unresolved': [2, { caseSensitive: true, ignore: ['react'] }],
-    '@typescript-eslint/no-unused-vars': [0, { argsIgnorePattern: '^_' }],
     '@typescript-eslint/member-delimiter-style': [
       0,
       {
@@ -50,6 +49,12 @@ module.exports = {
           requireLast: false,
         },
       },
+    ],
+    '@typescript-eslint/no-unused-vars': 'off',
+    'unused-imports/no-unused-imports-ts': 'error',
+    'unused-imports/no-unused-vars-ts': [
+      'warn',
+      { vars: 'all', varsIgnorePattern: '^_', args: 'after-used', argsIgnorePattern: '^_' },
     ],
   },
   settings: {

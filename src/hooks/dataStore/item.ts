@@ -1,5 +1,4 @@
 import { EdgeDataStore } from 'edge-core-js'
-import React from 'react'
 import { FetchQueryOptions, UseQueryOptions, useQuery, useQueryClient } from 'react-query'
 
 interface ItemQuery {

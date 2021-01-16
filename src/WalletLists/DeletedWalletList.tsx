@@ -3,7 +3,7 @@ import { Accordion, Button, ListGroup } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, FiatAmount, Logo } from '../components'
-import { useChangeWalletStates, useReadWalletSnapshot, useWalletSnapshots } from '../hooks'
+import { useChangeWalletStates, useReadWalletSnapshot } from '../hooks'
 import { getBalance, getDeletedWalletIds, normalize } from '../utils'
 import { FallbackRender } from './FallbackRender'
 

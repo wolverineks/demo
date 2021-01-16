@@ -1,8 +1,7 @@
 import React from 'react'
 import { Button, Container, Image, Navbar } from 'react-bootstrap'
-import { useQueryClient } from 'react-query'
 
-import { AccountConsumer, AccountProvider, Login, useEdgeAccount, useSetAccount } from './auth'
+import { AccountConsumer, AccountProvider, Login, useEdgeAccount } from './auth'
 import { Boundary } from './components'
 import { Edge } from './Edge'
 import { AccountInfo } from './EdgeAccount'

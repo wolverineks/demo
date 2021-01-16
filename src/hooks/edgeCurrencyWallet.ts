@@ -7,7 +7,7 @@ import {
   EdgeTransaction,
 } from 'edge-core-js'
 import React from 'react'
-import { UseQueryOptions, useMutation, useQuery, useQueryClient } from 'react-query'
+import { UseQueryOptions, useMutation, useQuery } from 'react-query'
 
 import { useInvalidateQueries } from './useInvalidateQueries'
 import { useWatch } from './watch'
