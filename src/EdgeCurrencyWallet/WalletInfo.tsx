@@ -2,30 +2,13 @@ import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 import { Tab, Tabs } from 'react-bootstrap'
 
-import { Boundary, DisplayAmount, FiatAmount } from '../components'
-import { useBalance, useFiatCurrencyCode, useOnNewTransactions } from '../hooks'
+import { Boundary } from '../components'
+import { useOnNewTransactions } from '../hooks'
 import { Disklet } from '../Storage'
 import { Request } from './Request'
 import { Send } from './Send'
 import { Settings } from './Settings'
 import { TransactionList } from './TransactionList'
-
-const Balance: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
-  const balance = useBalance(wallet, currencyCode)
-  const fiatCurrencyCode = useFiatCurrencyCode(wallet)[0]
-
-  return (
-    <div>
-      <div>
-        <DisplayAmount nativeAmount={balance} currencyCode={currencyCode} />
-      </div>
-
-      <div>
-        <FiatAmount nativeAmount={balance} fromCurrencyCode={currencyCode} fiatCurrencyCode={fiatCurrencyCode} />
-      </div>
-    </div>
-  )
-}
 
 export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({
   wallet,
@@ -40,7 +23,6 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: st
     <Tabs id={'walletTabs'} defaultActiveKey={'history'} mountOnEnter>
       <Tab eventKey={'history'} title={'History'}>
         <Boundary>
-          <Balance wallet={wallet} currencyCode={currencyCode} />
           <TransactionList wallet={wallet} currencyCode={currencyCode} />
         </Boundary>
       </Tab>
