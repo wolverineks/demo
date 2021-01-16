@@ -29,22 +29,16 @@ export const TransactionList: React.FC<{ wallet: EdgeCurrencyWallet; currencyCod
 }) => {
   const transactionCount = useTransactionCount(wallet, { currencyCode })
   const [transactions, setFilterQuery] = useFilter(matches, useTransactions(wallet, { currencyCode }))
-  const dedupe = (transactions: EdgeTransaction[]) =>
-    Object.values<EdgeTransaction>(
-      transactions.reduce((result, transaction) => ({ ...result, [transaction.txid]: transaction }), {}),
-    )
 
   return (
     <ListGroup>
       <ListGroup>
-        Transactions: {transactionCount} ({dedupe(transactions).length})
+        Transactions: {transactionCount} ({transactions.length})
         <FormControl placeholder={'Search'} onChange={(event) => setFilterQuery(event.currentTarget.value)} />
-        {dedupe(transactions).length <= 0 ? (
+        {transactions.length <= 0 ? (
           <div>No Transactions</div>
         ) : (
-          dedupe(transactions).map((transaction) => (
-            <TransactionListRow transaction={transaction} key={transaction.txid} />
-          ))
+          transactions.map((transaction) => <TransactionListRow transaction={transaction} key={transaction.txid} />)
         )}
       </ListGroup>
     </ListGroup>
@@ -53,6 +47,7 @@ export const TransactionList: React.FC<{ wallet: EdgeCurrencyWallet; currencyCod
 
 const TransactionListRow: React.FC<{ transaction: EdgeTransaction }> = ({ transaction }) => {
   const account = useEdgeAccount()
+  const txUrl = getTxUrl(account, transaction)
 
   return (
     <ListGroup.Item id={transaction.txid} variant={transaction.nativeAmount.startsWith('-') ? 'danger' : 'info'}>
@@ -64,9 +59,11 @@ const TransactionListRow: React.FC<{ transaction: EdgeTransaction }> = ({ transa
 
       {transaction.metadata && <Metadata metadata={transaction.metadata} />}
 
-      <NavLink target={'none'} href={getTxUrl(account, transaction)}>
-        View Details
-      </NavLink>
+      {txUrl ? (
+        <NavLink target={'none'} href={txUrl}>
+          View Details
+        </NavLink>
+      ) : null}
     </ListGroup.Item>
   )
 }

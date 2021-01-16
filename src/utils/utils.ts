@@ -53,7 +53,10 @@ export const getCurrencyInfos = (account: EdgeAccount) => {
 
 export const getTokenInfos = (account: EdgeAccount) => {
   return Object.values(account.currencyConfig)
-    .map(({ currencyInfo: { metaTokens } }) => metaTokens)
+    .map(
+      ({ currencyInfo: { metaTokens, transactionExplorer, addressExplorer } }) =>
+        metaTokens.map((tokenInfo) => ({ ...tokenInfo, transactionExplorer, addressExplorer })), // copy network explorers into token infos
+    )
     .reduce((result, current) => [...result, ...current], [])
 }
 
@@ -91,7 +94,7 @@ export const getBalance = (wallet: EdgeCurrencyWallet | InactiveWallet, currency
 }
 
 export const getTxUrl = (account: EdgeAccount, transaction: EdgeTransaction) => {
-  return getInfo(account, transaction.currencyCode).transactionExplorer.replace('%s', transaction.txid)
+  return getInfo(account, transaction.currencyCode).transactionExplorer?.replace('%s', transaction.txid)
 }
 
 // DENOMINATIONS
