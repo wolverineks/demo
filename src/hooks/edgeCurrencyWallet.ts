@@ -108,6 +108,7 @@ export const useTransactions = (
   const { data, refetch } = useQuery({
     queryKey: [wallet.id, 'transactions', options],
     queryFn: () => wallet.getTransactions(options),
+    suspense: true,
     ...queryOptions,
   })
 

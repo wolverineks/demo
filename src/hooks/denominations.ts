@@ -6,8 +6,10 @@ import {
   FiatInfo,
   denominatedToNative,
   exchangeToNative,
+  getDenominations,
   getExchangeDenomination,
   getInfo,
+  getNativeDenomination,
   nativeToDenominated,
   nativeToExchange,
 } from '../utils'
@@ -62,6 +64,15 @@ export const useDisplayDenomination = (account: EdgeAccount, currencyCode: strin
       currencyInfo.denominations[0],
     React.useCallback((denomination: EdgeDenomination) => write(denomination.multiplier), [write]),
   ] as const
+}
+
+export const useDenominations = (account: EdgeAccount, currencyCode: string) => {
+  return {
+    display: useDisplayDenomination(account, currencyCode),
+    native: getNativeDenomination(account, currencyCode),
+    exchange: getExchangeDenomination(account, currencyCode),
+    denominations: getDenominations(account, currencyCode),
+  }
 }
 
 export const useDisplayAmount = ({

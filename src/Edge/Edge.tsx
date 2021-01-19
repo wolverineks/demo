@@ -1,12 +1,12 @@
 import { addEdgeCorePlugins, closeEdge, lockEdgeCorePlugins } from 'edge-core-js'
 import React from 'react'
-import { QueryClient, QueryClientProvider } from 'react-query'
+import { QueryClient, QueryClientProvider, useQueryClient } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
 
 import { plugins } from './plugins'
 import { useEdgeContext } from './useEdgeContext'
 
-const queryClient = new QueryClient({
+export const queryClientOptions = {
   defaultOptions: {
     queries: {
       retry: false,
@@ -16,7 +16,7 @@ const queryClient = new QueryClient({
       useErrorBoundary: false,
     },
   },
-})
+}
 
 export const useEdge = () => {
   useEdgeContext()
@@ -31,18 +31,26 @@ export const useEdge = () => {
   }, [])
 }
 
-const WithEdge = () => {
+export const WithEdge = () => {
+  const queryClient = useQueryClient()
   useEdge()
+
+  React.useEffect(() => queryClient.clear(), [queryClient])
 
   return null
 }
 
 export const Edge: React.FC = ({ children }) => {
   return (
-    <QueryClientProvider client={queryClient}>
+    <EdgeCache>
       <ReactQueryDevtools />
       <WithEdge />
       {children}
-    </QueryClientProvider>
+    </EdgeCache>
   )
+}
+
+const queryClient = new QueryClient(queryClientOptions)
+export const EdgeCache: React.FC = ({ children }) => {
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 }

@@ -3,3 +3,12 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom/extend-expect'
+
+import { addEdgeCorePlugins, lockEdgeCorePlugins } from 'edge-core-js'
+
+import { plugins } from './Edge'
+
+jest.setTimeout(99999)
+
+plugins.forEach(addEdgeCorePlugins)
+lockEdgeCorePlugins()

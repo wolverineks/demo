@@ -84,6 +84,14 @@ export const getExchangeDenomination = (account: EdgeAccount, currencyCode: stri
   return getInfo(account, currencyCode).denominations[0]
 }
 
+export const getNativeDenomination = (account: EdgeAccount, currencyCode: string) => {
+  return getInfo(account, currencyCode).denominations.find(({ multiplier }) => multiplier === '1')
+}
+
+export const getDenominations = (account: EdgeAccount, currencyCode: string) => {
+  return getInfo(account, currencyCode).denominations
+}
+
 // EDGE CURRENCY WALLET
 export const getAvailableTokens = (wallet: EdgeCurrencyWallet) => {
   return wallet.currencyInfo.metaTokens.map(({ currencyCode }) => currencyCode)

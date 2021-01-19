@@ -1,6 +1,5 @@
 export * from './dataStore'
 export * from './disklet'
-export * from './usePrevious'
 export * from './useTimeout'
 export * from './useWhyDidYouRender'
 export * from './watch'

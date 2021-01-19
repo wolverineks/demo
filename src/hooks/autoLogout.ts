@@ -3,7 +3,7 @@ import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'reac
 
 import { useInvalidateQueries } from '.'
 
-const defaultAutoLogout = { enabled: true, delay: 3600 }
+export const defaultAutoLogout = { enabled: true, delay: 3600 }
 
 type AutoLogoutSetting = {
   enabled: boolean
