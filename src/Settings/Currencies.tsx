@@ -4,7 +4,7 @@ import { FormControl, ListGroup, ListGroupItem } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
 import { Boundary, Logo } from '../components'
-import { useActiveInfos, useDisplayDenomination } from '../hooks'
+import { useActiveInfos, useDenominations } from '../hooks'
 
 const normalize = (text: string) => text.trim().toLowerCase()
 
@@ -25,11 +25,7 @@ export const Currencies: React.FC = () => {
       {visibleSettings.length <= 0 ? (
         <div>No matching settings</div>
       ) : (
-        visibleSettings.map((currencyInfo) => (
-          <Boundary key={currencyInfo.currencyCode}>
-            <CurrencySetting info={currencyInfo} />
-          </Boundary>
-        ))
+        visibleSettings.map((currencyInfo) => <CurrencySetting key={currencyInfo.currencyCode} info={currencyInfo} />)
       )}
     </ListGroup>
   )
@@ -38,44 +34,44 @@ export const Currencies: React.FC = () => {
 const isToken = (info: EdgeCurrencyInfo | EdgeMetaToken): info is EdgeMetaToken => (info as any).currencyName != null
 
 const CurrencySetting: React.FC<{ info: EdgeCurrencyInfo | EdgeMetaToken }> = ({ info }) => {
-  const [denomination, write] = useDisplayDenomination(useEdgeAccount(), info.currencyCode)
-
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       <ListGroupItem>
         <Logo currencyCode={info.currencyCode} />
         {isToken(info) ? info.currencyName : info.displayName} - {info.currencyCode}
       </ListGroupItem>
-      <Denominations denominations={info.denominations} onSelect={write} selectedDenomination={denomination} />
+      <Boundary>
+        <Denominations currencyCode={info.currencyCode} />
+      </Boundary>
     </ListGroup>
   )
 }
 
-const Denominations = ({
-  denominations,
-  onSelect,
-  selectedDenomination,
-}: {
-  denominations: EdgeDenomination[]
-  selectedDenomination: EdgeDenomination
-  onSelect: (denomination: EdgeDenomination) => any
-}) => (
-  <>
-    <ListGroupItem>Denomination</ListGroupItem>
-    {denominations.length <= 0 ? (
-      <ListGroupItem>No Denominations</ListGroupItem>
-    ) : (
-      denominations.map((denomination) => (
-        <Denomination
-          key={denomination.name}
-          denomination={denomination}
-          onSelect={() => onSelect(denomination)}
-          isSelected={denomination.multiplier === selectedDenomination.multiplier}
-        />
-      ))
-    )}
-  </>
-)
+const Denominations = ({ currencyCode }: { currencyCode: string }) => {
+  const account = useEdgeAccount()
+  const {
+    denominations,
+    display: [displayDenomination, write],
+  } = useDenominations(account, currencyCode)
+
+  return (
+    <>
+      <ListGroupItem>Denomination</ListGroupItem>
+      {denominations.length <= 0 ? (
+        <ListGroupItem>No Denominations</ListGroupItem>
+      ) : (
+        denominations.map((denomination) => (
+          <Denomination
+            key={denomination.name}
+            denomination={denomination}
+            onSelect={() => write(denomination)}
+            isSelected={denomination.multiplier === displayDenomination.multiplier}
+          />
+        ))
+      )}
+    </>
+  )
+}
 
 const Denomination: React.FC<{
   denomination: EdgeDenomination
