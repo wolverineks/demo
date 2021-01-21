@@ -36,8 +36,12 @@ export const render = (callback: () => any, options?: RenderHookOptions<any>) =>
   const _waitFor: typeof result.waitFor = (callback, options) =>
     result.waitFor(callback, { timeout: 10000, ...options })
 
+  const _waitForValueToChange: typeof result.waitForValueToChange = (value, options) =>
+    result.waitForValueToChange(value, { timeout: 10000, ...options })
+
   return {
     ...result,
     waitFor: _waitFor,
+    waitForValueToChange: _waitForValueToChange,
   }
 }

@@ -17,33 +17,24 @@ describe('denominations', () => {
 
   it('useDenominations', async () => {
     const account = await setup()
-    const { result, waitFor, waitForValueToChange } = render(() => useDenominations(account, 'BTC'))
+    const { result: denominations, waitFor, waitForValueToChange } = render(() => useDenominations(account, 'BTC'))
 
-    await waitFor(() => !!result.current.denominations)
+    await waitFor(() => !!denominations.current.all)
     {
-      const {
-        denominations,
-        display: [displayDenomination],
-      } = result.current
-      expect(displayDenomination).toEqual(denominations[0])
+      const { all, display } = denominations.current
+      expect(display).toEqual(all[0])
     }
 
     act(() => {
-      const {
-        denominations,
-        display: [, setDisplayDenomination],
-      } = result.current
-      setDisplayDenomination(denominations[1])
+      const { all, setDisplay } = denominations.current
+      setDisplay(all[1])
     })
 
-    await waitForValueToChange(() => result.current.display[0])
+    await waitForValueToChange(() => denominations.current.display)
 
     {
-      const {
-        denominations,
-        display: [displayDenomination],
-      } = result.current
-      expect(displayDenomination).toBe(denominations[1])
+      const { all, display } = denominations.current
+      expect(display).toBe(all[1])
     }
   })
 })

@@ -31,7 +31,7 @@ describe('EdgeAccount', () => {
     await waitFor(() => !!result.current[0])
 
     {
-      const fiatCurrencyCode = result.current
+      const [fiatCurrencyCode] = result.current
       expect(fiatCurrencyCode).toBe('iso:USD')
     }
 
@@ -43,7 +43,7 @@ describe('EdgeAccount', () => {
     await waitForValueToChange(() => result.current[0])
 
     {
-      const fiatCurrencyCode = result.current
+      const [fiatCurrencyCode] = result.current
       expect(fiatCurrencyCode).toBe('iso:CAD')
     }
   })

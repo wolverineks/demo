@@ -28,7 +28,7 @@ describe('EdgeCurrencyWallet', () => {
     await waitFor(() => !!result.current[0])
 
     {
-      const fiatCurrencyCode = result.current
+      const [fiatCurrencyCode] = result.current
       expect(fiatCurrencyCode).toBe('iso:USD')
     }
 
@@ -40,7 +40,7 @@ describe('EdgeCurrencyWallet', () => {
     await waitForValueToChange(() => result.current[0])
 
     {
-      const fiatCurrencyCode = result.current
+      const [fiatCurrencyCode] = result.current
       expect(fiatCurrencyCode).toBe('iso:CAD')
     }
   })

@@ -19,25 +19,19 @@ describe('useOTP', () => {
 
   it('useOTP', async () => {
     const { result, waitFor, waitForValueToChange } = render(() => useOTP(account))
-    await waitFor(() => !!result.current.otpKey)
+    await waitFor(() => !!result.current.disableOTP)
 
     {
       const enabled = result.current.enabled
       expect(enabled).toBe(false)
     }
 
-    act(() => {
-      const { enableOTP } = result.current
-      enableOTP()
-    })
+    act(() => result.current.enableOTP())
 
-    await waitForValueToChange(() => result.current.enabled)
+    await waitForValueToChange(() => result.current.enabled, { timeout: 9999 })
     expect(result.current.enabled).toBe(true)
 
-    act(() => {
-      const { disableOTP } = result.current
-      disableOTP()
-    })
+    act(() => result.current.disableOTP())
 
     await waitForValueToChange(() => result.current.enabled)
 
