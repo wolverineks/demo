@@ -1,9 +1,10 @@
+import { EdgeDenomination, EdgeRateCache } from 'edge-core-js'
 import React from 'react'
 
 import { useEdgeAccount } from '../auth'
 import { AmountInput, Boundary } from '../components'
-import { useDisplayDenomination } from '../hooks'
-import { denominatedToNative, getExchangeDenomination, nativeToDenominated } from '../utils'
+import { useDenominations } from '../hooks'
+import { denominatedToNative, nativeToDenominated } from '../utils'
 
 type FlipInputProps = {
   onChange: (nativeAmount: string) => any
@@ -18,7 +19,29 @@ export type FlipInputRef = {
 
 export const FlipInput = React.forwardRef<FlipInputRef, FlipInputProps>(
   ({ currencyCode, fiatCurrencyCode, onChange }, ref) => {
-    const { top, bottom } = useFlipInput({ onChange, currencyCode, fiatCurrencyCode, ref })
+    const account = useEdgeAccount()
+    const topDenominations = useDenominations(account, currencyCode)
+    const bottomDenominations = useDenominations(account, fiatCurrencyCode)
+
+    const { top, bottom } = useFlipInput({
+      rateCache: account.rateCache,
+      onChange,
+      currencyCode,
+      fiatCurrencyCode,
+      topDenominations,
+      bottomDenominations,
+    })
+
+    React.useImperativeHandle(ref, () => ({
+      setNativeAmount: (nativeAmount: string) => {
+        const displayAmount = nativeToDenominated({
+          nativeAmount,
+          denomination: topDenominations.display,
+        })
+
+        top.onChange(displayAmount)
+      },
+    }))
 
     return (
       <div>
@@ -33,328 +56,90 @@ export const FlipInput = React.forwardRef<FlipInputRef, FlipInputProps>(
   },
 )
 
-// useRef version (uglier but easier to reason)
 const useFlipInput = ({
+  rateCache,
   onChange,
   currencyCode,
   fiatCurrencyCode,
-  ref,
+  topDenominations,
+  bottomDenominations,
 }: {
+  rateCache: EdgeRateCache
   onChange: (nativeAmount: string) => any
   currencyCode: string
   fiatCurrencyCode: string
-  ref: any
+  topDenominations: { display: EdgeDenomination; exchange: EdgeDenomination }
+  bottomDenominations: { display: EdgeDenomination; exchange: EdgeDenomination }
 }) => {
-  const account = useEdgeAccount()
-
-  const [direction, setDirection] = React.useState<'cryptoToFiat' | 'fiatToCrypto'>('cryptoToFiat')
-
   const [topDisplayAmount, setTopDisplayAmount] = React.useState('0')
   const [bottomDisplayAmount, setBottomDisplayAmount] = React.useState('0')
 
-  const topDisplayDenomination = useDisplayDenomination(account, currencyCode)[0]
-  const bottomDisplayDenomination = useDisplayDenomination(account, fiatCurrencyCode)[0]
+  const onTopChange = async (topDisplayAmount: string) => {
+    const topNativeAmount = denominatedToNative({
+      amount: topDisplayAmount,
+      denomination: topDenominations.display,
+    })
+    const topExchangeAmount = nativeToDenominated({
+      nativeAmount: topNativeAmount,
+      denomination: topDenominations.exchange,
+    })
+    const bottomExchangeAmount = await rateCache.convertCurrency(
+      currencyCode,
+      fiatCurrencyCode,
+      Number(topExchangeAmount),
+    )
+    const bottomNativeAmount = denominatedToNative({
+      amount: String(bottomExchangeAmount),
+      denomination: bottomDenominations.exchange,
+    })
+    const bottomDisplayAmount = nativeToDenominated({
+      nativeAmount: String(bottomNativeAmount),
+      denomination: bottomDenominations.display,
+    })
 
-  const topExchangeDenomination = getExchangeDenomination(account, currencyCode)
-  const bottomExchangeDenomination = getExchangeDenomination(account, fiatCurrencyCode)
+    setTopDisplayAmount(topDisplayAmount)
+    setBottomDisplayAmount(String(bottomDisplayAmount))
+    onChange(topNativeAmount)
+  }
 
-  React.useImperativeHandle(ref, () => ({
-    setNativeAmount: async (nativeAmount: string) => {
-      const topDisplayAmount = nativeToDenominated({
-        nativeAmount,
-        denomination: topDisplayDenomination,
-      })
+  const onBottomChange = async (bottomDisplayAmount: string) => {
+    const bottomNativeAmount = denominatedToNative({
+      amount: bottomDisplayAmount,
+      denomination: bottomDenominations.display,
+    })
+    const bottomExchangeAmount = nativeToDenominated({
+      nativeAmount: bottomNativeAmount,
+      denomination: bottomDenominations.exchange,
+    })
+    const topExchangeAmount = await rateCache.convertCurrency(
+      fiatCurrencyCode,
+      currencyCode,
+      Number(bottomExchangeAmount),
+    )
+    const topNativeAmount = denominatedToNative({
+      amount: String(topExchangeAmount),
+      denomination: topDenominations.exchange,
+    })
+    const topDisplayAmount = nativeToDenominated({
+      nativeAmount: topNativeAmount,
+      denomination: topDenominations.display,
+    })
 
-      const topExchangeAmount = nativeToDenominated({
-        nativeAmount,
-        denomination: topExchangeDenomination,
-      })
-      const bottomExchangeAmount = await account.rateCache.convertCurrency(
-        currencyCode,
-        fiatCurrencyCode,
-        Number(topExchangeAmount),
-      )
-      const bottomNativeAmount = denominatedToNative({
-        amount: String(bottomExchangeAmount),
-        denomination: bottomExchangeDenomination,
-      })
-      const bottomDisplayAmount = nativeToDenominated({
-        nativeAmount: bottomNativeAmount,
-        denomination: bottomDisplayDenomination,
-      })
-
-      setTopDisplayAmount(topDisplayAmount)
-      setBottomDisplayAmount(String(bottomDisplayAmount))
-
-      onChange(nativeAmount)
-    },
-  }))
-
-  React.useEffect(() => {
-    const onTopChange = async (topDisplayAmount: string) => {
-      const topNativeAmount = denominatedToNative({
-        amount: topDisplayAmount,
-        denomination: topDisplayDenomination,
-      })
-      const topExchangeAmount = nativeToDenominated({
-        nativeAmount: topNativeAmount,
-        denomination: topExchangeDenomination,
-      })
-      const bottomExchangeAmount = await account.rateCache.convertCurrency(
-        currencyCode,
-        fiatCurrencyCode,
-        Number(topExchangeAmount),
-      )
-      const bottomNativeAmount = denominatedToNative({
-        amount: String(bottomExchangeAmount),
-        denomination: bottomExchangeDenomination,
-      })
-      const bottomDisplayAmount = nativeToDenominated({
-        nativeAmount: bottomNativeAmount,
-        denomination: bottomDisplayDenomination,
-      })
-
-      setTopDisplayAmount(topDisplayAmount)
-      setBottomDisplayAmount(String(bottomDisplayAmount))
-
-      onChange(topNativeAmount)
-    }
-
-    const onBottomChange = async (bottomDisplayAmount: string) => {
-      const bottomNativeAmount = denominatedToNative({
-        amount: bottomDisplayAmount,
-        denomination: bottomDisplayDenomination,
-      })
-      const bottomExchangeAmount = nativeToDenominated({
-        nativeAmount: bottomNativeAmount,
-        denomination: bottomExchangeDenomination,
-      })
-      const topExchangeAmount = await account.rateCache.convertCurrency(
-        fiatCurrencyCode,
-        currencyCode,
-        Number(bottomExchangeAmount),
-      )
-      const topNativeAmount = denominatedToNative({
-        amount: String(topExchangeAmount),
-        denomination: topExchangeDenomination,
-      })
-      const topDisplayAmount = nativeToDenominated({
-        nativeAmount: topNativeAmount,
-        denomination: topDisplayDenomination,
-      })
-
-      setBottomDisplayAmount(bottomDisplayAmount)
-      setTopDisplayAmount(String(topDisplayAmount))
-      onChange(topNativeAmount)
-    }
-
-    direction === 'cryptoToFiat' ? onTopChange(topDisplayAmount) : onBottomChange(bottomDisplayAmount)
-  }, [
-    account.rateCache,
-    bottomDisplayAmount,
-    bottomDisplayDenomination,
-    bottomExchangeDenomination,
-    currencyCode,
-    direction,
-    fiatCurrencyCode,
-    onChange,
-    topDisplayAmount,
-    topDisplayDenomination,
-    topExchangeDenomination,
-  ])
+    setBottomDisplayAmount(bottomDisplayAmount)
+    setTopDisplayAmount(String(topDisplayAmount))
+    onChange(topNativeAmount)
+  }
 
   return {
     top: {
       amount: topDisplayAmount,
-      denomination: topDisplayDenomination,
-      setDisplayAmount: setTopDisplayAmount,
-      onChange: (displayAmount: string) => {
-        setDirection('cryptoToFiat')
-        setTopDisplayAmount(displayAmount)
-      },
+      denomination: topDenominations.display,
+      onChange: onTopChange,
     },
     bottom: {
       amount: bottomDisplayAmount,
-      denomination: bottomDisplayDenomination,
-      onChange: (displayAmount: string) => {
-        setDirection('fiatToCrypto')
-        setBottomDisplayAmount(displayAmount)
-      },
+      denomination: bottomDenominations.display,
+      onChange: onBottomChange,
     },
   }
 }
-
-// useLayoutEffect version (harder to reason, but looks better)
-// export const FlipInput: React.FC<{
-//   onChange: (nativeAmount: string) => any
-//   currencyCode: string
-//   fiatCurrencyCode: string
-//   nativeAmount?: string
-// }> = ({ currencyCode, fiatCurrencyCode, onChange, nativeAmount }) => {
-//   const { top, bottom } = useFlipInput({ onChange, currencyCode, fiatCurrencyCode, nativeAmount })
-
-//   return (
-//     <div>
-//       <Boundary>
-//         <AmountInput {...top} />
-//       </Boundary>
-//       <Boundary>
-//         <AmountInput {...bottom} />
-//       </Boundary>
-//     </div>
-//   )
-// }
-//
-// const useFlipInput = ({
-//   onChange,
-//   currencyCode,
-//   fiatCurrencyCode,
-//   nativeAmount,
-// }: {
-//   onChange: (nativeAmount: string) => any
-//   currencyCode: string
-//   fiatCurrencyCode: string
-//   nativeAmount?: string
-// }) => {
-//   const account = useEdgeAccount()
-
-//   const [direction, setDirection] = React.useState<'cryptoToFiat' | 'fiatToCrypto'>('cryptoToFiat')
-
-//   const [topDisplayAmount, setTopDisplayAmount] = React.useState('0')
-//   const [bottomDisplayAmount, setBottomDisplayAmount] = React.useState('0')
-
-//   const topDisplayDenomination = useDisplayDenomination(account, currencyCode)[0]
-//   const bottomDisplayDenomination = useDisplayDenomination(account, fiatCurrencyCode)[0]
-
-//   const topExchangeDenomination = getExchangeDenomination(account, currencyCode)
-//   const bottomExchangeDenomination = getExchangeDenomination(account, fiatCurrencyCode)
-
-//   React.useLayoutEffect(() => {
-//     const incomingNativeAmount = async () => {
-//       if (!nativeAmount) return
-//       const topDisplayAmount = nativeToDenominated({
-//         nativeAmount,
-//         denomination: topDisplayDenomination,
-//       })
-
-//       const topExchangeAmount = nativeToDenominated({
-//         nativeAmount,
-//         denomination: topExchangeDenomination,
-//       })
-//       const bottomExchangeAmount = await account.rateCache.convertCurrency(
-//         currencyCode,
-//         fiatCurrencyCode,
-//         Number(topExchangeAmount),
-//       )
-//       const bottomNativeAmount = denominatedToNative({
-//         amount: String(bottomExchangeAmount),
-//         denomination: bottomExchangeDenomination,
-//       })
-//       const bottomDisplayAmount = nativeToDenominated({
-//         nativeAmount: bottomNativeAmount,
-//         denomination: bottomDisplayDenomination,
-//       })
-
-//       setTopDisplayAmount(topDisplayAmount)
-//       setBottomDisplayAmount(String(bottomDisplayAmount))
-
-//       onChange(nativeAmount)
-//     }
-
-//     incomingNativeAmount()
-//     // eslint-disable-next-line react-hooks/exhaustive-deps
-//   }, [nativeAmount])
-
-//   React.useEffect(() => {
-//     const onTopChange = async (topDisplayAmount: string) => {
-//       const topNativeAmount = denominatedToNative({
-//         amount: topDisplayAmount,
-//         denomination: topDisplayDenomination,
-//       })
-//       const topExchangeAmount = nativeToDenominated({
-//         nativeAmount: topNativeAmount,
-//         denomination: topExchangeDenomination,
-//       })
-//       const bottomExchangeAmount = await account.rateCache.convertCurrency(
-//         currencyCode,
-//         fiatCurrencyCode,
-//         Number(topExchangeAmount),
-//       )
-//       const bottomNativeAmount = denominatedToNative({
-//         amount: String(bottomExchangeAmount),
-//         denomination: bottomExchangeDenomination,
-//       })
-//       const bottomDisplayAmount = nativeToDenominated({
-//         nativeAmount: bottomNativeAmount,
-//         denomination: bottomDisplayDenomination,
-//       })
-
-//       setTopDisplayAmount(topDisplayAmount)
-//       setBottomDisplayAmount(String(bottomDisplayAmount))
-
-//       onChange(topNativeAmount)
-//     }
-
-//     const onBottomChange = async (bottomDisplayAmount: string) => {
-//       const bottomNativeAmount = denominatedToNative({
-//         amount: bottomDisplayAmount,
-//         denomination: bottomDisplayDenomination,
-//       })
-//       const bottomExchangeAmount = nativeToDenominated({
-//         nativeAmount: bottomNativeAmount,
-//         denomination: bottomExchangeDenomination,
-//       })
-//       const topExchangeAmount = await account.rateCache.convertCurrency(
-//         fiatCurrencyCode,
-//         currencyCode,
-//         Number(bottomExchangeAmount),
-//       )
-//       const topNativeAmount = denominatedToNative({
-//         amount: String(topExchangeAmount),
-//         denomination: topExchangeDenomination,
-//       })
-//       const topDisplayAmount = nativeToDenominated({
-//         nativeAmount: topNativeAmount,
-//         denomination: topDisplayDenomination,
-//       })
-
-//       setBottomDisplayAmount(bottomDisplayAmount)
-//       setTopDisplayAmount(String(topDisplayAmount))
-//       onChange(topNativeAmount)
-//     }
-
-//     direction === 'cryptoToFiat' ? onTopChange(topDisplayAmount) : onBottomChange(bottomDisplayAmount)
-//   }, [
-//     account.rateCache,
-//     bottomDisplayAmount,
-//     bottomDisplayDenomination,
-//     bottomExchangeDenomination,
-//     currencyCode,
-//     direction,
-//     fiatCurrencyCode,
-//     onChange,
-//     topDisplayAmount,
-//     topDisplayDenomination,
-//     topExchangeDenomination,
-//   ])
-
-//   return {
-//     top: {
-//       amount: topDisplayAmount,
-//       denomination: topDisplayDenomination,
-//       setDisplayAmount: setTopDisplayAmount,
-//       onChange: (displayAmount: string) => {
-//         setDirection('cryptoToFiat')
-//         setTopDisplayAmount(displayAmount)
-//       },
-//     },
-//     bottom: {
-//       amount: bottomDisplayAmount,
-//       denomination: bottomDisplayDenomination,
-//       onChange: (displayAmount: string) => {
-//         setDirection('fiatToCrypto')
-//         setBottomDisplayAmount(displayAmount)
-//       },
-//     },
-//   }
-// }
