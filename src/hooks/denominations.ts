@@ -96,6 +96,17 @@ export const useDisplayAmount = ({
   }
 }
 
+/**
+ * crypto nativeAmount -> fiat exchangeAmount
+ *
+ * ```
+ * const fiatExchangeAmount = useFiatAmount({
+ *   account, nativeAmount,
+ *   fromCurrencyCode: 'BTC',
+ *   toCurrencyCode: 'iso:USD'
+ * })
+ * ```
+ */
 export const useFiatAmount = (
   {
     account,
@@ -110,6 +121,8 @@ export const useFiatAmount = (
   },
   queryOptions?: UseQueryOptions<number>,
 ) => {
+  const fiatDenominations = useDenominations(account, fiatCurrencyCode)
+
   const exchangeAmount = nativeToExchange({
     account,
     currencyCode: fromCurrencyCode,
@@ -119,6 +132,7 @@ export const useFiatAmount = (
   const { data, refetch } = useQuery({
     queryKey: [{ fromCurrencyCode, fiatCurrencyCode, exchangeAmount }],
     queryFn: () => account.rateCache.convertCurrency(fromCurrencyCode, fiatCurrencyCode, Number(exchangeAmount)),
+    suspense: true,
     ...queryOptions,
   })
 
@@ -130,7 +144,16 @@ export const useFiatAmount = (
     }
   }, [account.rateCache, exchangeAmount, fiatCurrencyCode, fromCurrencyCode, refetch])
 
-  return data!
+  const fiatNativeAmount = denominatedToNative({
+    amount: String(data)!,
+    denomination: fiatDenominations.exchange,
+  })
+  const fiatDisplayAmount = nativeToDenominated({
+    nativeAmount: fiatNativeAmount,
+    denomination: fiatDenominations.display,
+  })
+
+  return fiatDisplayAmount
 }
 
 export const useDisplayToNative = ({
