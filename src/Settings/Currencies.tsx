@@ -4,20 +4,32 @@ import { FormControl, ListGroup, ListGroupItem } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
 import { Boundary, Logo } from '../components'
-import { useActiveInfos, useDenominations } from '../hooks'
+import { useActiveInfos, useDefaultFiatInfo, useDenominations } from '../hooks'
+import { FiatInfo } from '../utils'
 
 const normalize = (text: string) => text.trim().toLowerCase()
 
-const matches = (query: string) => (info: EdgeCurrencyInfo | EdgeMetaToken) =>
+const isToken = (info: EdgeCurrencyInfo | EdgeMetaToken | FiatInfo): info is EdgeMetaToken =>
+  (info as any).currencyName != null
+
+const isFiat = (info: EdgeCurrencyInfo | EdgeMetaToken | FiatInfo): info is FiatInfo =>
+  (info as any).isoCurrencyCode != null
+
+const matches = (query: string) => (info: EdgeCurrencyInfo | EdgeMetaToken | FiatInfo) =>
   normalize(info.currencyCode).includes(normalize(query)) ||
   (isToken(info)
     ? normalize(info.currencyName).includes(normalize(query))
+    : isFiat(info)
+    ? normalize(info.currencyCode)
     : normalize(info.displayName).includes(normalize(query)))
 
 export const Currencies: React.FC = () => {
   const account = useEdgeAccount()
   const [searchQuery, setSearchQuery] = React.useState('')
-  const visibleSettings = useActiveInfos(account).filter(matches(searchQuery))
+  const fiatInfo = useDefaultFiatInfo(account)
+  const visibleSettings = [...useActiveInfos(account), (fiatInfo as unknown) as EdgeCurrencyInfo].filter(
+    matches(searchQuery),
+  )
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
@@ -30,8 +42,6 @@ export const Currencies: React.FC = () => {
     </ListGroup>
   )
 }
-
-const isToken = (info: EdgeCurrencyInfo | EdgeMetaToken): info is EdgeMetaToken => (info as any).currencyName != null
 
 const CurrencySetting: React.FC<{ info: EdgeCurrencyInfo | EdgeMetaToken }> = ({ info }) => {
   return (
