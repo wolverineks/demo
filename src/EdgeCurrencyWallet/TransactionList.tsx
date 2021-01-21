@@ -5,7 +5,14 @@ import { FormControl, ListGroup, NavLink } from 'react-bootstrap'
 import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount } from '../components'
 import { useDisplayDenomination, useTransactionCount, useTransactions } from '../hooks'
-import { exchangeToNative, getTxUrl, nativeToDenominated } from '../utils'
+import {
+  exchangeToNative,
+  getAddressExplorerUrl,
+  getBlockExplorerUrl,
+  getTransactionExplorerUrl,
+  getXpubExplorerUrl,
+  nativeToDenominated,
+} from '../utils'
 import { useFilter } from './useFilter'
 
 const matches = (query: string) => (transaction: EdgeTransaction): boolean => {
@@ -47,7 +54,10 @@ export const TransactionList: React.FC<{ wallet: EdgeCurrencyWallet; currencyCod
 
 const TransactionListRow: React.FC<{ transaction: EdgeTransaction }> = ({ transaction }) => {
   const account = useEdgeAccount()
-  const txUrl = getTxUrl(account, transaction)
+  const transactionExplorerUrl = getTransactionExplorerUrl(account, transaction)
+  const addressExplorerUrl = getAddressExplorerUrl(account, transaction)
+  const xPubExplorerUrl = getXpubExplorerUrl(account, transaction)
+  const blockExplorerUrl = getBlockExplorerUrl(account, transaction)
 
   return (
     <ListGroup.Item id={transaction.txid} variant={transaction.nativeAmount.startsWith('-') ? 'danger' : 'info'}>
@@ -59,9 +69,27 @@ const TransactionListRow: React.FC<{ transaction: EdgeTransaction }> = ({ transa
 
       {transaction.metadata && <Metadata metadata={transaction.metadata} />}
 
-      {txUrl ? (
-        <NavLink target={'none'} href={txUrl}>
-          View Details
+      {transactionExplorerUrl ? (
+        <NavLink target={'none'} href={transactionExplorerUrl}>
+          View Transaction Details
+        </NavLink>
+      ) : null}
+
+      {addressExplorerUrl ? (
+        <NavLink target={'none'} href={addressExplorerUrl}>
+          View Address Details
+        </NavLink>
+      ) : null}
+
+      {xPubExplorerUrl ? (
+        <NavLink target={'none'} href={xPubExplorerUrl}>
+          View Xpub Details
+        </NavLink>
+      ) : null}
+
+      {blockExplorerUrl ? (
+        <NavLink target={'none'} href={blockExplorerUrl}>
+          View Block Details
         </NavLink>
       ) : null}
     </ListGroup.Item>
