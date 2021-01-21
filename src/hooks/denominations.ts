@@ -67,11 +67,14 @@ export const useDisplayDenomination = (account: EdgeAccount, currencyCode: strin
 }
 
 export const useDenominations = (account: EdgeAccount, currencyCode: string) => {
+  const [display, setDisplay] = useDisplayDenomination(account, currencyCode)
+
   return {
-    display: useDisplayDenomination(account, currencyCode),
+    display,
+    setDisplay,
     native: getNativeDenomination(account, currencyCode),
     exchange: getExchangeDenomination(account, currencyCode),
-    denominations: getDenominations(account, currencyCode),
+    all: getDenominations(account, currencyCode),
   }
 }
 

@@ -49,23 +49,20 @@ const CurrencySetting: React.FC<{ info: EdgeCurrencyInfo | EdgeMetaToken }> = ({
 
 const Denominations = ({ currencyCode }: { currencyCode: string }) => {
   const account = useEdgeAccount()
-  const {
-    denominations,
-    display: [displayDenomination, write],
-  } = useDenominations(account, currencyCode)
+  const { all, display, setDisplay } = useDenominations(account, currencyCode)
 
   return (
     <>
       <ListGroupItem>Denomination</ListGroupItem>
-      {denominations.length <= 0 ? (
+      {all.length <= 0 ? (
         <ListGroupItem>No Denominations</ListGroupItem>
       ) : (
-        denominations.map((denomination) => (
+        all.map((denomination) => (
           <Denomination
-            key={denomination.name}
+            key={`${denomination.name} - ${denomination.symbol}`}
             denomination={denomination}
-            onSelect={() => write(denomination)}
-            isSelected={denomination.multiplier === displayDenomination.multiplier}
+            onSelect={() => setDisplay(denomination)}
+            isSelected={denomination.multiplier === display.multiplier}
           />
         ))
       )}
