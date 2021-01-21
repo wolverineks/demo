@@ -151,14 +151,13 @@ const DeletePin = () => {
   const context = useEdgeContext()
   const account = useEdgeAccount()
   const {
-    pinExists,
     deletePin: { mutate: deletePin, error, isLoading },
   } = usePin(context, account)
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       <ListGroupItem>
-        Delete Pin: {String(pinExists)}
+        Delete Pin:
         <Form>
           <FormGroup>
             <Button disabled={isLoading} onClick={() => deletePin()}>
