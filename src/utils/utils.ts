@@ -85,7 +85,7 @@ export const getExchangeDenomination = (account: EdgeAccount, currencyCode: stri
 }
 
 export const getNativeDenomination = (account: EdgeAccount, currencyCode: string) => {
-  return getInfo(account, currencyCode).denominations.find(({ multiplier }) => multiplier === '1')
+  return getInfo(account, currencyCode).denominations.find(({ multiplier }) => multiplier === '1')!
 }
 
 export const getDenominations = (account: EdgeAccount, currencyCode: string) => {
@@ -101,8 +101,20 @@ export const getBalance = (wallet: EdgeCurrencyWallet | InactiveWallet, currency
   return wallet.balances[currencyCode]
 }
 
-export const getTxUrl = (account: EdgeAccount, transaction: EdgeTransaction) => {
+export const getTransactionExplorerUrl = (account: EdgeAccount, transaction: EdgeTransaction) => {
   return getInfo(account, transaction.currencyCode).transactionExplorer?.replace('%s', transaction.txid)
+}
+
+export const getAddressExplorerUrl = (account: EdgeAccount, transaction: EdgeTransaction) => {
+  return getInfo(account, transaction.currencyCode).addressExplorer?.replace('%s', transaction.txid)
+}
+
+export const getBlockExplorerUrl = (account: EdgeAccount, transaction: EdgeTransaction) => {
+  return getInfo(account, transaction.currencyCode).addressExplorer?.replace('%s', transaction.txid)
+}
+
+export const getXpubExplorerUrl = (account: EdgeAccount, transaction: EdgeTransaction) => {
+  return getInfo(account, transaction.currencyCode).addressExplorer?.replace('%s', transaction.txid)
 }
 
 // DENOMINATIONS
@@ -118,6 +130,21 @@ export const nativeToDenominated = ({
 
 export const denominatedToNative = ({ denomination, amount }: { denomination: EdgeDenomination; amount: string }) => {
   return String(Number(amount) * Number(denomination.multiplier))
+}
+
+export const denominatedToDenominated = ({
+  amount,
+  fromDenomination,
+  toDenomination,
+}: {
+  amount: string
+  fromDenomination: EdgeDenomination
+  toDenomination: EdgeDenomination
+}) => {
+  const nativeAmount = denominatedToNative({ amount, denomination: fromDenomination })
+  const result = nativeToDenominated({ denomination: toDenomination, nativeAmount })
+
+  return result
 }
 
 export const nativeToExchange = ({
