@@ -168,6 +168,10 @@ export const fiatInfos: FiatInfo[] = [
   { currencyCode: 'ZMW', symbol: 'ZK' },
 ].map((info) => ({
   ...info,
-  denominations: [{ name: info.currencyCode, symbol: info.symbol, multiplier: '1' }],
+  denominations: [
+    { name: info.currencyCode, symbol: info.symbol, multiplier: '1' },
+    { name: info.currencyCode, symbol: `c${info.symbol}`, multiplier: '.01' },
+    { name: info.currencyCode, symbol: `m${info.symbol}`, multiplier: '.001' },
+  ],
   isoCurrencyCode: `iso:${info.currencyCode}`,
 }))
