@@ -6,11 +6,11 @@ import { Boundary, DisplayAmount, FiatAmount, Logo } from '../components'
 import { useActiveInfos, useDefaultFiatCurrencyCode, useDisplayToNative } from '../hooks'
 import { isUnique } from '../utils'
 
-const watch = ['currencyWallets'] as const
 const requiredExchangeRates = ['BTC', 'BCH', 'LTC', 'ETH']
 export const ExchangeRates = () => {
   const [searchQuery, setSearchQuery] = React.useState('')
-  const currencyCodes = useActiveInfos(useEdgeAccount(watch))
+  const account = useEdgeAccount()
+  const currencyCodes = useActiveInfos(account)
     .reduce((result, current) => [...result, current.currencyCode], requiredExchangeRates as string[])
     .filter(isUnique)
   const visibleCurrencyCodes = currencyCodes.filter((currencyCode) =>

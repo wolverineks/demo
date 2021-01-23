@@ -10,7 +10,6 @@ import {
   nativeToDenominated,
 } from '../utils'
 import { useInvalidateQueries } from './useInvalidateQueries'
-import { useWatchAll } from './watch'
 import { useDisplayDenomination } from '.'
 
 export const useEdgeAccountTotal = (account: EdgeAccount) => {
@@ -134,11 +133,7 @@ export const useActiveInfos = (account: EdgeAccount) => {
 }
 
 export const useEdgeCurrencyWallet = (
-  {
-    account,
-    walletId,
-    watch,
-  }: { account: EdgeAccount; walletId: string; watch?: readonly (keyof EdgeCurrencyWallet)[] },
+  { account, walletId }: { account: EdgeAccount; walletId: string; watch?: readonly (keyof EdgeCurrencyWallet)[] },
   queryOptions?: UseQueryOptions<EdgeCurrencyWallet>,
 ) => {
   const { data: wallet } = useQuery({
@@ -149,7 +144,15 @@ export const useEdgeCurrencyWallet = (
 
   if (!wallet) throw new Error(`404: wallet:${walletId} not found`)
 
-  useWatchAll(wallet, watch)
-
   return wallet
+}
+
+export const useOnRateChange = (account: EdgeAccount, callback: () => any) => {
+  React.useEffect(() => {
+    const unsub = account.rateCache.on('update', () => callback())
+
+    return () => {
+      unsub()
+    }
+  }, [account.rateCache, callback])
 }
