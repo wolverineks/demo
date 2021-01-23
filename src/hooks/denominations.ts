@@ -118,7 +118,7 @@ export const useFiatAmount = (
     nativeAmount,
   })
 
-  const { data, refetch } = useQuery({
+  const { data: fiatExchangeAmount, refetch } = useQuery({
     queryKey: [{ fromCurrencyCode, fiatCurrencyCode, exchangeAmount }],
     queryFn: () => account.rateCache.convertCurrency(fromCurrencyCode, fiatCurrencyCode, Number(exchangeAmount)),
     suspense: true,
@@ -134,7 +134,7 @@ export const useFiatAmount = (
   }, [account.rateCache, exchangeAmount, fiatCurrencyCode, fromCurrencyCode, refetch])
 
   const fiatNativeAmount = denominatedToNative({
-    amount: String(data)!,
+    amount: String(fiatExchangeAmount)!,
     denomination: fiatDenominations.exchange,
   })
   const fiatDisplayAmount = nativeToDenominated({

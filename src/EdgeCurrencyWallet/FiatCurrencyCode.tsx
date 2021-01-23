@@ -7,7 +7,7 @@ import { useFiatCurrencyCode } from '../hooks'
 import { fiatInfos } from '../utils'
 
 export const FiatCurrencyCode: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
-  const [fiatCurrencyCode, write] = useFiatCurrencyCode(wallet)
+  const [fiatCurrencyCode, setFiatCurrencyCode] = useFiatCurrencyCode(wallet)
   const [_fiatCurrencyCode, _setFiatCurrencyCode] = React.useState(fiatCurrencyCode)
 
   return (
@@ -24,7 +24,7 @@ export const FiatCurrencyCode: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wal
         )}
       />
 
-      <Button onClick={() => write(_fiatCurrencyCode)}>Set Fiat</Button>
+      <Button onClick={() => setFiatCurrencyCode(_fiatCurrencyCode)}>Set Fiat</Button>
     </FormGroup>
   )
 }
