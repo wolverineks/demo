@@ -12,6 +12,12 @@ import { UseQueryOptions, useMutation, useQuery } from 'react-query'
 import { useInvalidateQueries } from './useInvalidateQueries'
 import { useWatch } from './watch'
 
+export const useSyncRatio = (wallet: EdgeCurrencyWallet) => {
+  useWatch(wallet, 'syncRatio')
+
+  return wallet.syncRatio
+}
+
 export const useBalance = (wallet: EdgeCurrencyWallet, currencyCode: string) => {
   const waitForBalance = (wallet: EdgeCurrencyWallet): Promise<string> => {
     return wallet.balances[currencyCode] != null
@@ -42,6 +48,8 @@ export const useWriteFiatCurrencyCode = (wallet: EdgeCurrencyWallet) => {
 }
 
 export const useFiatCurrencyCode = (wallet: EdgeCurrencyWallet) => {
+  useWatch(wallet, 'fiatCurrencyCode')
+
   return [wallet.fiatCurrencyCode, useWriteFiatCurrencyCode(wallet).mutate] as const
 }
 
@@ -51,6 +59,12 @@ export const useRenameWallet = (wallet: EdgeCurrencyWallet) => {
   return useMutation(mutationFn, {
     ...useInvalidateQueries([[wallet.id, 'disklet', 'WalletName.json']]), // invalidate dataStore
   })
+}
+
+export const useName = (wallet: EdgeCurrencyWallet) => {
+  useWatch(wallet, 'name')
+
+  return [wallet.name, useRenameWallet(wallet).mutate] as const
 }
 
 export const useReceiveAddressAndEncodeUri = ({

@@ -3,12 +3,13 @@ import { Accordion, Button, ListGroup } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, FiatAmount, Logo } from '../components'
-import { useChangeWalletStates, useReadWalletSnapshot } from '../hooks'
-import { getBalance, getDeletedWalletIds, normalize } from '../utils'
+import { useChangeWalletStates, useDeletedWalletIds, useReadWalletSnapshot } from '../hooks'
+import { getBalance, normalize } from '../utils'
 import { FallbackRender } from './FallbackRender'
 
 export const DeletedWalletList = ({ searchQuery }: { searchQuery: string }) => {
-  const deletedWalletIds = getDeletedWalletIds(useEdgeAccount())
+  const account = useEdgeAccount()
+  const deletedWalletIds = useDeletedWalletIds(account)
 
   return (
     <Accordion>
@@ -33,7 +34,8 @@ export const DeletedWalletList = ({ searchQuery }: { searchQuery: string }) => {
 }
 
 const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId, searchQuery, children }) => {
-  const snapshot = useReadWalletSnapshot(useEdgeAccount(), walletId)
+  const account = useEdgeAccount()
+  const snapshot = useReadWalletSnapshot(account, walletId)
   const display = [snapshot.name || '', snapshot.currencyInfo.currencyCode, snapshot.fiatCurrencyCode].some((target) =>
     normalize(target).includes(normalize(searchQuery)),
   )
@@ -42,7 +44,8 @@ const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId
 }
 
 const WalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
-  const snapshot = useReadWalletSnapshot(useEdgeAccount(), walletId)
+  const account = useEdgeAccount()
+  const snapshot = useReadWalletSnapshot(account, walletId)
   const balance = getBalance(snapshot, snapshot.currencyInfo.currencyCode) || '0'
 
   return (
@@ -65,7 +68,8 @@ const WalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
 }
 
 const WalletOptions = ({ walletId }: { walletId: string }) => {
-  const { activateWallet, archiveWallet, error, status } = useChangeWalletStates(useEdgeAccount())
+  const account = useEdgeAccount()
+  const { activateWallet, archiveWallet, error, status } = useChangeWalletStates(account)
 
   return (
     <>

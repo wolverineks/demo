@@ -5,15 +5,7 @@ import { FormControl, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { useEdgeAccount } from '../auth'
 import { Boundary, Logo } from '../components'
 import { useActiveInfos, useDefaultFiatInfo, useDenominations } from '../hooks'
-import { FiatInfo } from '../utils'
-
-const normalize = (text: string) => text.trim().toLowerCase()
-
-const isToken = (info: EdgeCurrencyInfo | EdgeMetaToken | FiatInfo): info is EdgeMetaToken =>
-  (info as any).currencyName != null
-
-const isFiat = (info: EdgeCurrencyInfo | EdgeMetaToken | FiatInfo): info is FiatInfo =>
-  (info as any).isoCurrencyCode != null
+import { FiatInfo, isFiat, isToken, normalize } from '../utils'
 
 const matches = (query: string) => (info: EdgeCurrencyInfo | EdgeMetaToken | FiatInfo) =>
   normalize(info.currencyCode).includes(normalize(query)) ||
@@ -59,20 +51,20 @@ const CurrencySetting: React.FC<{ info: EdgeCurrencyInfo | EdgeMetaToken }> = ({
 
 const Denominations = ({ currencyCode }: { currencyCode: string }) => {
   const account = useEdgeAccount()
-  const { all, display, setDisplay } = useDenominations(account, currencyCode)
+  const denominations = useDenominations(account, currencyCode)
 
   return (
     <>
       <ListGroupItem>Denomination</ListGroupItem>
-      {all.length <= 0 ? (
+      {denominations.all.length <= 0 ? (
         <ListGroupItem>No Denominations</ListGroupItem>
       ) : (
-        all.map((denomination) => (
+        denominations.all.map((denomination) => (
           <Denomination
             key={`${denomination.name} - ${denomination.symbol}`}
             denomination={denomination}
-            onSelect={() => setDisplay(denomination)}
-            isSelected={denomination.multiplier === display.multiplier}
+            onSelect={() => denominations.setDisplay(denomination)}
+            isSelected={denomination.multiplier === denominations.display.multiplier}
           />
         ))
       )}

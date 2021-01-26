@@ -5,7 +5,7 @@ import { AccountConsumer, AccountProvider, Login, useEdgeAccount } from './auth'
 import { Boundary } from './components'
 import { Edge } from './Edge'
 import { AccountInfo } from './EdgeAccount'
-import { useEdgeCurrencyWallet, useLogout } from './hooks'
+import { useEdgeCurrencyWallet, useLogout, useName, useUsername } from './hooks'
 import { RouteProvider } from './route'
 import { SelectedWalletInfoProvider, useSelectedWalletInfo } from './SelectedWallet'
 
@@ -47,6 +47,7 @@ export const Header = () => {
   const account = useEdgeAccount()
   const [walletInfo] = useSelectedWalletInfo()
   const logout = useLogout()
+  const username = useUsername(account)
 
   return (
     <Navbar>
@@ -64,7 +65,7 @@ export const Header = () => {
       )}
 
       <Navbar.Collapse className="justify-content-end">
-        <Navbar.Text>{account.username}</Navbar.Text>
+        <Navbar.Text>{username}</Navbar.Text>
         <Button variant={'warning'} onClick={() => logout()}>
           Logout
         </Button>
@@ -75,10 +76,11 @@ export const Header = () => {
 
 const WalletName: React.FC<{ walletId: string; currencyCode: string }> = ({ walletId, currencyCode }) => {
   const wallet = useEdgeCurrencyWallet({ account: useEdgeAccount(), walletId })
+  const [name] = useName(wallet)
 
   return (
     <Navbar.Text>
-      {wallet.name}:{currencyCode}
+      {name}:{currencyCode}
     </Navbar.Text>
   )
 }

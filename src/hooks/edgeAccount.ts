@@ -1,16 +1,55 @@
-import { EdgeAccount, EdgeCreateCurrencyWalletOptions, EdgeCurrencyWallet, EdgeWalletState } from 'edge-core-js'
+import {
+  EdgeAccount,
+  EdgeCreateCurrencyWalletOptions,
+  EdgeCurrencyWallet,
+  EdgeSwapQuote,
+  EdgeSwapRequest,
+  EdgeWalletState,
+} from 'edge-core-js'
 import React from 'react'
 import { UseQueryOptions, useMutation, useQuery } from 'react-query'
 
 import {
   getActiveInfos,
+  getDeletedWalletIds,
   getExchangeDenomination,
   getFiatInfo,
   getSortedCurrencyWallets,
   nativeToDenominated,
 } from '../utils'
 import { useInvalidateQueries } from './useInvalidateQueries'
+import { useWatch } from './watch'
 import { useDisplayDenomination } from '.'
+
+export const useUsername = (account: EdgeAccount) => {
+  useWatch(account, 'username')
+
+  return account.username
+}
+
+export const useActiveWalletIds = (account: EdgeAccount) => {
+  useWatch(account, 'activeWalletIds')
+
+  return account.activeWalletIds
+}
+
+export const useArchivedWalletIds = (account: EdgeAccount) => {
+  useWatch(account, 'archivedWalletIds')
+
+  return account.archivedWalletIds
+}
+
+export const useDeletedWalletIds = (account: EdgeAccount) => {
+  useWatch(account, 'allKeys')
+
+  return getDeletedWalletIds(account)
+}
+
+export const useCurrencyWallets = (account: EdgeAccount) => {
+  useWatch(account, 'currencyWallets')
+
+  return account.currencyWallets
+}
 
 export const useEdgeAccountTotal = (account: EdgeAccount) => {
   const wallets = getSortedCurrencyWallets(account)
@@ -40,13 +79,7 @@ export const useEdgeAccountTotal = (account: EdgeAccount) => {
     refetchInterval: 1000,
   })
 
-  React.useEffect(() => {
-    const unsub = account.rateCache.on('update', () => refetch())
-
-    return () => {
-      unsub()
-    }
-  })
+  useOnRateChange(account, () => refetch())
 
   return { total: data!, denomination: displayDenomination }
 }
@@ -121,19 +154,13 @@ export const useActiveInfos = (account: EdgeAccount) => {
   const queryKey = 'activeInfos'
   const { refetch, data } = useQuery(queryKey, queryFn, { suspense: true })
 
-  React.useEffect(() => {
-    const unsub = account.watch('currencyWallets', () => refetch())
-
-    return () => {
-      unsub()
-    }
-  }, [account, refetch])
+  useWatch(account, 'currencyWallets', () => refetch())
 
   return data!
 }
 
 export const useEdgeCurrencyWallet = (
-  { account, walletId }: { account: EdgeAccount; walletId: string; watch?: readonly (keyof EdgeCurrencyWallet)[] },
+  { account, walletId }: { account: EdgeAccount; walletId: string },
   queryOptions?: UseQueryOptions<EdgeCurrencyWallet>,
 ) => {
   const { data: wallet } = useQuery({
@@ -155,4 +182,50 @@ export const useOnRateChange = (account: EdgeAccount, callback: () => any) => {
       unsub()
     }
   }, [account.rateCache, callback])
+}
+
+export const useSwapQuote = ({
+  account,
+  nativeAmount,
+  fromWallet,
+  fromCurrencyCode,
+  toWallet,
+  toCurrencyCode,
+}: {
+  account: EdgeAccount
+  nativeAmount: string
+  fromWallet: EdgeCurrencyWallet
+  fromCurrencyCode: string
+  toWallet: EdgeCurrencyWallet | undefined
+  toCurrencyCode: string | undefined
+}) => {
+  const swapRequest = {
+    fromWallet,
+    fromCurrencyCode,
+    nativeAmount,
+
+    quoteFor: 'to',
+
+    toWallet,
+    toCurrencyCode,
+  } as EdgeSwapRequest
+
+  const { data: swapQuote, ...rest } = useQuery<EdgeSwapQuote, Error>(
+    [
+      {
+        nativeAmount,
+        fromWalletId: fromWallet.id,
+        fromCurrencyCode,
+        toWalletId: toWallet?.id,
+        toCurrencyCode,
+      },
+    ],
+    () => account.fetchSwapQuote(swapRequest as EdgeSwapRequest),
+    { enabled: !!toWallet && !!toCurrencyCode, useErrorBoundary: false, suspense: false, cacheTime: 0 },
+  )
+
+  return {
+    swapQuote,
+    ...rest,
+  }
 }

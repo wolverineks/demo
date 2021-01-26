@@ -4,7 +4,16 @@ import { Accordion, Button, ListGroup, ProgressBar } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
 import { Balance, Boundary, Logo } from '../components'
-import { useChangeWalletStates, useEdgeCurrencyWallet, useEnabledTokens, useOnNewTransactions } from '../hooks'
+import {
+  useActiveWalletIds,
+  useChangeWalletStates,
+  useEdgeCurrencyWallet,
+  useEnabledTokens,
+  useFiatCurrencyCode,
+  useName,
+  useOnNewTransactions,
+  useSyncRatio,
+} from '../hooks'
 import { useSelectedWalletInfo } from '../SelectedWallet'
 import { normalize } from '../utils'
 
@@ -13,16 +22,17 @@ export const ActiveWalletList: React.FC<{ onSelect: () => void; searchQuery: str
   searchQuery,
 }) => {
   const account = useEdgeAccount()
+  const activeWalletIds = useActiveWalletIds(account)
 
   return (
     <Accordion defaultActiveKey={'0'}>
       <Accordion.Toggle as={ListGroup.Item} eventKey={'0'}>
-        Active Wallets ({account.activeWalletIds.length})
+        Active Wallets ({activeWalletIds.length})
       </Accordion.Toggle>
 
       <Accordion.Collapse eventKey={'0'}>
         <ListGroup variant={'flush'}>
-          {account.activeWalletIds.map((id) => (
+          {activeWalletIds.map((id) => (
             <Boundary key={id} suspense={{ fallback: <ListGroup.Item>Loading...</ListGroup.Item> }}>
               <Matcher walletId={id} searchQuery={searchQuery}>
                 <ActiveWalletRow walletId={id} onSelect={onSelect} />
@@ -38,12 +48,12 @@ export const ActiveWalletList: React.FC<{ onSelect: () => void; searchQuery: str
 const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId, searchQuery, children }) => {
   const wallet = useEdgeCurrencyWallet({ account: useEdgeAccount(), walletId })
   const enabledTokens = useEnabledTokens(wallet)
-  const display = [
-    wallet.name || '',
-    wallet.currencyInfo.currencyCode,
-    wallet.fiatCurrencyCode,
-    ...enabledTokens,
-  ].some((target) => normalize(target).includes(normalize(searchQuery)))
+  const [name] = useName(wallet)
+  const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
+
+  const display = [name || '', wallet.currencyInfo.currencyCode, fiatCurrencyCode, ...enabledTokens].some((target) =>
+    normalize(target).includes(normalize(searchQuery)),
+  )
 
   return display ? <>{children}</> : null
 }
@@ -51,11 +61,12 @@ const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId
 const ActiveWalletRow: React.FC<{ walletId: string; onSelect: () => void }> = ({ walletId, onSelect }) => {
   const account = useEdgeAccount()
   const wallet = useEdgeCurrencyWallet({ account, walletId })
+  const name = useName(wallet)
   const currencyCode = wallet.currencyInfo.currencyCode
   const [selected, select] = useSelectedWalletInfo()
 
   useOnNewTransactions(wallet, (transactions) =>
-    alert(`${wallet.name} - ${transactions.length > 1 ? 'New Transactions' : 'New Transaction'}`),
+    alert(`${name} - ${transactions.length > 1 ? 'New Transactions' : 'New Transaction'}`),
   )
 
   return (
@@ -63,7 +74,7 @@ const ActiveWalletRow: React.FC<{ walletId: string; onSelect: () => void }> = ({
       <ListGroup.Item
         variant={wallet.id === selected?.id && currencyCode === selected?.currencyCode ? 'primary' : undefined}
       >
-        {wallet.syncRatio < 1 && <ProgressBar min={0} now={Math.max(wallet.syncRatio, 0.1)} max={1} striped animated />}
+        <SyncRatio wallet={wallet} />
         <span
           onClick={() => {
             select({ id: walletId, currencyCode })
@@ -71,7 +82,7 @@ const ActiveWalletRow: React.FC<{ walletId: string; onSelect: () => void }> = ({
           }}
           className={'float-left'}
         >
-          <Logo currencyCode={currencyCode} /> {wallet.name}{' '}
+          <Logo currencyCode={currencyCode} /> {name}{' '}
           <Boundary>
             <Balance wallet={wallet} currencyCode={currencyCode} />
           </Boundary>
@@ -85,8 +96,15 @@ const ActiveWalletRow: React.FC<{ walletId: string; onSelect: () => void }> = ({
   )
 }
 
+const SyncRatio = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
+  const syncRatio = useSyncRatio(wallet)
+
+  return syncRatio < 1 ? <ProgressBar min={0} now={Math.max(syncRatio, 0.1)} max={1} striped animated /> : null
+}
+
 const WalletOptions = ({ walletId }: { walletId: string }) => {
-  const { archiveWallet, deleteWallet, status } = useChangeWalletStates(useEdgeAccount())
+  const account = useEdgeAccount()
+  const { archiveWallet, deleteWallet, status } = useChangeWalletStates(account)
 
   return (
     <span className={'float-right'}>

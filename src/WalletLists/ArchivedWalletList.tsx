@@ -3,24 +3,25 @@ import { Accordion, Button, ListGroup } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, FiatAmount, Logo } from '../components'
-import { useChangeWalletStates, useReadWalletSnapshot } from '../hooks'
+import { useArchivedWalletIds, useChangeWalletStates, useReadWalletSnapshot } from '../hooks'
 import { getBalance, normalize } from '../utils'
 import { WalletSnapshots } from '../WalletSnapshots'
 import { FallbackRender } from './FallbackRender'
 
 export const ArchivedWalletList = ({ searchQuery }: { searchQuery: string }) => {
   const account = useEdgeAccount()
+  const archivedWalletIds = useArchivedWalletIds(account)
 
   return (
     <Accordion>
       <WalletSnapshots />
       <Accordion.Toggle as={ListGroup.Item} eventKey={'0'}>
-        Archived Wallets ({account.archivedWalletIds.length})
+        Archived Wallets ({archivedWalletIds.length})
       </Accordion.Toggle>
 
       <Accordion.Collapse eventKey={'0'}>
         <ListGroup variant={'flush'}>
-          {account.archivedWalletIds.map((id) => (
+          {archivedWalletIds.map((id) => (
             // eslint-disable-next-line react/display-name
             <Boundary key={id} error={{ fallbackRender: () => <FallbackRender walletId={id} /> }}>
               <Matcher walletId={id} searchQuery={searchQuery}>
@@ -35,7 +36,8 @@ export const ArchivedWalletList = ({ searchQuery }: { searchQuery: string }) => 
 }
 
 const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId, searchQuery, children }) => {
-  const snapshot = useReadWalletSnapshot(useEdgeAccount(), walletId)
+  const account = useEdgeAccount()
+  const snapshot = useReadWalletSnapshot(account, walletId)
   const display = [snapshot.name || '', snapshot.currencyInfo.currencyCode, snapshot.fiatCurrencyCode].some((target) =>
     normalize(target).includes(normalize(searchQuery)),
   )
@@ -44,7 +46,8 @@ const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId
 }
 
 const WalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
-  const snapshot = useReadWalletSnapshot(useEdgeAccount(), walletId)
+  const account = useEdgeAccount()
+  const snapshot = useReadWalletSnapshot(account, walletId)
   const balance = getBalance(snapshot, snapshot.currencyInfo.currencyCode) || '0'
 
   return (
@@ -67,7 +70,8 @@ const WalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
 }
 
 const WalletOptions = ({ walletId }: { walletId: string }) => {
-  const { activateWallet, deleteWallet, error, status } = useChangeWalletStates(useEdgeAccount())
+  const account = useEdgeAccount()
+  const { activateWallet, deleteWallet, error, status } = useChangeWalletStates(account)
 
   return (
     <>

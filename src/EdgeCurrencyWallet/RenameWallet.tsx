@@ -2,19 +2,17 @@ import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 import { Button, Form, FormControl, FormGroup } from 'react-bootstrap'
 
-import { useRenameWallet } from '../hooks'
+import { useName } from '../hooks'
 
 export const RenameWallet: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
-  const [name, setName] = React.useState<string>(wallet.name || '')
-  const { mutate: renameWallet, status } = useRenameWallet(wallet)
+  const [name, rename] = useName(wallet)
+  const [_name, setName] = React.useState<string>(name || '')
 
   return (
     <FormGroup>
       <Form.Label>Wallet Name</Form.Label>
-      <FormControl value={name} onChange={(event) => setName(event.currentTarget.value)} />
-      <Button onClick={() => renameWallet({ name })} disabled={status === 'loading'}>
-        Rename
-      </Button>
+      <FormControl value={_name} onChange={(event) => setName(event.currentTarget.value)} />
+      <Button onClick={() => rename({ name: _name })}>Rename</Button>
     </FormGroup>
   )
 }

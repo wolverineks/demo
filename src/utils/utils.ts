@@ -1,10 +1,25 @@
-import { EdgeAccount, EdgeContext, EdgeCurrencyWallet, EdgeDenomination, EdgeTransaction } from 'edge-core-js'
+import {
+  EdgeAccount,
+  EdgeContext,
+  EdgeCurrencyInfo,
+  EdgeCurrencyWallet,
+  EdgeDenomination,
+  EdgeMetaToken,
+  EdgeTransaction,
+} from 'edge-core-js'
 
 import { InactiveWallet } from '../hooks'
 import { FiatInfo, fiatInfos } from './fiatInfos'
 
 export const isUnique = (value: any, index: number, array: any[]) => array.indexOf(value) === index
+
 export const normalize = (text: string) => text.trim().toLowerCase()
+
+export const isToken = (info: EdgeCurrencyInfo | EdgeMetaToken | FiatInfo): info is EdgeMetaToken =>
+  (info as any).currencyName != null
+
+export const isFiat = (info: EdgeCurrencyInfo | EdgeMetaToken | FiatInfo): info is FiatInfo =>
+  (info as any).isoCurrencyCode != null
 
 // EDGE CONTEXT
 export const getAccountsWithPinLogin = (context: EdgeContext) => {

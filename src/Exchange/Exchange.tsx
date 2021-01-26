@@ -1,12 +1,11 @@
-import { EdgeAccount, EdgeCurrencyWallet, EdgeSwapQuote, EdgeTransaction } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeTransaction } from 'edge-core-js'
 import React from 'react'
 import { Form, FormGroup, FormLabel } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
-import { useQuery } from 'react-query'
 
 import { useEdgeAccount } from '../auth'
 import { Balance, Boundary, Debug, FlipInput, Logo } from '../components'
-import { useDisplayDenomination, useEnabledTokens } from '../hooks'
+import { useDisplayDenomination, useEdgeCurrencyWallet, useEnabledTokens, useName, useSwapQuote } from '../hooks'
 import { useFiatCurrencyCode } from '../hooks'
 import { getSortedCurrencyWallets } from '../utils'
 
@@ -25,52 +24,6 @@ export interface EdgeSwapResult {
   readonly transaction: EdgeTransaction
 }
 
-const useFetchSwapQuote = ({
-  account,
-  nativeAmount,
-  fromWallet,
-  fromCurrencyCode,
-  toWallet,
-  toCurrencyCode,
-}: {
-  account: EdgeAccount
-  nativeAmount: string
-  fromWallet: EdgeCurrencyWallet
-  fromCurrencyCode: string
-  toWallet: EdgeCurrencyWallet | undefined
-  toCurrencyCode: string | undefined
-}) => {
-  const swapRequest = {
-    fromWallet,
-    fromCurrencyCode,
-    nativeAmount,
-
-    quoteFor: 'to',
-
-    toWallet,
-    toCurrencyCode,
-  } as EdgeSwapRequest
-
-  const { data: swapQuote, ...rest } = useQuery<EdgeSwapQuote, Error>(
-    [
-      {
-        nativeAmount,
-        fromWalletId: fromWallet.id,
-        fromCurrencyCode,
-        toWalletId: toWallet?.id,
-        toCurrencyCode,
-      },
-    ],
-    () => account.fetchSwapQuote(swapRequest as EdgeSwapRequest),
-    { enabled: !!toWallet && !!toCurrencyCode, useErrorBoundary: false, suspense: false, cacheTime: 0 },
-  )
-
-  return {
-    swapQuote,
-    ...rest,
-  }
-}
-
 export const Exchange = ({ wallet, currencyCode }: { wallet: EdgeCurrencyWallet; currencyCode: string }) => {
   const account = useEdgeAccount()
   const wallets = getSortedCurrencyWallets(account)
@@ -79,30 +32,14 @@ export const Exchange = ({ wallet, currencyCode }: { wallet: EdgeCurrencyWallet;
   const [nativeAmount, setNativeAmount] = React.useState('0')
   const [fromWallet, setFromWallet] = React.useState(wallet)
   const [fromCurrencyCode, setFromCurrencyCode] = React.useState(currencyCode)
-  const [toWallet, setToWallet] = React.useState<EdgeCurrencyWallet>()
-  const [toCurrencyCode, setToCurrencyCode] = React.useState<string>()
 
-  const { swapQuote, error } = useFetchSwapQuote({
-    account,
-    nativeAmount,
-    fromWallet,
-    fromCurrencyCode,
-    toWallet,
-    toCurrencyCode,
-  })
+  const [toWalletId, setToWalletId] = React.useState<string>()
+  const [toCurrencyCode, setToCurrencyCode] = React.useState<string>()
 
   return (
     <Form>
       <FormGroup>
-        <FormLabel>From: {wallet.name}</FormLabel>
-        <div>
-          <span>
-            <Logo currencyCode={fromCurrencyCode} /> {fromWallet.name}{' '}
-            <Boundary>
-              <Balance wallet={fromWallet} currencyCode={fromCurrencyCode} />
-            </Boundary>
-          </span>
-        </div>
+        <FromWallet walletId={fromWallet.id} currencyCode={fromCurrencyCode} />
       </FormGroup>
 
       <FormGroup>
@@ -119,17 +56,9 @@ export const Exchange = ({ wallet, currencyCode }: { wallet: EdgeCurrencyWallet;
         <FlipInput onChange={setNativeAmount} currencyCode={fromCurrencyCode} fiatCurrencyCode={fiatCurrencyCode} />
       </FormGroup>
 
-      {toWallet && toCurrencyCode ? (
+      {toWalletId && toCurrencyCode ? (
         <FormGroup>
-          <FormLabel>To: {toWallet.name} </FormLabel>
-          <div>
-            <span>
-              <Logo currencyCode={toCurrencyCode} /> {toWallet.name}{' '}
-              <Boundary>
-                <Balance wallet={toWallet} currencyCode={toCurrencyCode} />
-              </Boundary>
-            </span>
-          </div>
+          <ToWallet walletId={toWalletId} currencyCode={toCurrencyCode} />
         </FormGroup>
       ) : null}
 
@@ -139,13 +68,21 @@ export const Exchange = ({ wallet, currencyCode }: { wallet: EdgeCurrencyWallet;
         <SelectWallet
           wallets={wallets}
           onSelect={({ wallet, currencyCode }) => {
-            setToWallet(wallet)
+            setToWalletId(wallet.id)
             setToCurrencyCode(currencyCode)
           }}
         />
       </FormGroup>
 
-      {error ? <div>{error.message}</div> : null}
+      {toWalletId && toCurrencyCode ? (
+        <SwapQuote
+          toWalletId={toWalletId}
+          fromWalletId={fromWallet.id}
+          toCurrencyCode={toCurrencyCode}
+          nativeAmount={nativeAmount}
+          fromCurrencyCode={fromCurrencyCode}
+        />
+      ) : null}
 
       <Debug>
         <JSONPretty
@@ -157,14 +94,47 @@ export const Exchange = ({ wallet, currencyCode }: { wallet: EdgeCurrencyWallet;
               nativeAmount,
               fromWallet: `EdgeCurrencyWallet<${fromWallet.id}>`,
               fromCurrencyCode,
-              toWallet: toWallet ? `EdgeCurrencyWallet<${toWallet.id}>` : '',
               toCurrencyCode,
             },
-            swapQuote,
           }}
         />
       </Debug>
     </Form>
+  )
+}
+
+const SwapQuote = ({
+  fromWalletId,
+  toWalletId,
+  nativeAmount,
+  toCurrencyCode,
+  fromCurrencyCode,
+}: {
+  fromWalletId: string
+  fromCurrencyCode: string
+  toCurrencyCode: string
+  toWalletId: string
+  nativeAmount: string
+}) => {
+  const account = useEdgeAccount()
+  const toWallet = useEdgeCurrencyWallet({ account, walletId: toWalletId })
+  const fromWallet = useEdgeCurrencyWallet({ account, walletId: fromWalletId })
+  const { swapQuote, error } = useSwapQuote({
+    account,
+    nativeAmount,
+    fromWallet,
+    fromCurrencyCode,
+    toWallet,
+    toCurrencyCode,
+  })
+
+  return (
+    <Debug>
+      <div>
+        {swapQuote ? <JSONPretty json={swapQuote} /> : null}
+        {error ? <div>{error.message}</div> : null}
+      </div>
+    </Debug>
   )
 }
 
@@ -194,15 +164,54 @@ const WalletRow = ({
   onSelect: ({ wallet, currencyCode }: { wallet: EdgeCurrencyWallet; currencyCode: string }) => void
 }) => {
   const enabledTokens = useEnabledTokens(wallet)
+  const [name] = useName(wallet)
 
   return (
     <div>
-      <div onClick={() => onSelect({ wallet, currencyCode: wallet.currencyInfo.currencyCode })}>{wallet.name}</div>
+      <div onClick={() => onSelect({ wallet, currencyCode: wallet.currencyInfo.currencyCode })}>{name}</div>
       {enabledTokens.map((token) => (
         <div key={token} onClick={() => onSelect({ wallet, currencyCode: token })}>
           {token}
         </div>
       ))}
     </div>
+  )
+}
+
+const FromWallet = ({ walletId, currencyCode }: { walletId: string; currencyCode: string }) => {
+  const wallet = useEdgeCurrencyWallet({ account: useEdgeAccount(), walletId })
+  const [name] = useName(wallet)
+
+  return (
+    <>
+      <FormLabel>From: {name}</FormLabel>
+      <div>
+        <span>
+          <Logo currencyCode={currencyCode} /> {name}{' '}
+          <Boundary>
+            <Balance wallet={wallet} currencyCode={currencyCode} />
+          </Boundary>
+        </span>
+      </div>
+    </>
+  )
+}
+
+const ToWallet = ({ walletId, currencyCode }: { walletId: string; currencyCode: string }) => {
+  const wallet = useEdgeCurrencyWallet({ account: useEdgeAccount(), walletId })
+  const [name] = useName(wallet)
+
+  return (
+    <>
+      <FormLabel>To: {name} </FormLabel>
+      <div>
+        <span>
+          <Logo currencyCode={currencyCode} /> {name}{' '}
+          <Boundary>
+            <Balance wallet={wallet} currencyCode={currencyCode} />
+          </Boundary>
+        </span>
+      </div>
+    </>
   )
 }

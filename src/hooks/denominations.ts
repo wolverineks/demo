@@ -1,5 +1,4 @@
 import { EdgeAccount, EdgeCurrencyInfo, EdgeDenomination, EdgeMetaToken } from 'edge-core-js'
-import React from 'react'
 import { UseQueryOptions, useMutation, useQuery } from 'react-query'
 
 import {
@@ -13,6 +12,7 @@ import {
   nativeToDenominated,
   nativeToExchange,
 } from '../utils'
+import { useOnRateChange } from './edgeAccount'
 import { useInvalidateQueries } from './useInvalidateQueries'
 
 export const useReadDisplayDenomination = (
@@ -125,13 +125,7 @@ export const useFiatAmount = (
     ...queryOptions,
   })
 
-  React.useEffect(() => {
-    const unsub = account.rateCache.on('update', () => refetch())
-
-    return () => {
-      unsub()
-    }
-  }, [account.rateCache, exchangeAmount, fiatCurrencyCode, fromCurrencyCode, refetch])
+  useOnRateChange(account, () => refetch())
 
   const fiatNativeAmount = denominatedToNative({
     amount: String(fiatExchangeAmount)!,
