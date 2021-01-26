@@ -179,7 +179,8 @@ const WalletRow = ({
 }
 
 const FromWallet = ({ walletId, currencyCode }: { walletId: string; currencyCode: string }) => {
-  const wallet = useEdgeCurrencyWallet({ account: useEdgeAccount(), walletId })
+  const account = useEdgeAccount()
+  const wallet = useEdgeCurrencyWallet({ account, walletId })
   const [name] = useName(wallet)
 
   return (
@@ -198,7 +199,8 @@ const FromWallet = ({ walletId, currencyCode }: { walletId: string; currencyCode
 }
 
 const ToWallet = ({ walletId, currencyCode }: { walletId: string; currencyCode: string }) => {
-  const wallet = useEdgeCurrencyWallet({ account: useEdgeAccount(), walletId })
+  const account = useEdgeAccount()
+  const wallet = useEdgeCurrencyWallet({ account, walletId })
   const [name] = useName(wallet)
 
   return (
