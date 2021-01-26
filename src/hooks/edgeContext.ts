@@ -1,6 +1,15 @@
 import { EdgeAccount, EdgeContext, EdgeLoginMessages } from 'edge-core-js'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
+import { getAccountsWithPinLogin } from '../utils'
+import { useWatch } from './watch'
+
+export const useAccountsWithPinLogin = (context: EdgeContext) => {
+  useWatch(context, 'localUsers')
+
+  return getAccountsWithPinLogin(context)
+}
+
 export const useLoginMessages = (
   context: EdgeContext,
   username: string,

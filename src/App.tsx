@@ -10,10 +10,6 @@ import { RouteProvider } from './route'
 import { SelectedWalletInfoProvider, useSelectedWalletInfo } from './SelectedWallet'
 
 export const App = () => {
-  React.useEffect(() => {
-    document.title = 'Edge'
-  }, [])
-
   return (
     <Boundary>
       <Edge>

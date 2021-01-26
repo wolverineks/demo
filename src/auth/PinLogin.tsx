@@ -3,14 +3,13 @@ import React from 'react'
 import { Alert, Button, Card, Form, FormControl, ListGroup } from 'react-bootstrap'
 
 import { Boundary, Select } from '../components'
-import { useLoginMessages, useLoginWithPin } from '../hooks'
-import { getAccountsWithPinLogin } from '../utils'
+import { useAccountsWithPinLogin, useLoginMessages, useLoginWithPin } from '../hooks'
 
 export const PinLogin: React.FC<{ context: EdgeContext; onLogin: (account: EdgeAccount) => any }> = ({
   onLogin,
   context,
 }) => {
-  const accountsWithPinLogin = getAccountsWithPinLogin(context)
+  const accountsWithPinLogin = useAccountsWithPinLogin(context)
   const [username, setUsername] = React.useState(accountsWithPinLogin[0].username)
   const loginWithPin = useLoginWithPin(context, { onSuccess: onLogin })
 
