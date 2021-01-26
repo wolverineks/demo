@@ -2,18 +2,13 @@ import React from 'react'
 import { Form, FormControl, FormGroup, FormLabel, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { useIdleTimer } from 'react-idle-timer'
 
-import { useEdgeAccount, useSetAccount } from '../auth'
-import { useAutoLogout } from '../hooks'
+import { useEdgeAccount } from '../auth'
+import { useAutoLogout, useLogout } from '../hooks'
 
 export const AutoLogout = () => {
   const account = useEdgeAccount()
   const [{ enabled, delay }, setAutologout] = useAutoLogout(account)
-  const setAccount = useSetAccount()
-
-  const onIdle = () => {
-    setAccount()
-    account.logout()
-  }
+  const logout = useLogout()
 
   return (
     <>
@@ -22,7 +17,7 @@ export const AutoLogout = () => {
           <Form>
             <FormGroup>
               <FormLabel>AutoLogout: {delay}</FormLabel>
-              {enabled && delay >= 30 && <IdleTimeout delay={delay} onIdle={onIdle} />}
+              {enabled && delay >= 30 && <IdleTimeout delay={delay} onIdle={logout} />}
               <FormControl
                 onChange={(event) =>
                   setAutologout({
