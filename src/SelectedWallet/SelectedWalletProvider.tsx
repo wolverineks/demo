@@ -1,4 +1,3 @@
-import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 import { useQueryClient } from 'react-query'
 
@@ -69,12 +68,12 @@ const missingProvider = () => {
 
 export const useSelectedWalletInfo = () => React.useContext(SelectedWalletInfoContext) || missingProvider()
 
-export const useSelectedWallet = (watch?: readonly (keyof EdgeCurrencyWallet)[]) => {
+export const useSelectedWallet = () => {
   const [walletInfo, selectWallet] = useSelectedWalletInfo()
 
   if (!walletInfo) throw new Error('Missing SelectedWallet Boundary')
 
-  const wallet = useEdgeCurrencyWallet({ account: useEdgeAccount(), walletId: walletInfo.id as string, watch })
+  const wallet = useEdgeCurrencyWallet({ account: useEdgeAccount(), walletId: walletInfo.id })
 
   return [{ wallet, id: walletInfo?.id, currencyCode: walletInfo?.currencyCode }, selectWallet] as const
 }

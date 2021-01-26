@@ -1,8 +1,6 @@
 import { EdgeAccount } from 'edge-core-js'
 import React from 'react'
 
-import { useWatchAll } from '../hooks'
-
 export const EdgeAccountContext = React.createContext<EdgeAccount | undefined>(undefined)
 export const SetEdgeAccountContext = React.createContext<(account?: EdgeAccount) => void>(() => undefined)
 
@@ -24,7 +22,6 @@ const unauthorized = () => {
 
 export const useEdgeAccount = (watch?: readonly (keyof EdgeAccount)[]) => {
   const account = React.useContext(EdgeAccountContext) || unauthorized()
-  useWatchAll(account, watch)
 
   return account
 }
