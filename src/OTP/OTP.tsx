@@ -5,7 +5,8 @@ import { useEdgeAccount } from '../auth'
 import { useOTP } from '../hooks'
 
 export const OTP = () => {
-  const { enableOTP, disableOTP, enabled, otpKey } = useOTP(useEdgeAccount())
+  const account = useEdgeAccount()
+  const { enableOTP, disableOTP, enabled, otpKey } = useOTP(account)
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>

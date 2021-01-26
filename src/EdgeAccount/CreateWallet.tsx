@@ -7,9 +7,10 @@ import { useCreateCurrencyWallet, useDefaultFiatInfo } from '../hooks'
 import { FiatInfo, fiatInfos, getWalletTypes } from '../utils'
 
 export const CreateWallet = () => {
-  const defaultFiatInfo = useDefaultFiatInfo(useEdgeAccount())
-  const walletTypes = getWalletTypes(useEdgeAccount())
-  const { mutate: createCurrencyWallet, error, status } = useCreateCurrencyWallet(useEdgeAccount())
+  const account = useEdgeAccount()
+  const defaultFiatInfo = useDefaultFiatInfo(account)
+  const walletTypes = getWalletTypes(account)
+  const { mutate: createCurrencyWallet, error, status } = useCreateCurrencyWallet(account)
 
   const [type, setType] = React.useState<string>(walletTypes[0].type)
   const [name, setName] = React.useState<string>('')

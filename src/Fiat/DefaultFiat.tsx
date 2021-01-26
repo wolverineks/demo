@@ -7,8 +7,9 @@ import { useDefaultFiatCurrencyCode, useDefaultFiatInfo } from '../hooks'
 import { FiatInfo, fiatInfos } from '../utils/fiatInfos'
 
 export const DefaultFiat = () => {
-  const [currencyCode, write] = useDefaultFiatCurrencyCode(useEdgeAccount())
-  const defaultFiatInfo = useDefaultFiatInfo(useEdgeAccount())
+  const account = useEdgeAccount()
+  const [currencyCode, write] = useDefaultFiatCurrencyCode(account)
+  const defaultFiatInfo = useDefaultFiatInfo(account)
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>

@@ -10,6 +10,7 @@ import { useDisplayDenomination } from '../hooks'
 import { useFiatCurrencyCode, useReceiveAddressAndEncodeUri } from '../hooks'
 
 export const Request: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
+  const account = useEdgeAccount()
   const [nativeAmount, setNativeAmount] = React.useState('0')
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
   const { data, error } = useReceiveAddressAndEncodeUri({ wallet, nativeAmount, options: { currencyCode } })
@@ -57,7 +58,7 @@ export const Request: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: strin
           data={{
             nativeAmount,
             fiatCurrencyCode,
-            displayDenomination: useDisplayDenomination(useEdgeAccount(), currencyCode)[0],
+            displayDenomination: useDisplayDenomination(account, currencyCode)[0],
             currencyCodeOptions: { currencyCode },
             uri: data?.uri,
             receiveAddress: data?.receiveAddress,

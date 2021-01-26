@@ -5,7 +5,8 @@ import { useEdgeAccount } from '../auth'
 import { useChangeWalletStates } from '../hooks'
 
 export const FallbackRender = ({ walletId }: { walletId: string }) => {
-  const { activateWallet, status } = useChangeWalletStates(useEdgeAccount())
+  const account = useEdgeAccount()
+  const { activateWallet, status } = useChangeWalletStates(account)
 
   return (
     <div>

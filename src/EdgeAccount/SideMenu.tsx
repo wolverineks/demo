@@ -8,10 +8,11 @@ import { Route, useRoute, useSetRoute } from '../route'
 import { ActiveWalletList, ArchivedWalletList, DeletedWalletList } from '../WalletLists'
 
 const AccountTotal = () => {
+  const account = useEdgeAccount()
   const {
     total,
     denomination: { symbol, name },
-  } = useEdgeAccountTotal(useEdgeAccount())
+  } = useEdgeAccountTotal(account)
 
   return (
     <ListGroup.Item>
