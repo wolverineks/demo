@@ -22,7 +22,7 @@ export const FiatAmount = ({
   })
 
   const { name, symbol, amount } = useDisplayAmount({
-    account: useEdgeAccount(),
+    account,
     currencyCode: fiatCurrencyCode,
     nativeAmount: String(fiatAmount),
   })

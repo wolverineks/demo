@@ -4,7 +4,8 @@ import { useEdgeAccount } from '../auth'
 import { useDisplayAmount } from '../hooks'
 
 export const DisplayAmount = ({ nativeAmount, currencyCode }: { nativeAmount: string; currencyCode: string }) => {
-  const { name, symbol, amount } = useDisplayAmount({ account: useEdgeAccount(), currencyCode, nativeAmount })
+  const account = useEdgeAccount()
+  const { name, symbol, amount } = useDisplayAmount({ account, currencyCode, nativeAmount })
 
   return (
     <>
