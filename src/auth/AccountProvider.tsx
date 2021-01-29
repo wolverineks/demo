@@ -20,7 +20,7 @@ const unauthorized = () => {
   throw new Error('Unauthorized')
 }
 
-export const useEdgeAccount = (watch?: readonly (keyof EdgeAccount)[]) => {
+export const useEdgeAccount = () => {
   const account = React.useContext(EdgeAccountContext) || unauthorized()
 
   return account
