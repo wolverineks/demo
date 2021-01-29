@@ -61,7 +61,7 @@ const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId
 const ActiveWalletRow: React.FC<{ walletId: string; onSelect: () => void }> = ({ walletId, onSelect }) => {
   const account = useEdgeAccount()
   const wallet = useEdgeCurrencyWallet({ account, walletId })
-  const name = useName(wallet)
+  const [name] = useName(wallet)
   const currencyCode = wallet.currencyInfo.currencyCode
   const [selected, select] = useSelectedWalletInfo()
 
