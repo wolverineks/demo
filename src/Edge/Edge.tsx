@@ -1,6 +1,6 @@
 import { addEdgeCorePlugins, closeEdge, lockEdgeCorePlugins } from 'edge-core-js'
 import React from 'react'
-import { QueryClient, QueryClientProvider, useQueryClient } from 'react-query'
+import { QueryClient, QueryClientProvider } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
 
 import { plugins } from './plugins'
@@ -32,18 +32,17 @@ export const useEdge = () => {
 }
 
 export const WithEdge = () => {
-  const queryClient = useQueryClient()
   useEdge()
-
-  React.useEffect(() => queryClient.clear(), [queryClient])
 
   return null
 }
 
+const isTesting = process.env.NODE_ENV === 'test'
+
 export const Edge: React.FC = ({ children }) => {
   return (
     <EdgeCache>
-      <ReactQueryDevtools />
+      {!isTesting && <ReactQueryDevtools />}
       <WithEdge />
       {children}
     </EdgeCache>
