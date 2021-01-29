@@ -35,31 +35,55 @@ const missingProvider = () => {
 
 export const useSelectedWalletInfo = () => React.useContext(SelectedWalletInfoContext) || missingProvider()
 
-export const useSelectedWallet = () => {
+export const WalletBoundary: React.FC<{ fallback?: React.ReactNode }> = ({ children, fallback = null }) => {
   const [walletInfo, selectWallet] = useSelectedWalletInfo()
 
-  if (!walletInfo) throw new Error('Missing SelectedWallet Boundary')
-
   const account = useEdgeAccount()
-  const wallet = useEdgeCurrencyWallet({ account, walletId: walletInfo.id })
-
-  // unselect wallet if edgeWallet is deactivated
   const activeWalletIds = useActiveWalletIds(account)
+
+  // no wallet selected
+  if (!walletInfo) return <>{fallback}</>
+
+  // selected wallet deactived remotely
   if (!activeWalletIds.includes(walletInfo.id)) {
-    selectWallet()
+    selectWallet(undefined)
+
+    return <>{fallback}</>
   }
 
-  // unselect wallet if selected currency code is deactivated
-  const { enabledTokens } = useTokens(account, wallet)
-  if (![wallet.currencyInfo.currencyCode, ...enabledTokens].includes(walletInfo.currencyCode)) {
-    selectWallet()
-  }
-
-  return [{ wallet, id: walletInfo?.id, currencyCode: walletInfo?.currencyCode }, selectWallet] as const
+  return <>{children}</>
 }
 
-export const SelectedWalletBoundary: React.FC<{ fallback?: React.ReactNode }> = ({ children, fallback = null }) => {
-  const [walletInfo] = useSelectedWalletInfo()
+export const CurrencyCodeBoundary: React.FC<{ fallback?: React.ReactNode }> = ({ children, fallback = null }) => {
+  const [walletInfo, selectWallet] = useSelectedWalletInfo()
+  if (!walletInfo) throw new Error('Missing <WalletBoundary>')
 
-  return <>{walletInfo ? children : fallback}</>
+  const account = useEdgeAccount()
+  const wallet = useEdgeCurrencyWallet({ account, walletId: walletInfo.id }) // never settles if archived id
+  const { enabledTokens } = useTokens(account, wallet)
+
+  // selected currency code deactivated
+  if (![wallet.currencyInfo.currencyCode, ...enabledTokens].includes(walletInfo.currencyCode)) {
+    selectWallet(undefined)
+
+    return <>{fallback}</>
+  }
+
+  return <>{children}</>
+}
+
+export const SelectedWalletBoundary: React.FC<{ fallback?: React.ReactNode }> = ({ children, fallback = null }) => (
+  <WalletBoundary fallback={fallback}>
+    <CurrencyCodeBoundary fallback={fallback}>{children}</CurrencyCodeBoundary>
+  </WalletBoundary>
+)
+
+export const useSelectedWallet = () => {
+  const [walletInfo, selectWallet] = useSelectedWalletInfo()
+  if (!walletInfo) throw new Error('Missing <SelectedWalletBoundary>')
+
+  const account = useEdgeAccount()
+  const wallet = useEdgeCurrencyWallet({ account, walletId: walletInfo.id }) // never settles if archived id
+
+  return [{ wallet, id: walletInfo.id, currencyCode: walletInfo.currencyCode }, selectWallet] as const
 }
