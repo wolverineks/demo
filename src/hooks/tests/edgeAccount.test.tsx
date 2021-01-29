@@ -28,7 +28,11 @@ describe('EdgeAccount', () => {
 
   it('useDefaultFiatCurrencyCode', async () => {
     const { result, waitFor, waitForValueToChange } = render(() => useDefaultFiatCurrencyCode(account))
-    await waitFor(() => !!result.current[0])
+    await waitFor(() => {
+      const [fiatCurrencyCode, setFiatCurrencyCode] = result.current
+
+      return !!fiatCurrencyCode && !!setFiatCurrencyCode
+    })
 
     {
       const [fiatCurrencyCode] = result.current
@@ -40,7 +44,11 @@ describe('EdgeAccount', () => {
       setDefaultFiatCurrencyCode('iso:CAD')
     })
 
-    await waitForValueToChange(() => result.current[0])
+    await waitForValueToChange(() => {
+      const [fiatCurrencyCode] = result.current
+
+      return fiatCurrencyCode
+    })
 
     {
       const [fiatCurrencyCode] = result.current

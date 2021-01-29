@@ -25,7 +25,11 @@ describe('EdgeCurrencyWallet', () => {
 
   it('useFiatCurrencyCode', async () => {
     const { result, waitFor, waitForValueToChange } = render(() => useFiatCurrencyCode(wallet))
-    await waitFor(() => !!result.current[0])
+    await waitFor(() => {
+      const [fiatCurrencyCode, setFiatCurrencyCode] = result.current
+
+      return !!fiatCurrencyCode && !!setFiatCurrencyCode
+    })
 
     {
       const [fiatCurrencyCode] = result.current
@@ -37,7 +41,11 @@ describe('EdgeCurrencyWallet', () => {
       setFiatCurrencyCode('iso:CAD')
     })
 
-    await waitForValueToChange(() => result.current[0])
+    await waitForValueToChange(() => {
+      const [fiatCurrencyCode] = result.current
+
+      return fiatCurrencyCode
+    })
 
     {
       const [fiatCurrencyCode] = result.current
@@ -68,7 +76,11 @@ describe('EdgeCurrencyWallet', () => {
 
   it('useTransactions', async () => {
     const { result, waitFor } = render(() => useTransactions(wallet))
-    await waitFor(() => !!result.current)
+    await waitFor(() => {
+      const transactions = result.current
+
+      return !!transactions
+    })
 
     const transactions = result.current
     expect(transactions).toEqual(expect.any(Array))
@@ -76,7 +88,11 @@ describe('EdgeCurrencyWallet', () => {
 
   it('useMaxSpendable', async () => {
     const { result, waitFor } = render(() => useMaxSpendable(wallet, { spendTargets: [] }))
-    await waitFor(() => !!result.current)
+    await waitFor(() => {
+      const maxSpendable = result.current
+
+      return !!maxSpendable
+    })
 
     const maxSpendable = result.current
     expect(maxSpendable).toBe('0')

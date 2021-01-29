@@ -6,7 +6,7 @@ import { fakeUser } from './fake-user'
 import { makeFakeEdgeContext, render } from './utils'
 
 const setup = async () => {
-  const context = await makeFakeEdgeContext({ bitcoin: true })
+  const context = await makeFakeEdgeContext()
   const account = await context.loginWithPassword(fakeUser.username, fakeUser.password)
 
   return account
@@ -19,9 +19,14 @@ describe('autoLogout', () => {
     const account = await setup()
     const { result, waitFor, waitForValueToChange } = render(() => useAutoLogout(account))
 
-    await waitFor(() => !!result.current[0] && !!result.current[1])
+    await waitFor(() => {
+      const [autoLogout, setAutoLogout] = result.current
+
+      return !!autoLogout && !!setAutoLogout
+    })
+
     {
-      const autoLogout = result.current[0]
+      const [autoLogout] = result.current
       expect(autoLogout).toEqual(defaultAutoLogout)
     }
 
@@ -33,7 +38,7 @@ describe('autoLogout', () => {
     await waitForValueToChange(() => result.current[0].enabled)
 
     {
-      const autoLogoutSetting = result.current[0]
+      const [autoLogoutSetting] = result.current
       expect(autoLogoutSetting).toEqual({ enabled: false, delay: 9999 })
     }
   })

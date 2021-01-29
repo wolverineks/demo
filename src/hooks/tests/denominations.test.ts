@@ -34,7 +34,7 @@ describe('denominations', () => {
 
     {
       const { all, display } = denominations.current
-      expect(display).toBe(all[1])
+      expect(display).toEqual(all[1])
     }
   })
 })
