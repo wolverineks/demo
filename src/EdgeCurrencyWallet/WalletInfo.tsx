@@ -23,19 +23,19 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: st
     <Tabs id={'walletTabs'} defaultActiveKey={'history'} mountOnEnter>
       <Tab eventKey={'history'} title={'History'}>
         <Boundary>
-          <TransactionList wallet={wallet} currencyCode={currencyCode} />
+          <TransactionList wallet={wallet} currencyCode={currencyCode} key={wallet.id} />
         </Boundary>
       </Tab>
 
       <Tab eventKey={'send'} title={'Send'}>
         <Boundary>
-          <Send wallet={wallet} currencyCode={currencyCode} />
+          <Send wallet={wallet} currencyCode={currencyCode} key={wallet.id} />
         </Boundary>
       </Tab>
 
       <Tab eventKey={'request'} title={'Request'}>
         <Boundary>
-          <Request wallet={wallet} currencyCode={currencyCode} />
+          <Request wallet={wallet} currencyCode={currencyCode} key={wallet.id} />
         </Boundary>
       </Tab>
 
