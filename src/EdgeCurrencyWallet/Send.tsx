@@ -1,47 +1,27 @@
-import { EdgeCurrencyWallet, EdgeParsedUri, EdgeSpendInfo, EdgeTransaction } from 'edge-core-js'
-import React from 'react'
+import { EdgeCurrencyWallet, EdgeParsedUri, EdgeSpendInfo, EdgeSpendTarget, EdgeTransaction } from 'edge-core-js'
+import * as React from 'react'
 import { Alert, Button, Form, FormControl, FormGroup, FormLabel, InputGroup } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
 import QrReader from 'react-qr-scanner'
 
 import { useEdgeAccount } from '../auth'
 import { Debug, DisplayAmount, FlipInput, FlipInputRef, Select } from '../components'
-import {
-  useDisplayDenomination,
-  useFiatCurrencyCode,
-  useMaxSpendable,
-  useNativeToDisplay,
-  useNewTransaction,
-} from '../hooks'
+import { useDisplayDenomination, useFiatCurrencyCode, useMaxSpendable, useNewTransaction } from '../hooks'
 import { categories } from '../utils'
+
+const UNIQUE_IDENTIFIER_CURRENCIES = ['BNB', 'EOS', 'TLOS', 'XLM', 'XRP']
+const MULTIPLE_TARGETs_CURRENCIES = ['BCH', 'BTC', 'BSV']
 
 export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
   const account = useEdgeAccount()
   const [parsedUri, setParsedUri] = React.useState<EdgeParsedUri>()
   const [publicAddress, setPublicAddress] = React.useState('')
-  const [displayAmount, setDisplayAmount] = React.useState('0')
   const [name, setName] = React.useState('')
   const [notes, setNotes] = React.useState('')
   const [category, setCategory] = React.useState('')
-  const [networkFeeOption, setNetworkFeeOption] = React.useState<'high' | 'standard' | 'low'>('standard')
+  const [networkFeeOption, setNetworkFeeOption] = React.useState<EdgeTransaction['networkFeeOption']>('standard')
 
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
-  const [nativeAmount, setNativeAmount] = React.useState('0')
-  const parsedUriDisplayAmount = useNativeToDisplay({
-    account,
-    nativeAmount: parsedUri?.nativeAmount || '0',
-    currencyCode: currencyCode,
-  })
-  const spendInfo: EdgeSpendInfo = React.useMemo(
-    () => ({
-      metadata: { name, notes, category },
-      currencyCode: currencyCode,
-      spendTargets: [{ publicAddress, nativeAmount }],
-      networkFeeOption,
-    }),
-    [name, notes, category, currencyCode, publicAddress, nativeAmount, networkFeeOption],
-  )
-  const maxSpendable = useMaxSpendable(wallet, spendInfo)
 
   const [scan, setScan] = React.useState(false)
   const onScan = (uri: string) =>
@@ -50,7 +30,6 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
       .then((parsedUri: EdgeParsedUri) => {
         setParsedUri(parsedUri)
         setPublicAddress(parsedUri.publicAddress || '')
-        setDisplayAmount(parsedUriDisplayAmount || '')
         // setCurrencyCode(parsedUri.currencyCode || '')
         setName(parsedUri.metadata?.name || '')
         setNotes(parsedUri.metadata?.notes || '')
@@ -58,9 +37,16 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
       })
       .catch((error: Error) => console.log(error))
 
+  const { updateTarget, addTarget, removeTarget, spendTargets } = useSpendTargets()
+  const spendInfo: EdgeSpendInfo = {
+    metadata: { name, notes, category },
+    currencyCode,
+    spendTargets,
+    networkFeeOption,
+  }
+  const maxSpendable = useMaxSpendable(wallet, spendInfo)
   const { data: transaction, error } = useNewTransaction(wallet, spendInfo, {
-    enabled: !!publicAddress,
-    initialData: undefined,
+    enabled: !!spendInfo.spendTargets[0].publicAddress && !!Number(spendInfo.spendTargets[0].nativeAmount),
   })
 
   const onConfirm = () => {
@@ -73,28 +59,27 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
 
   return (
     <Form>
-      <FormGroup>
-        <FormLabel>Public Address:</FormLabel>
-        <InputGroup>
-          <FormControl value={publicAddress} onChange={(event) => setPublicAddress(event.currentTarget.value)} />
-          <InputGroup.Append>
-            <Button variant="outline-secondary" onClick={() => setPublicAddress(parsedUri?.publicAddress || '')}>
-              Reset
-            </Button>
-          </InputGroup.Append>
-        </InputGroup>
-      </FormGroup>
+      {spendTargets.map((_, index) => (
+        <div key={index}>
+          {index !== 0 ? <Button onClick={() => removeTarget(index)}>X</Button> : null}
+          <SpendTarget
+            currencyCode={currencyCode}
+            fiatCurrencyCode={fiatCurrencyCode}
+            onChange={(spendTarget) => updateTarget(index, spendTarget)}
+            _ref={index === 0 ? flipInputRef : undefined}
+          />
+        </div>
+      ))}
 
-      <Button onClick={() => flipInputRef.current?.setNativeAmount(maxSpendable)}>Spend Max</Button>
+      <Matcher query={currencyCode} matchers={MULTIPLE_TARGETs_CURRENCIES}>
+        <FormGroup>
+          <Button onClick={addTarget}>Add another output</Button>
+        </FormGroup>
+      </Matcher>
 
-      <FormGroup>
-        <FlipInput
-          currencyCode={currencyCode}
-          fiatCurrencyCode={fiatCurrencyCode}
-          onChange={setNativeAmount}
-          ref={flipInputRef}
-        />
-      </FormGroup>
+      {spendTargets.length === 1 ? (
+        <Button onClick={() => flipInputRef.current?.setNativeAmount(maxSpendable)}>Spend Max</Button>
+      ) : null}
 
       <FormGroup>
         <FormLabel>Name</FormLabel>
@@ -148,17 +133,16 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
       <Debug>
         <JSONPretty
           data={{
-            displayAmount: String(displayAmount),
+            error,
+            spendTargets,
             displayDenomination: useDisplayDenomination(account, currencyCode)[0],
-            nativeAmount: String(nativeAmount),
             fiatCurrencyCode,
             parsedUri: parsedUri,
-            parsedUriDisplayAmount: String(parsedUriDisplayAmount),
             currencyCode: String(currencyCode),
             publicAddress: String(publicAddress),
             spendInfo: spendInfo,
             maxSpendable: String(maxSpendable),
-            transaction: transaction,
+            transaction: transaction || 'undefined',
           }}
         />
       </Debug>
@@ -184,4 +168,92 @@ const Scanner: React.FC<{ onScan: (data: string) => any; show: boolean }> = ({ o
       <QrReader delay={300} onError={setError} onScan={(data) => onScan(data || '')} style={{ width: '50%' }} />
     </div>
   ) : null
+}
+
+const Matcher: React.FC<{ query: string; matchers: string[] }> = ({ children, query, matchers }) => {
+  const matches = (query: string, match: string) => {
+    const normalize = (text: string) => text.trim().toLowerCase()
+
+    return normalize(match).includes(normalize(query))
+  }
+
+  return <>{matchers.some((match) => matches(query, match)) ? children : null}</>
+}
+
+const SpendTarget = ({
+  currencyCode,
+  fiatCurrencyCode,
+  onChange,
+  _ref,
+}: {
+  currencyCode: string
+  fiatCurrencyCode: string
+  onChange: (spendTarget: EdgeSpendTarget) => void
+  _ref?: React.RefObject<FlipInputRef>
+}) => {
+  return (
+    <>
+      <FormGroup>
+        <FormLabel>Public Address:</FormLabel>
+
+        <InputGroup>
+          <FormControl onChange={(event) => onChange({ publicAddress: event.currentTarget.value })} />
+        </InputGroup>
+      </FormGroup>
+
+      <Matcher query={currencyCode} matchers={UNIQUE_IDENTIFIER_CURRENCIES}>
+        <FormGroup>
+          <FormLabel>Unique Identifier</FormLabel>
+          <FormControl onChange={(event) => onChange({ uniqueIdentifier: event.currentTarget.value })} />
+        </FormGroup>
+      </Matcher>
+
+      <FormGroup>
+        <FlipInput
+          currencyCode={currencyCode}
+          fiatCurrencyCode={fiatCurrencyCode}
+          onChange={(nativeAmount: string) => onChange({ nativeAmount })}
+          ref={_ref}
+        />
+      </FormGroup>
+    </>
+  )
+}
+
+type State = EdgeSpendTarget[]
+type Action =
+  | { type: 'ADD_SPEND_TARGET' }
+  | { type: 'REMOVE_SPEND_TARGET'; index: number }
+  | { type: 'UPDATE_SPEND_TARGET'; index: number; spendTarget: Partial<EdgeSpendTarget> }
+
+const useSpendTargets = () => {
+  const [spendTargets, dispatch] = React.useReducer(
+    (state: State, action: Action) => {
+      switch (action.type) {
+        case 'ADD_SPEND_TARGET':
+          return [...state, { publicAddress: '', nativeAmount: '0', uniqueIdentifier: '', otherParams: {} }]
+
+        case 'REMOVE_SPEND_TARGET':
+          return state.filter((_, index) => index !== action.index)
+
+        case 'UPDATE_SPEND_TARGET':
+          return state.map((item, index) => (index === action.index ? { ...item, ...action.spendTarget } : item))
+
+        default:
+          throw new Error('Invalid Action')
+      }
+    },
+    [{ publicAddress: '', nativeAmount: '0', uniqueIdentifier: '', otherParams: {} }],
+  )
+
+  return {
+    spendTargets,
+    addTarget: React.useCallback(() => dispatch({ type: 'ADD_SPEND_TARGET' }), []),
+    removeTarget: React.useCallback((index: number) => dispatch({ type: 'REMOVE_SPEND_TARGET', index }), []),
+    updateTarget: React.useCallback(
+      (index: number, spendTarget: Partial<EdgeSpendTarget>) =>
+        dispatch({ type: 'UPDATE_SPEND_TARGET', spendTarget, index }),
+      [],
+    ),
+  }
 }
