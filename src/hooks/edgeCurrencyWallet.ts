@@ -2,6 +2,7 @@ import {
   EdgeCurrencyCodeOptions,
   EdgeCurrencyWallet,
   EdgeGetTransactionsOptions,
+  EdgeParsedUri,
   EdgeReceiveAddress,
   EdgeSpendInfo,
   EdgeTransaction,
@@ -132,6 +133,13 @@ export const useTransactions = (
   )
 
   return dedupe(data!)
+}
+
+export const useParsedUri = (wallet: EdgeCurrencyWallet, uri?: string, options?: UseQueryOptions<EdgeParsedUri>) => {
+  return useQuery([wallet.id, uri], () => wallet.parseUri(uri!), {
+    suspense: false,
+    ...options,
+  }).data
 }
 
 export const useTransactionCount = (
