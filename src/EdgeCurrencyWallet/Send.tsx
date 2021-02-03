@@ -4,16 +4,14 @@ import { Alert, Button, Form, FormControl, FormGroup, FormLabel, InputGroup } fr
 import JSONPretty from 'react-json-pretty'
 import QrReader from 'react-qr-scanner'
 
-import { useEdgeAccount } from '../auth'
 import { Debug, DisplayAmount, FlipInput, FlipInputRef, Select } from '../components'
-import { useDisplayDenomination, useFiatCurrencyCode, useMaxSpendable, useNewTransaction, useParsedUri } from '../hooks'
+import { useFiatCurrencyCode, useMaxSpendable, useNewTransaction, useParsedUri } from '../hooks'
 import { categories } from '../utils'
 
 const UNIQUE_IDENTIFIER_CURRENCIES = ['BNB', 'EOS', 'TLOS', 'XLM', 'XRP']
 const MULTIPLE_TARGETS_CURRENCIES = ['BCH', 'BTC', 'BSV']
 
 export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
-  const account = useEdgeAccount()
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
 
   // EdgeMetadata
@@ -150,7 +148,6 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
           data={{
             error,
             spendTargets,
-            displayDenomination: useDisplayDenomination(account, currencyCode)[0],
             fiatCurrencyCode,
             parsedUri: parsedUri,
             currencyCode: String(currencyCode),
