@@ -1,4 +1,4 @@
-import { EdgeCurrencyWallet, EdgeParsedUri, EdgeSpendInfo, EdgeSpendTarget, EdgeTransaction } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeSpendInfo, EdgeSpendTarget, EdgeTransaction } from 'edge-core-js'
 import * as React from 'react'
 import { Alert, Button, Form, FormControl, FormGroup, FormLabel, InputGroup } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
@@ -6,42 +6,39 @@ import QrReader from 'react-qr-scanner'
 
 import { useEdgeAccount } from '../auth'
 import { Debug, DisplayAmount, FlipInput, FlipInputRef, Select } from '../components'
-import { useDisplayDenomination, useFiatCurrencyCode, useMaxSpendable, useNewTransaction } from '../hooks'
+import { useDisplayDenomination, useFiatCurrencyCode, useMaxSpendable, useNewTransaction, useParsedUri } from '../hooks'
 import { categories } from '../utils'
 
 const UNIQUE_IDENTIFIER_CURRENCIES = ['BNB', 'EOS', 'TLOS', 'XLM', 'XRP']
-const MULTIPLE_TARGETs_CURRENCIES = ['BCH', 'BTC', 'BSV']
+const MULTIPLE_TARGETS_CURRENCIES = ['BCH', 'BTC', 'BSV']
 
 export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
   const account = useEdgeAccount()
-  const [parsedUri, setParsedUri] = React.useState<EdgeParsedUri>()
-  const [publicAddress, setPublicAddress] = React.useState('')
+  const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
+
+  // EdgeMetadata
   const [name, setName] = React.useState('')
   const [notes, setNotes] = React.useState('')
   const [category, setCategory] = React.useState('')
-  const [networkFeeOption, setNetworkFeeOption] = React.useState<EdgeTransaction['networkFeeOption']>('standard')
 
-  const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
+  const spendTargetRef = React.useRef<SpendTargetRef>(null)
 
+  // Scan
   const [scan, setScan] = React.useState(false)
-  const onScan = (uri: string) =>
-    wallet
-      .parseUri(uri, currencyCode)
-      .then((parsedUri: EdgeParsedUri) => {
-        setParsedUri(parsedUri)
-        setPublicAddress(parsedUri.publicAddress || '')
-        // setCurrencyCode(parsedUri.currencyCode || '')
-        setName(parsedUri.metadata?.name || '')
-        setNotes(parsedUri.metadata?.notes || '')
-        setCategory(parsedUri.metadata?.category || '')
-      })
-      .catch((error: Error) => console.log(error))
+  const [uri, setUri] = React.useState<string>()
+  const parsedUri = useParsedUri(wallet, uri, {
+    enabled: !!uri,
+    onSuccess: ({ nativeAmount, uniqueIdentifier, publicAddress }) =>
+      spendTargetRef.current?.setSpendTarget({ nativeAmount, publicAddress, uniqueIdentifier }),
+  })
 
-  const { updateTarget, addTarget, removeTarget, spendTargets } = useSpendTargets()
+  // EdgeTransaction
+  const [networkFeeOption, setNetworkFeeOption] = React.useState<EdgeTransaction['networkFeeOption']>('standard')
+  const spendTargets = useSpendTargets()
   const spendInfo: EdgeSpendInfo = {
     metadata: { name, notes, category },
     currencyCode,
-    spendTargets,
+    spendTargets: spendTargets.all,
     networkFeeOption,
   }
   const maxSpendable = useMaxSpendable(wallet, spendInfo)
@@ -55,31 +52,40 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
     Promise.resolve(transaction).then(wallet.signTx).then(wallet.broadcastTx).then(wallet.saveTx)
   }
 
-  const flipInputRef = React.useRef<FlipInputRef>(null)
-
   return (
     <Form>
-      {spendTargets.map(({ id }, index) => (
-        // eslint-disable-next-line react/jsx-key
-        <div key={id}>
-          {index !== 0 ? <Button onClick={() => removeTarget(index)}>X - {index}</Button> : null}
-          <SpendTarget
-            currencyCode={currencyCode}
-            fiatCurrencyCode={fiatCurrencyCode}
-            onChange={(spendTarget) => updateTarget(index, spendTarget)}
-            _ref={index === 0 ? flipInputRef : undefined}
-          />
+      {spendTargets.all.map((spendTarget, index) => (
+        <div key={spendTarget.id}>
+          {index === 0 ? (
+            <SpendTarget
+              currencyCode={currencyCode}
+              fiatCurrencyCode={fiatCurrencyCode}
+              onChange={(spendTarget) => spendTargets.update(index, spendTarget)}
+              ref={spendTargetRef}
+            />
+          ) : (
+            <>
+              <Button onClick={() => spendTargets.remove(index)}>X - {index}</Button>
+              <SpendTarget
+                currencyCode={currencyCode}
+                fiatCurrencyCode={fiatCurrencyCode}
+                onChange={(spendTarget) => spendTargets.update(index, spendTarget)}
+              />
+            </>
+          )}
         </div>
       ))}
 
-      <Matcher query={currencyCode} matchers={MULTIPLE_TARGETs_CURRENCIES}>
+      <Matcher query={currencyCode} matchers={MULTIPLE_TARGETS_CURRENCIES}>
         <FormGroup>
-          <Button onClick={addTarget}>Add another output</Button>
+          <Button onClick={spendTargets.add}>Add another output</Button>
         </FormGroup>
       </Matcher>
 
-      {spendTargets.length === 1 ? (
-        <Button onClick={() => flipInputRef.current?.setNativeAmount(maxSpendable)}>Spend Max</Button>
+      {spendTargets.all.length === 1 && Number(maxSpendable) > 0 ? (
+        <Button onClick={() => spendTargetRef.current?.setSpendTarget({ nativeAmount: maxSpendable })}>
+          Spend Max
+        </Button>
       ) : null}
 
       <FormGroup>
@@ -129,10 +135,18 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
 
       <Button onClick={() => setScan((scan) => !scan)}>Scan</Button>
 
-      {scan && <Scanner onScan={!parsedUri ? onScan : () => undefined} show={!parsedUri} />}
+      <Scanner
+        onScan={(text) => {
+          if (!text) return
+          setUri(text)
+          setScan(false)
+        }}
+        show={scan}
+      />
 
       <Debug>
         <JSONPretty
+          style={{ maxWidth: 900 }}
           data={{
             error,
             spendTargets,
@@ -140,7 +154,6 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
             fiatCurrencyCode,
             parsedUri: parsedUri,
             currencyCode: String(currencyCode),
-            publicAddress: String(publicAddress),
             spendInfo: spendInfo,
             maxSpendable: String(maxSpendable),
             transaction: transaction || 'undefined',
@@ -181,31 +194,57 @@ const Matcher: React.FC<{ query: string; matchers: string[] }> = ({ children, qu
   return <>{matchers.some((match) => matches(query, match)) ? children : null}</>
 }
 
-const SpendTarget = ({
-  currencyCode,
-  fiatCurrencyCode,
-  onChange,
-  _ref,
-}: {
+type SpendTargetRef = {
+  setSpendTarget: (spendTarget: Partial<EdgeSpendTarget>) => void
+}
+
+type SpendTargetProps = {
   currencyCode: string
   fiatCurrencyCode: string
   onChange: (spendTarget: EdgeSpendTarget) => void
-  _ref?: React.RefObject<FlipInputRef>
-}) => {
+}
+
+const SpendTarget = React.forwardRef<SpendTargetRef, SpendTargetProps>(function SpendInfo( // function ssyntax required for component display name
+  { currencyCode, fiatCurrencyCode, onChange },
+  ref,
+) {
+  const flipInputRef = React.useRef<FlipInputRef>(null)
+  const publicAddressRef = React.useRef<HTMLInputElement>(null)
+  const uniqueIdentifierRef = React.useRef<HTMLInputElement>(null)
+
+  React.useImperativeHandle(ref, () => ({
+    setSpendTarget: (spendTarget: Partial<EdgeSpendTarget>) => {
+      if (spendTarget.publicAddress && publicAddressRef?.current)
+        publicAddressRef.current.value = spendTarget.publicAddress
+
+      if (spendTarget.uniqueIdentifier && uniqueIdentifierRef.current)
+        uniqueIdentifierRef.current.value = spendTarget.uniqueIdentifier
+
+      if (spendTarget.nativeAmount && flipInputRef?.current)
+        flipInputRef.current.setNativeAmount(spendTarget.nativeAmount)
+    },
+  }))
+
   return (
     <>
       <FormGroup>
         <FormLabel>Public Address:</FormLabel>
 
         <InputGroup>
-          <FormControl onChange={(event) => onChange({ publicAddress: event.currentTarget.value })} />
+          <FormControl
+            ref={publicAddressRef}
+            onChange={(event) => onChange({ publicAddress: event.currentTarget.value })}
+          />
         </InputGroup>
       </FormGroup>
 
       <Matcher query={currencyCode} matchers={UNIQUE_IDENTIFIER_CURRENCIES}>
         <FormGroup>
           <FormLabel>Unique Identifier</FormLabel>
-          <FormControl onChange={(event) => onChange({ uniqueIdentifier: event.currentTarget.value })} />
+          <FormControl
+            ref={uniqueIdentifierRef}
+            onChange={(event) => onChange({ uniqueIdentifier: event.currentTarget.value })}
+          />
         </FormGroup>
       </Matcher>
 
@@ -214,12 +253,12 @@ const SpendTarget = ({
           currencyCode={currencyCode}
           fiatCurrencyCode={fiatCurrencyCode}
           onChange={(nativeAmount: string) => onChange({ nativeAmount })}
-          ref={_ref}
+          ref={flipInputRef}
         />
       </FormGroup>
     </>
   )
-}
+})
 
 type State = (EdgeSpendTarget & { id: number })[]
 type Action =
@@ -258,14 +297,15 @@ const useSpendTargets = () => {
     [{ id: 0, publicAddress: '', nativeAmount: '0', uniqueIdentifier: '', otherParams: {} }],
   )
 
+  const add = () => dispatch({ type: 'ADD_SPEND_TARGET' })
+  const remove = (index: number) => dispatch({ type: 'REMOVE_SPEND_TARGET', index })
+  const update = (index: number, spendTarget: Partial<EdgeSpendTarget>) =>
+    dispatch({ type: 'UPDATE_SPEND_TARGET', spendTarget, index })
+
   return {
-    spendTargets,
-    addTarget: React.useCallback(() => dispatch({ type: 'ADD_SPEND_TARGET' }), []),
-    removeTarget: React.useCallback((index: number) => dispatch({ type: 'REMOVE_SPEND_TARGET', index }), []),
-    updateTarget: React.useCallback(
-      (index: number, spendTarget: Partial<EdgeSpendTarget>) =>
-        dispatch({ type: 'UPDATE_SPEND_TARGET', spendTarget, index }),
-      [],
-    ),
+    all: spendTargets,
+    add: React.useCallback(add, []),
+    remove: React.useCallback(remove, []),
+    update: React.useCallback(update, []),
   }
 }
