@@ -23,31 +23,31 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: st
     <Tabs id={'walletTabs'} defaultActiveKey={'history'} mountOnEnter>
       <Tab eventKey={'history'} title={'History'}>
         <Boundary>
-          <TransactionList wallet={wallet} currencyCode={currencyCode} key={wallet.id} />
+          <TransactionList wallet={wallet} currencyCode={currencyCode} key={`${wallet.id}:${currencyCode}`} />
         </Boundary>
       </Tab>
 
       <Tab eventKey={'send'} title={'Send'}>
         <Boundary>
-          <Send wallet={wallet} currencyCode={currencyCode} key={wallet.id} />
+          <Send wallet={wallet} currencyCode={currencyCode} key={`${wallet.id}:${currencyCode}`} />
         </Boundary>
       </Tab>
 
       <Tab eventKey={'request'} title={'Request'}>
         <Boundary>
-          <Request wallet={wallet} currencyCode={currencyCode} key={wallet.id} />
+          <Request wallet={wallet} currencyCode={currencyCode} key={`${wallet.id}:${currencyCode}`} />
         </Boundary>
       </Tab>
 
       <Tab eventKey={'settings'} title={'Settings'}>
         <Boundary>
-          <Settings wallet={wallet} key={wallet.id} />
+          <Settings wallet={wallet} key={`${wallet.id}:${currencyCode}`} />
         </Boundary>
       </Tab>
 
       <Tab eventKey={'storage'} title={'Storage'}>
         <Boundary>
-          <Disklets wallet={wallet} key={wallet.id} />
+          <Disklets wallet={wallet} key={`${wallet.id}:${currencyCode}`} />
         </Boundary>
       </Tab>
     </Tabs>
