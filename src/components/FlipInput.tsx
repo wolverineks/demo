@@ -17,44 +17,45 @@ export type FlipInputRef = {
   setNativeAmount: (nativeAmount: string) => void
 }
 
-export const FlipInput = React.forwardRef<FlipInputRef, FlipInputProps>(
-  ({ currencyCode, fiatCurrencyCode, onChange }, ref) => {
-    const account = useEdgeAccount()
-    const topDenominations = useDenominations(account, currencyCode)
-    const bottomDenominations = useDenominations(account, fiatCurrencyCode)
+export const FlipInput = React.forwardRef<FlipInputRef, FlipInputProps>(function FlipInput( // function syntax required for component display names
+  { currencyCode, fiatCurrencyCode, onChange },
+  ref,
+) {
+  const account = useEdgeAccount()
+  const topDenominations = useDenominations(account, currencyCode)
+  const bottomDenominations = useDenominations(account, fiatCurrencyCode)
 
-    const { top, bottom } = useFlipInput({
-      rateCache: account.rateCache,
-      onChange,
-      currencyCode,
-      fiatCurrencyCode,
-      topDenominations,
-      bottomDenominations,
-    })
+  const { top, bottom } = useFlipInput({
+    rateCache: account.rateCache,
+    onChange,
+    currencyCode,
+    fiatCurrencyCode,
+    topDenominations,
+    bottomDenominations,
+  })
 
-    React.useImperativeHandle(ref, () => ({
-      setNativeAmount: (nativeAmount: string) => {
-        const displayAmount = nativeToDenominated({
-          nativeAmount,
-          denomination: topDenominations.display,
-        })
+  React.useImperativeHandle(ref, () => ({
+    setNativeAmount: (nativeAmount) => {
+      const displayAmount = nativeToDenominated({
+        nativeAmount,
+        denomination: topDenominations.display,
+      })
 
-        top.onChange(displayAmount)
-      },
-    }))
+      top.onChange(displayAmount)
+    },
+  }))
 
-    return (
-      <div>
-        <Boundary>
-          <AmountInput {...top} />
-        </Boundary>
-        <Boundary>
-          <AmountInput {...bottom} />
-        </Boundary>
-      </div>
-    )
-  },
-)
+  return (
+    <div>
+      <Boundary>
+        <AmountInput {...top} />
+      </Boundary>
+      <Boundary>
+        <AmountInput {...bottom} />
+      </Boundary>
+    </div>
+  )
+})
 
 const useFlipInput = ({
   rateCache,
