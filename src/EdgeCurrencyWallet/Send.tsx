@@ -1,4 +1,4 @@
-import { EdgeCurrencyWallet, EdgeSpendInfo, EdgeSpendTarget, EdgeTransaction } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeMetadata, EdgeSpendInfo, EdgeSpendTarget, EdgeTransaction } from 'edge-core-js'
 import * as React from 'react'
 import { Alert, Button, Form, FormControl, FormGroup, FormLabel, InputGroup } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
@@ -13,29 +13,25 @@ const MULTIPLE_TARGETS_CURRENCIES = ['BCH', 'BTC', 'BSV']
 
 export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
-
-  // Scan
   const [scan, setScan] = React.useState(false)
-
-  // Clipboard
   const clipboardUri = useClipboardUri(wallet)
 
-  const {
-    setName,
-    setNotes,
-    setCategory,
-    setNetworkFeeOption,
-    setUri,
-    onConfirm,
-    spendTargetRef,
-    spendTargets,
-    maxSpendable,
-    transaction,
-    error,
-    parsedUri,
-    spendInfo,
-    uri,
-  } = useSpendInfo(wallet, currencyCode)
+  const { updateMetadata, setNetworkFeeOption, setUri, spendTargetRef, spendTargets, spendInfo } = useSpendInfo(
+    wallet,
+    currencyCode,
+  )
+
+  const maxSpendable = useMaxSpendable(wallet, spendInfo)
+
+  const { data: transaction, error } = useNewTransaction(wallet, spendInfo, {
+    enabled: !!spendInfo.spendTargets[0].publicAddress && !!Number(spendInfo.spendTargets[0].nativeAmount),
+  })
+
+  const onConfirm = () => {
+    if (!transaction) return
+
+    Promise.resolve(transaction).then(wallet.signTx).then(wallet.broadcastTx).then(wallet.saveTx)
+  }
 
   return (
     <Form>
@@ -67,7 +63,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
         </FormGroup>
       </Matcher>
 
-      {spendTargets.all.length === 1 && Number(maxSpendable) > 0 ? (
+      {spendInfo.spendTargets.length === 1 && Number(maxSpendable) > 0 ? (
         <Button onClick={() => spendTargetRef.current?.setSpendTarget({ nativeAmount: maxSpendable })}>
           Spend Max
         </Button>
@@ -77,17 +73,17 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
 
       <FormGroup>
         <FormLabel>Name</FormLabel>
-        <FormControl onChange={(event) => setName(event.currentTarget.value)} />
+        <FormControl onChange={(event) => updateMetadata({ name: event.currentTarget.value })} />
       </FormGroup>
 
       <FormGroup>
         <FormLabel>Notes</FormLabel>
-        <FormControl as={'textarea'} onChange={(event) => setNotes(event.currentTarget.value)} />
+        <FormControl as={'textarea'} onChange={(event) => updateMetadata({ notes: event.currentTarget.value })} />
       </FormGroup>
 
       <Select
         title={'Category'}
-        onSelect={(event) => setCategory(event.currentTarget.value)}
+        onSelect={(event) => updateMetadata({ category: event.currentTarget.value })}
         options={[{ value: 'none', display: '-' }, ...categories]}
         renderOption={(category) => (
           <option value={category.value} key={category.value}>
@@ -135,11 +131,8 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
         <JSONPretty
           style={{ maxWidth: 900 }}
           data={{
-            uri,
             error: (error as Error)?.message,
-            spendTargets: spendTargets.all,
             fiatCurrencyCode,
-            parsedUri,
             currencyCode,
             spendInfo,
             maxSpendable,
@@ -300,57 +293,36 @@ const useSpendTargets = () => {
 }
 
 const useSpendInfo = (wallet: EdgeCurrencyWallet, currencyCode: string) => {
-  // EdgeMetadata
-  const [name, setName] = React.useState('')
-  const [notes, setNotes] = React.useState('')
-  const [category, setCategory] = React.useState('')
-
-  // ParsedUri
   const spendTargetRef = React.useRef<SpendTargetRef>(null)
   const [uri, setUri] = React.useState<string>()
-
-  const parsedUri = useParsedUri(wallet, uri, {
+  useParsedUri(wallet, uri, {
     enabled: !!uri,
     onSuccess: ({ nativeAmount, publicAddress, uniqueIdentifier }) => {
       spendTargetRef.current?.setSpendTarget({ nativeAmount, publicAddress, uniqueIdentifier })
     },
   })
 
-  // EdgeTransaction
-  const [networkFeeOption, setNetworkFeeOption] = React.useState<EdgeTransaction['networkFeeOption']>('standard')
   const spendTargets = useSpendTargets()
-  const spendInfo: EdgeSpendInfo = {
-    metadata: { name, notes, category },
-    currencyCode,
-    spendTargets: spendTargets.all,
-    networkFeeOption,
-  }
+  const [metadata, setMetadata] = React.useState({})
+  const [networkFeeOption, setNetworkFeeOption] = React.useState<EdgeSpendInfo['networkFeeOption']>('standard')
+  const updateMetadata = (metadata: EdgeMetadata) => setMetadata((current) => ({ ...current, ...metadata }))
 
-  const maxSpendable = useMaxSpendable(wallet, spendInfo, { refetchInterval: 1000 })
-  const { data: transaction, error } = useNewTransaction(wallet, spendInfo, {
-    enabled: !!spendInfo.spendTargets[0].publicAddress && !!Number(spendInfo.spendTargets[0].nativeAmount),
-  })
-
-  const onConfirm = () => {
-    if (!transaction) return
-
-    Promise.resolve(transaction).then(wallet.signTx).then(wallet.broadcastTx).then(wallet.saveTx)
-  }
+  const spendInfo = React.useMemo(
+    () => ({
+      currencyCode,
+      spendTargets: spendTargets.all.map(({ id: _id, ...spendInfo }) => spendInfo as EdgeSpendTarget),
+      metadata,
+      networkFeeOption,
+    }),
+    [currencyCode, metadata, networkFeeOption, spendTargets],
+  )
 
   return {
-    error,
-    maxSpendable,
-    onConfirm,
-    parsedUri,
-    setCategory,
-    setName,
     setNetworkFeeOption,
-    setNotes,
     setUri,
     spendInfo,
     spendTargetRef,
     spendTargets,
-    transaction,
-    uri,
+    updateMetadata,
   }
 }
