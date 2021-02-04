@@ -1,9 +1,9 @@
 import React from 'react'
 import { Button, Form, FormGroup, ListGroup, ListGroupItem } from 'react-bootstrap'
 
-import { useEdgeAccount } from '../auth'
-import { useEdgeContext } from '../Edge'
-import { usePin } from '../hooks'
+import { useEdgeAccount } from '../../auth'
+import { useEdgeContext } from '../../Edge'
+import { usePin } from '../../hooks'
 
 export const Pin = () => {
   return (

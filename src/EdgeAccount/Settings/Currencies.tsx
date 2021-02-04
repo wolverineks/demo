@@ -2,10 +2,10 @@ import { EdgeCurrencyInfo, EdgeDenomination, EdgeMetaToken } from 'edge-core-js'
 import React from 'react'
 import { FormControl, ListGroup, ListGroupItem } from 'react-bootstrap'
 
-import { useEdgeAccount } from '../auth'
-import { Boundary, Logo } from '../components'
-import { useActiveInfos, useDefaultFiatInfo, useDenominations } from '../hooks'
-import { FiatInfo, isFiat, isToken, normalize } from '../utils'
+import { useEdgeAccount } from '../../auth'
+import { Boundary, Logo } from '../../components'
+import { useActiveInfos, useDefaultFiatInfo, useDenominations } from '../../hooks'
+import { FiatInfo, isFiat, isToken, normalize } from '../../utils'
 
 const matches = (query: string) => (info: EdgeCurrencyInfo | EdgeMetaToken | FiatInfo) =>
   normalize(info.currencyCode).includes(normalize(query)) ||

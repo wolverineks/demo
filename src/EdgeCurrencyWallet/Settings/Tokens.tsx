@@ -2,10 +2,10 @@ import { EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
 import React from 'react'
 import { Card, FormControl, ListGroup } from 'react-bootstrap'
 
-import { useEdgeAccount } from '../auth'
-import { Logo } from '../components'
-import { useTokens } from '../hooks'
-import { useFilter } from './useFilter'
+import { useEdgeAccount } from '../../auth'
+import { Logo } from '../../components'
+import { useTokens } from '../../hooks'
+import { useFilter } from '../useFilter'
 
 export const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const account = useEdgeAccount()

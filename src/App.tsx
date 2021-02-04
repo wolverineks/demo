@@ -2,6 +2,7 @@ import React from 'react'
 import { Button, Container, Image, Navbar } from 'react-bootstrap'
 
 import { AccountConsumer, AccountProvider, Login, useEdgeAccount } from './auth'
+import { AutologoutProvider } from './AutoLogout'
 import { Boundary } from './components'
 import { Edge } from './Edge'
 import { AccountInfo } from './EdgeAccount'
@@ -17,15 +18,17 @@ export const App = () => {
           <AccountConsumer>
             {(account) =>
               account ? (
-                <SelectedWalletInfoProvider>
-                  <RouteProvider>
-                    <Header />
+                <AutologoutProvider>
+                  <SelectedWalletInfoProvider>
+                    <RouteProvider>
+                      <Header />
 
-                    <Boundary>
-                      <AccountInfo />
-                    </Boundary>
-                  </RouteProvider>
-                </SelectedWalletInfoProvider>
+                      <Boundary>
+                        <AccountInfo />
+                      </Boundary>
+                    </RouteProvider>
+                  </SelectedWalletInfoProvider>
+                </AutologoutProvider>
               ) : (
                 <Container style={{ top: '100px' }}>
                   <Login />

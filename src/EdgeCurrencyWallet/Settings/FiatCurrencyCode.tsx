@@ -2,9 +2,9 @@ import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 import { Button, FormGroup } from 'react-bootstrap'
 
-import { Select } from '../components'
-import { useFiatCurrencyCode } from '../hooks'
-import { fiatInfos } from '../utils'
+import { Select } from '../../components'
+import { useFiatCurrencyCode } from '../../hooks'
+import { fiatInfos } from '../../utils'
 
 export const FiatCurrencyCode: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const [fiatCurrencyCode, setFiatCurrencyCode] = useFiatCurrencyCode(wallet)

@@ -2,13 +2,13 @@
 import React from 'react'
 import { ListGroup, Tab, Tabs } from 'react-bootstrap'
 
-import { AutoLogout } from '../AutoLogout'
-import { Boundary } from '../components'
-import { DefaultFiat } from '../Fiat'
-import { OTP } from '../OTP'
-import { Pin } from '../Pin'
-import { Storage } from '../Storage'
+import { Boundary } from '../../components'
+import { Storage } from '../../Storage'
+import { AutoLogout } from './AutoLogout'
 import { Currencies } from './Currencies'
+import { DefaultFiat } from './DefaultFiat'
+import { OTP } from './OTP'
+import { Pin } from './Pin'
 
 export const Settings = () => {
   return (

@@ -1,56 +1,28 @@
 import React from 'react'
-import { Form, FormControl, FormGroup, FormLabel, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { useIdleTimer } from 'react-idle-timer'
 
 import { useEdgeAccount } from '../auth'
 import { useAutoLogout, useLogout } from '../hooks'
 
-export const AutoLogout = () => {
+export const AutologoutContext = React.createContext<number>(Infinity)
+
+export const AutologoutProvider: React.FC = ({ children }) => {
   const account = useEdgeAccount()
-  const [{ enabled, delay }, setAutologout] = useAutoLogout(account)
+  const [{ enabled, delay }] = useAutoLogout(account)
   const logout = useLogout()
-
-  return (
-    <>
-      <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
-        <ListGroupItem>
-          <Form>
-            <FormGroup>
-              <FormLabel>AutoLogout: {delay}</FormLabel>
-              {enabled && delay >= 30 && <IdleTimeout delay={delay} onIdle={logout} />}
-              <FormControl
-                onChange={(event) =>
-                  setAutologout({
-                    delay: Math.max(Number(event.currentTarget.value), 30),
-                    enabled: true,
-                  })
-                }
-                value={String(delay)}
-              />
-
-              <Form.Check
-                id={'autoLogoutEnabled'}
-                type={'switch'}
-                label={'enabled'}
-                onChange={() => setAutologout({ enabled: !enabled, delay: Math.max(delay, 30) })}
-                checked={enabled}
-              />
-            </FormGroup>
-          </Form>
-        </ListGroupItem>
-      </ListGroup>
-    </>
-  )
-}
-
-const IdleTimeout: React.FC<{ onIdle: () => void; delay: number }> = ({ onIdle, delay }) => {
   const [remainingTime, setRemainingTime] = React.useState(delay)
-  const { getRemainingTime } = useIdleTimer({ timeout: delay * 1000, onIdle })
+  const { getRemainingTime, resume, pause } = useIdleTimer({ timeout: delay * 1000, onIdle: logout })
+
+  React.useEffect(() => {
+    enabled && resume()
+    !enabled && pause()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled])
 
   React.useEffect(() => {
     setInterval(() => setRemainingTime(getRemainingTime()), 1000)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  return <div>Remaining Time: {(remainingTime / 1000).toFixed(0)}</div>
+  return <AutologoutContext.Provider value={remainingTime}>{children}</AutologoutContext.Provider>
 }

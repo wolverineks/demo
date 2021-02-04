@@ -5,8 +5,8 @@ import { Exchange } from '../Exchange'
 import { useActiveWalletIds } from '../hooks'
 import { Route, useRoute } from '../route'
 import { useSelectedWallet } from '../SelectedWallet'
-import { Settings } from '../Settings/Settings'
 import { SelectedWalletInfo } from './SelectedWalletInfo'
+import { Settings } from './Settings'
 import { CreateWallet } from '.'
 
 export const Main = () => {

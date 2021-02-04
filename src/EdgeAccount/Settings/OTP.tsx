@@ -1,8 +1,8 @@
 import React from 'react'
 import { Form, FormGroup, ListGroup, ListGroupItem } from 'react-bootstrap'
 
-import { useEdgeAccount } from '../auth'
-import { useOTP } from '../hooks'
+import { useEdgeAccount } from '../../auth'
+import { useOTP } from '../../hooks'
 
 export const OTP = () => {
   const account = useEdgeAccount()
