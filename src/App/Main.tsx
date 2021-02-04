@@ -1,13 +1,13 @@
 import React from 'react'
 
 import { useEdgeAccount } from '../auth'
+import { CreateWallet } from '../EdgeAccount'
+import { SelectedWalletInfo } from '../EdgeAccount/SelectedWalletInfo'
+import { Settings } from '../EdgeAccount/Settings'
 import { Exchange } from '../Exchange'
 import { useActiveWalletIds } from '../hooks'
 import { Route, useRoute } from '../route'
 import { useSelectedWallet } from '../SelectedWallet'
-import { SelectedWalletInfo } from './SelectedWalletInfo'
-import { Settings } from './Settings'
-import { CreateWallet } from '.'
 
 export const Main = () => {
   const route = useRoute()

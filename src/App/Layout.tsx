@@ -5,9 +5,9 @@ import { Boundary } from '../components'
 import { SelectedWalletBoundary } from '../SelectedWallet'
 import { ExchangeRates } from './ExchangeRates'
 import { Main } from './Main'
-import { SideMenu } from './SideMenu'
+import { SideMenu } from '.'
 
-export const AccountInfo = () => {
+export const Layout = () => {
   return (
     <Row>
       <Col xl={3} lg={3} md={3} sm={3}>
