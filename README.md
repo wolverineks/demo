@@ -4,66 +4,98 @@
 
 ## Auth
 
-- create account
-- login with password
-- login with pin
+- [x] create account
+- [ ] check password rules
+- [ ] login
+  - [x] password
+  - [x] pin
+  - [ ] key
+  - [ ] recovery
+- [ ] get recovery key
+- [ ] fetch recovery questions
+- [ ] list recovery question choices
+- [ ] request edge login
+- [ ] request otp reset
+- [ ] approve voucher
+- [ ] reject voucher
 
 ## Wallets
 
-- create wallet
-- activate wallet
-- archive wallet
-- delete wallet
+- [x] create wallet
+- [x] activate wallet
+- [x] archive wallet
+- [x] delete wallet
+- [ ] create default wallets
 
 ## Account Settings
 
-- enable / disable pin login
-- change pin
-- check pin
-- delete pin
-- change password
-- check password
-- change default fiat currency code
-- enable / disable otp
-- autologout
-- set display denominations
-- dataStore explorer
-- disklet explorer
-- local disklet explorer
+- [x] enable / disable pin login
+- [x] change pin
+- [x] check pin
+- [x] delete pin
+- [x] change password
+- [x] check password
+- [x] delete password
+- [x] change default fiat currency code
+- [x] enable / disable otp
+- [x] autologout
+- [x] set display denominations
+- [x] dataStore explorer
+- [x] disklet explorer
+- [x] local disklet explorer
 
 ## Wallet Settings
 
-- rename wallet
-- set fiat currency code
-- enable / disable tokens
-- display public seed
-- display private seed
-- display raw key
-- disklet explorer
-- local disklet explorer
+- [x] rename wallet
+- [x] set fiat currency code
+- [x] enable / disable tokens
+- [ ] add custom token
+- [x] display public seed
+- [x] display private seed
+- [x] display raw key
+- [x] disklet explorer
+- [x] local disklet explorer
+- [ ] split wallet
 
 ## Send
 
-- input via crypto / fiat
-- input via scan
-- multiple targets
-- destination tag
-- change fee setting
-- metadata
+- [x] input via crypto / fiat
+- [x] input via scan
+- [x] multiple targets
+- [x] destination tag
+- [x] change fee setting
+- [ ] custom fee setting
+- [x] metadata
 
 ## Receive
 
-- input via crypto / fiat
-- copy public address
-- copy uri
-- display qr code
+- [x] input via crypto / fiat
+- [x] copy public address
+- [x] copy uri
+- [x] display qr code
 
 ## Transactions
 
-- view / filter transactions
-- export transactions
-- view transaction explorers
+- [x] view / filter transactions
+- [x] export transactions
+- [x] view transaction explorers
+- [ ] edit metadata
 
 ## Exchange Rates
 
-- filter
+- [x] filter
+- [ ] add currency code
+
+## FIO
+
+- [ ] wallet.otherMethods
+  - [ ] fioAction
+  - [ ] getFioAddressNames
+  - [ ] getFioAddresses
+  - [ ] getFioDomains
+- [ ] plugin.otherMethods
+  - [ ] getActivationSupportedCurrencies
+  - [ ] buyAddressRequest
+  - [ ] isFioAddressValid
+  - [ ] getDomains
+  - [ ] validateAccount
