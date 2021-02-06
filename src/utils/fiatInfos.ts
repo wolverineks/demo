@@ -1,9 +1,12 @@
 import { EdgeDenomination } from 'edge-core-js'
 
+const toCountryCode = (currencyCode: string) => currencyCode.slice(0, 2)
+
 export type FiatInfo = {
   currencyCode: string
   isoCurrencyCode: string
   symbol: string
+  symbolImage: string
   denominations: EdgeDenomination[]
 }
 export const fiatInfos: FiatInfo[] = [
@@ -169,9 +172,22 @@ export const fiatInfos: FiatInfo[] = [
 ].map((info) => ({
   ...info,
   denominations: [
-    { name: info.currencyCode, symbol: info.symbol, multiplier: '1' },
-    { name: info.currencyCode, symbol: `c${info.symbol}`, multiplier: '.01' },
-    { name: info.currencyCode, symbol: `m${info.symbol}`, multiplier: '.001' },
+    {
+      name: info.currencyCode,
+      symbol: info.symbol,
+      multiplier: '1',
+    },
+    {
+      name: info.currencyCode,
+      symbol: `c${info.symbol}`,
+      multiplier: '.01',
+    },
+    {
+      name: info.currencyCode,
+      symbol: `m${info.symbol}`,
+      multiplier: '.001',
+    },
   ],
+  symbolImage: `https://www.countryflags.io/${toCountryCode(info.currencyCode)}/flat/64.png`,
   isoCurrencyCode: `iso:${info.currencyCode}`,
 }))

@@ -19,7 +19,7 @@ export const Currencies: React.FC = () => {
   const account = useEdgeAccount()
   const [searchQuery, setSearchQuery] = React.useState('')
   const fiatInfo = useDefaultFiatInfo(account)
-  const visibleSettings = [...useActiveInfos(account), (fiatInfo as unknown) as EdgeCurrencyInfo].filter(
+  const visibleSettings = [(fiatInfo as unknown) as EdgeCurrencyInfo, ...useActiveInfos(account)].filter(
     matches(searchQuery),
   )
 
