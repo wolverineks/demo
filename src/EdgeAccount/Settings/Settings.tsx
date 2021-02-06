@@ -1,4 +1,3 @@
-/* eslint-disable react/display-name */
 import React from 'react'
 import { ListGroup, Tab, Tabs } from 'react-bootstrap'
 
@@ -8,7 +7,9 @@ import { AutoLogout } from './AutoLogout'
 import { Currencies } from './Currencies'
 import { DefaultFiat } from './DefaultFiat'
 import { OTP } from './OTP'
+import { Password } from './Password'
 import { Pin } from './Pin'
+import { PinLogin } from './PinLogin'
 
 export const Settings = () => {
   return (
@@ -17,6 +18,10 @@ export const Settings = () => {
         <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
           <Boundary>
             <OTP />
+          </Boundary>
+
+          <Boundary>
+            <PinLogin />
           </Boundary>
 
           <Boundary>
@@ -29,6 +34,10 @@ export const Settings = () => {
 
           <Boundary>
             <Pin />
+          </Boundary>
+
+          <Boundary>
+            <Password />
           </Boundary>
         </ListGroup>
       </Tab>

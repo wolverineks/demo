@@ -2,34 +2,32 @@ import React from 'react'
 import { Button, Form, FormGroup, ListGroup, ListGroupItem, Tab, Tabs } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../../auth'
-import { useEdgeContext } from '../../Edge'
-import { usePin } from '../../hooks'
+import { usePassword } from '../../hooks'
 
-export const Pin = () => {
+export const Password = () => {
   return (
-    <Tabs defaultActiveKey={'checkPin'}>
-      <Tab title={'Check Pin'} eventKey={'checkPin'}>
-        <CheckPin />
+    <Tabs defaultActiveKey={'checkPassword'}>
+      <Tab title={'Check Password'} eventKey={'checkPassword'}>
+        <CheckPassword />
       </Tab>
 
-      <Tab title={'Change Pin'} eventKey={'changePin'}>
-        <ChangePin />
+      <Tab title={'Change Password'} eventKey={'changePassword'}>
+        <ChangePassword />
       </Tab>
 
-      <Tab title={'Delete Pin'} eventKey={'deletePin'}>
-        <DeletePin />
+      <Tab title={'Delete Password'} eventKey={'deletePassword'}>
+        <DeletePassword />
       </Tab>
     </Tabs>
   )
 }
 
-const CheckPin = () => {
-  const context = useEdgeContext()
+const CheckPassword = () => {
   const account = useEdgeAccount()
   const {
-    checkPin: { mutateAsync: checkPin, data: isCorrect, error, reset, isLoading },
-  } = usePin(context, account)
-  const [pin, setPin] = React.useState('')
+    checkPassword: { mutateAsync: checkPassword, data: isCorrect, error, reset, isLoading },
+  } = usePassword(account)
+  const [password, setPassword] = React.useState('')
 
   React.useEffect(() => {
     if (isCorrect == null) return
@@ -44,13 +42,13 @@ const CheckPin = () => {
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       <ListGroupItem>
         <Form
-          id={`checkPin`}
+          id={`checkPassword`}
           onSubmit={(event: React.FormEvent) => {
             event.preventDefault()
-            checkPin(pin).finally(() => {
+            checkPassword(password).finally(() => {
               setTimeout(() => {
                 reset()
-                setPin('')
+                setPassword('')
               }, 3000)
             })
           }}
@@ -58,16 +56,16 @@ const CheckPin = () => {
           <FormGroup>
             <Form.Row>
               <Form.Control
-                value={pin}
+                value={password}
                 disabled={isLoading}
                 onChange={(event) => {
                   event.preventDefault()
                   reset()
-                  setPin(event.currentTarget.value)
+                  setPassword(event.currentTarget.value)
                 }}
               />
 
-              <Button type={'submit'} variant="primary" disabled={isLoading} form={'checkPin'}>
+              <Button type={'submit'} variant="primary" disabled={isLoading} form={'checkPassword'}>
                 {isLoading ? '...' : 'Submit'}
               </Button>
             </Form.Row>
@@ -80,22 +78,21 @@ const CheckPin = () => {
   )
 }
 
-const ChangePin = () => {
-  const context = useEdgeContext()
+const ChangePassword = () => {
   const account = useEdgeAccount()
   const {
-    changePin: { mutateAsync: changePin, error, isLoading },
-  } = usePin(context, account)
-  const [pin, setPin] = React.useState('')
+    changePassword: { mutateAsync: changePassword, error, isLoading },
+  } = usePassword(account)
+  const [password, setPassword] = React.useState('')
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       <ListGroupItem>
         <Form
-          id={`pin`}
+          id={`password`}
           onSubmit={(event: React.FormEvent) => {
             event.preventDefault()
-            changePin(pin).finally(() => setPin(''))
+            changePassword(password).finally(() => setPassword(''))
           }}
         >
           <FormGroup>
@@ -103,14 +100,14 @@ const ChangePin = () => {
               <Form.Control
                 type={'password'}
                 disabled={isLoading}
-                value={pin}
+                value={password}
                 onChange={(event) => {
                   event.preventDefault()
-                  setPin(event.currentTarget.value)
+                  setPassword(event.currentTarget.value)
                 }}
               />
 
-              <Button type={'submit'} variant="primary" disabled={isLoading} form={'pin'}>
+              <Button type={'submit'} variant="primary" disabled={isLoading} form={'password'}>
                 {isLoading ? '...' : 'Submit'}
               </Button>
             </Form.Row>
@@ -122,19 +119,18 @@ const ChangePin = () => {
   )
 }
 
-const DeletePin = () => {
-  const context = useEdgeContext()
+const DeletePassword = () => {
   const account = useEdgeAccount()
   const {
-    deletePin: { mutate: deletePin, error, isLoading },
-  } = usePin(context, account)
+    deletePassword: { mutate: deletePassword, error, isLoading },
+  } = usePassword(account)
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       <ListGroupItem>
         <Form>
           <FormGroup>
-            <Button disabled={isLoading} onClick={() => deletePin()} variant={'danger'}>
+            <Button disabled={isLoading} onClick={() => deletePassword()} variant={'danger'}>
               Confirm
             </Button>
           </FormGroup>
