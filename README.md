@@ -26,6 +26,7 @@
 - [x] archive wallet
 - [x] delete wallet
 - [ ] create default wallets
+- [ ] sort wallets
 
 ## Account Settings
 
@@ -56,6 +57,7 @@
 - [x] disklet explorer
 - [x] local disklet explorer
 - [ ] split wallet
+- [ ] add / enable / disable custom nodes
 
 ## Send
 
