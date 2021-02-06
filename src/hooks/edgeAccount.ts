@@ -4,7 +4,6 @@ import {
   EdgeCurrencyWallet,
   EdgeSwapQuote,
   EdgeSwapRequest,
-  EdgeWalletState,
 } from 'edge-core-js'
 import React from 'react'
 import { UseQueryOptions, useMutation, useQuery } from 'react-query'
@@ -84,29 +83,44 @@ export const useEdgeAccountTotal = (account: EdgeAccount) => {
   return { total: data!, denomination: displayDenomination }
 }
 
-export const useChangeWalletStates = (account: EdgeAccount) => {
-  const {
-    mutate: changeWalletStates,
-    ...rest
-  } = useMutation(({ walletId, walletState }: { walletId: string; walletState: EdgeWalletState }) =>
-    account.changeWalletStates({ [walletId]: walletState }),
-  )
+const toActive = (walletId: string) => ({ [walletId]: { archived: false, deleted: false } })
+const toArchived = (walletId: string) => ({ [walletId]: { archived: true, deleted: false } })
+const toDeleted = (walletId: string) => ({ [walletId]: { archived: false, deleted: true } })
+
+export const useChangeWalletState = (account: EdgeAccount, walletId: string) => {
+  const { mutate: changeWalletStates, ...rest } = useMutation(account.changeWalletStates)
+
+  const activateWallet = React.useCallback(() => changeWalletStates(toActive(walletId)), [changeWalletStates, walletId])
+  const archiveWallet = React.useCallback(() => changeWalletStates(toArchived(walletId)), [
+    changeWalletStates,
+    walletId,
+  ])
+  const deleteWallet = React.useCallback(() => changeWalletStates(toDeleted(walletId)), [changeWalletStates, walletId])
 
   return {
-    activateWallet: React.useCallback(
-      (walletId: string) => changeWalletStates({ walletId, walletState: { archived: false, deleted: false } }),
-      [changeWalletStates],
-    ),
-    archiveWallet: React.useCallback(
-      (walletId: string) => changeWalletStates({ walletId, walletState: { archived: true, deleted: false } }),
-      [changeWalletStates],
-    ),
-    deleteWallet: React.useCallback(
-      (walletId: string) => changeWalletStates({ walletId, walletState: { archived: false, deleted: true } }),
-      [changeWalletStates],
-    ),
+    activateWallet,
+    archiveWallet,
+    deleteWallet,
     ...rest,
   }
+}
+
+export const useSortWallets = (account: EdgeAccount) => {
+  const { mutate: changeWalletStates } = useMutation(account.changeWalletStates)
+
+  return React.useCallback(
+    (walletIds: string[]) =>
+      changeWalletStates(
+        walletIds.reduce(
+          (result, walletId, index) => ({
+            ...result,
+            [walletId]: { sortIndex: index },
+          }),
+          {},
+        ),
+      ),
+    [changeWalletStates],
+  )
 }
 
 export const useCreateCurrencyWallet = (account: EdgeAccount) => {

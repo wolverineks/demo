@@ -3,7 +3,7 @@ import { Accordion, Button, ListGroup } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, FiatAmount, Logo } from '../components'
-import { useChangeWalletStates, useDeletedWalletIds, useReadWalletSnapshot } from '../hooks'
+import { useChangeWalletState, useDeletedWalletIds, useReadWalletSnapshot } from '../hooks'
 import { getBalance, normalize } from '../utils'
 import { FallbackRender } from './FallbackRender'
 
@@ -69,14 +69,14 @@ const WalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
 
 const WalletOptions = ({ walletId }: { walletId: string }) => {
   const account = useEdgeAccount()
-  const { activateWallet, archiveWallet, error, status } = useChangeWalletStates(account)
+  const { activateWallet, archiveWallet, error, status } = useChangeWalletState(account, walletId)
 
   return (
     <>
-      <Button variant={'warning'} disabled={status === 'loading'} onClick={() => activateWallet(walletId)}>
+      <Button variant={'warning'} disabled={status === 'loading'} onClick={activateWallet}>
         A
       </Button>
-      <Button variant={'warning'} disabled={status === 'loading'} onClick={() => archiveWallet(walletId)}>
+      <Button variant={'warning'} disabled={status === 'loading'} onClick={archiveWallet}>
         A
       </Button>
       {error && <DisplayError error={error} />}
