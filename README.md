@@ -60,9 +60,9 @@
 
 ## Transactions
 
-view / filter transactions
-export transactions
-view transaction explorers
+- view / filter transactions
+- export transactions
+- view transaction explorers
 
 ## Exchange Rates
 
