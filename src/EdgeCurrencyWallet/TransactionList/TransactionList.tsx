@@ -1,19 +1,14 @@
 import { EdgeCurrencyWallet, EdgeTransaction } from 'edge-core-js'
 import React from 'react'
-import { FormControl, ListGroup, NavLink } from 'react-bootstrap'
+import { Button, FormControl, Image, ListGroup, NavLink, Row } from 'react-bootstrap'
 
-import { useEdgeAccount } from '../auth'
-import { Boundary, DisplayAmount } from '../components'
-import { useDisplayDenomination, useTransactionCount, useTransactions } from '../hooks'
-import {
-  exchangeToNative,
-  getAddressExplorerUrl,
-  getBlockExplorerUrl,
-  getTransactionExplorerUrl,
-  getXpubExplorerUrl,
-  nativeToDenominated,
-} from '../utils'
-import { useFilter } from './useFilter'
+import { useEdgeAccount } from '../../auth'
+import { DisplayAmount } from '../../components'
+import { useTransactionCount, useTransactions } from '../../hooks'
+import { getAddressExplorerUrl, getBlockExplorerUrl, getTransactionExplorerUrl, getXpubExplorerUrl } from '../../utils'
+import { useFilter } from '../useFilter'
+import { ExportTransactions } from './ExportTransactions'
+import { Metadata } from './Metadata'
 
 const matches = (query: string) => (transaction: EdgeTransaction): boolean => {
   const normalize = (text: string) => text.trim().toLowerCase()
@@ -36,18 +31,32 @@ export const TransactionList: React.FC<{ wallet: EdgeCurrencyWallet; currencyCod
 }) => {
   const transactionCount = useTransactionCount(wallet, { currencyCode })
   const [transactions, setFilterQuery] = useFilter(matches, useTransactions(wallet, { currencyCode }))
+  const [isActive, setIsActive] = React.useState(false)
 
   return (
     <ListGroup>
-      <ListGroup>
+      <Row style={{ justifyContent: 'space-between' }}>
         Transactions: {transactionCount} ({transactions.length})
+        <Button onClick={() => setIsActive((x) => !x)}>
+          <Image alt={'logo'} src={'../../export.png'} style={{ height: 40, width: 40 }} />
+        </Button>
+      </Row>
+
+      <Row>
+        <ExportTransactions wallet={wallet} currencyCode={currencyCode} isActive={isActive} />
+      </Row>
+
+      <Row>
         <FormControl placeholder={'Search'} onChange={(event) => setFilterQuery(event.currentTarget.value)} />
+      </Row>
+
+      <Row>
         {transactions.length <= 0 ? (
           <div>No Transactions</div>
         ) : (
           transactions.map((transaction) => <TransactionListRow transaction={transaction} key={transaction.txid} />)
         )}
-      </ListGroup>
+      </Row>
     </ListGroup>
   )
 }
@@ -60,7 +69,11 @@ const TransactionListRow: React.FC<{ transaction: EdgeTransaction }> = ({ transa
   const blockExplorerUrl = getBlockExplorerUrl(account, transaction)
 
   return (
-    <ListGroup.Item id={transaction.txid} variant={transaction.nativeAmount.startsWith('-') ? 'danger' : 'info'}>
+    <ListGroup.Item
+      style={{ flex: 1 }}
+      id={transaction.txid}
+      variant={transaction.nativeAmount.startsWith('-') ? 'danger' : 'info'}
+    >
       <span>
         <DisplayDate transaction={transaction} />:{' '}
         <DisplayAmount nativeAmount={transaction.nativeAmount} currencyCode={transaction.currencyCode} />{' '}
@@ -93,52 +106,6 @@ const TransactionListRow: React.FC<{ transaction: EdgeTransaction }> = ({ transa
         </NavLink>
       ) : null}
     </ListGroup.Item>
-  )
-}
-
-const Metadata = ({ metadata }: { metadata: NonNullable<EdgeTransaction['metadata']> }) => {
-  return (
-    <div>
-      <div>Name: {metadata.name}</div>
-      <div>Category: {metadata.category}</div>
-      <div>Notes: {metadata.notes}</div>
-      <div>Exchange Amounts:</div>
-      {metadata.exchangeAmount && <ExchangeAmounts exchangeAmounts={metadata.exchangeAmount} />}
-    </div>
-  )
-}
-
-const ExchangeAmounts = ({
-  exchangeAmounts,
-}: {
-  exchangeAmounts: NonNullable<NonNullable<EdgeTransaction['metadata']>['exchangeAmount']>
-}) => {
-  return (
-    <>
-      {Object.entries(exchangeAmounts).map(([currencyCode, exchangeAmount]) => (
-        <Boundary key={currencyCode}>
-          <ExchangeAmount currencyCode={currencyCode} exchangeAmount={exchangeAmount} />
-        </Boundary>
-      ))}
-    </>
-  )
-}
-
-const ExchangeAmount: React.FC<{ currencyCode: string; exchangeAmount: number | string }> = ({
-  currencyCode,
-  exchangeAmount,
-}) => {
-  const account = useEdgeAccount()
-  const displayDenomination = useDisplayDenomination(account, currencyCode)[0]
-  const displayAmount = nativeToDenominated({
-    nativeAmount: exchangeToNative({ account, currencyCode, exchangeAmount: String(exchangeAmount) }),
-    denomination: displayDenomination,
-  })
-
-  return (
-    <div>
-      {displayDenomination.symbol} {Number(displayAmount).toFixed(2)} {displayDenomination.name}
-    </div>
   )
 }
 

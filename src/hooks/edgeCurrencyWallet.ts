@@ -219,3 +219,13 @@ export const useNewTransaction = (
     ...queryOptions,
   })
 }
+
+export const useExportTransactions = (
+  wallet: EdgeCurrencyWallet,
+  options: EdgeGetTransactionsOptions,
+  format: 'CSV' | 'QBO',
+) => {
+  return useQuery([wallet.id, 'export-transaction', options, format], () =>
+    format === 'CSV' ? wallet.exportTransactionsToCSV(options) : wallet.exportTransactionsToQBO(options),
+  )
+}
