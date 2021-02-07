@@ -10,21 +10,6 @@ import { useFilter } from '../useFilter'
 import { ExportTransactions } from './ExportTransactions'
 import { Metadata } from './Metadata'
 
-const matches = (query: string) => (transaction: EdgeTransaction): boolean => {
-  const normalize = (text: string) => text.trim().toLowerCase()
-
-  return (
-    transaction.txid.includes(query) ||
-    normalize(new Date(transaction.date * 1000).toLocaleString()).includes(normalize(query)) ||
-    normalize(transaction.currencyCode).includes(normalize(query)) ||
-    normalize(transaction.nativeAmount).includes(normalize(query)) ||
-    normalize(transaction.metadata?.name || '').includes(normalize(query)) ||
-    normalize(transaction.metadata?.category || '').includes(normalize(query)) ||
-    normalize(transaction.metadata?.notes || '').includes(normalize(query)) ||
-    normalize(String(transaction.metadata?.amountFiat) || '').includes(normalize(query))
-  )
-}
-
 export const TransactionList: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({
   wallet,
   currencyCode,
@@ -115,4 +100,19 @@ const DisplayDate: React.FC<{ transaction: EdgeTransaction }> = ({ transaction }
   const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
 
   return <>{formattedDate}</>
+}
+
+const matches = (query: string) => (transaction: EdgeTransaction): boolean => {
+  const normalize = (text: string) => text.trim().toLowerCase()
+
+  return (
+    transaction.txid.includes(query) ||
+    normalize(new Date(transaction.date * 1000).toLocaleString()).includes(normalize(query)) ||
+    normalize(transaction.currencyCode).includes(normalize(query)) ||
+    normalize(transaction.nativeAmount).includes(normalize(query)) ||
+    normalize(transaction.metadata?.name || '').includes(normalize(query)) ||
+    normalize(transaction.metadata?.category || '').includes(normalize(query)) ||
+    normalize(transaction.metadata?.notes || '').includes(normalize(query)) ||
+    normalize(String(transaction.metadata?.amountFiat) || '').includes(normalize(query))
+  )
 }
