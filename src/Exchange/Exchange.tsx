@@ -1,4 +1,4 @@
-import { EdgeCurrencyWallet, EdgeTransaction } from 'edge-core-js'
+import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 import { Form, FormGroup, FormLabel } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
@@ -8,21 +8,6 @@ import { Balance, Boundary, Debug, FlipInput, Logo } from '../components'
 import { useDisplayDenomination, useEdgeCurrencyWallet, useEnabledTokens, useName, useSwapQuote } from '../hooks'
 import { useFiatCurrencyCode } from '../hooks'
 import { getSortedCurrencyWallets } from '../utils'
-
-export interface EdgeSwapRequest {
-  fromWallet: EdgeCurrencyWallet
-  toWallet: EdgeCurrencyWallet
-  fromCurrencyCode: string
-  toCurrencyCode: string
-  nativeAmount: string
-  quoteFor: 'from' | 'to'
-}
-
-export interface EdgeSwapResult {
-  readonly orderId?: string
-  readonly destinationAddress?: string
-  readonly transaction: EdgeTransaction
-}
 
 export const Exchange = ({ wallet, currencyCode }: { wallet: EdgeCurrencyWallet; currencyCode: string }) => {
   const account = useEdgeAccount()
