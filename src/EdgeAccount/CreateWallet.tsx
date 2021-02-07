@@ -47,7 +47,7 @@ export const CreateWallet = () => {
         disabled={status === 'loading'}
         defaultValue={defaultFiatInfo.isoCurrencyCode}
         onSelect={(event) => setFiatCurrencyCode(event.currentTarget.value)}
-        options={displayFiatInfos(defaultFiatInfo)}
+        options={fiatOptions(defaultFiatInfo)}
         renderOption={({ isoCurrencyCode, currencyCode, symbol }) => (
           <option value={isoCurrencyCode} key={isoCurrencyCode}>
             {symbol} - {currencyCode}
@@ -63,5 +63,7 @@ export const CreateWallet = () => {
   )
 }
 
-const displayFiatInfos = (fiatInfo?: FiatInfo) =>
-  fiatInfo ? [fiatInfo, ...fiatInfos.filter(({ currencyCode }) => currencyCode !== fiatInfo.currencyCode)] : fiatInfos
+const fiatOptions = (fiatInfo: FiatInfo) => [
+  fiatInfo,
+  ...fiatInfos.filter(({ currencyCode }) => currencyCode !== fiatInfo.currencyCode),
+]

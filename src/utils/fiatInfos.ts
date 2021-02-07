@@ -172,21 +172,9 @@ export const fiatInfos: FiatInfo[] = [
 ].map((info) => ({
   ...info,
   denominations: [
-    {
-      name: info.currencyCode,
-      symbol: info.symbol,
-      multiplier: '1',
-    },
-    {
-      name: info.currencyCode,
-      symbol: `c${info.symbol}`,
-      multiplier: '.01',
-    },
-    {
-      name: info.currencyCode,
-      symbol: `m${info.symbol}`,
-      multiplier: '.001',
-    },
+    { name: info.currencyCode, symbol: info.symbol, multiplier: '1' },
+    { name: info.currencyCode, symbol: `c${info.symbol}`, multiplier: '.01' },
+    { name: info.currencyCode, symbol: `m${info.symbol}`, multiplier: '.001' },
   ],
   symbolImage: `https://www.countryflags.io/${toCountryCode(info.currencyCode)}/flat/64.png`,
   isoCurrencyCode: `iso:${info.currencyCode}`,

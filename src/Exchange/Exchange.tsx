@@ -24,7 +24,7 @@ export const Exchange = ({ wallet, currencyCode }: { wallet: EdgeCurrencyWallet;
   return (
     <Form>
       <FormGroup>
-        <FromWallet walletId={fromWallet.id} currencyCode={fromCurrencyCode} />
+        <SelectedWallet direction={'from'} walletId={fromWallet.id} currencyCode={fromCurrencyCode} />
       </FormGroup>
 
       <FormGroup>
@@ -43,7 +43,7 @@ export const Exchange = ({ wallet, currencyCode }: { wallet: EdgeCurrencyWallet;
 
       {toWalletId && toCurrencyCode ? (
         <FormGroup>
-          <ToWallet walletId={toWalletId} currencyCode={toCurrencyCode} />
+          <SelectedWallet direction={'to'} walletId={toWalletId} currencyCode={toCurrencyCode} />
         </FormGroup>
       ) : null}
 
@@ -163,34 +163,24 @@ const WalletRow = ({
   )
 }
 
-const FromWallet = ({ walletId, currencyCode }: { walletId: string; currencyCode: string }) => {
+const SelectedWallet = ({
+  walletId,
+  currencyCode,
+  direction,
+}: {
+  walletId: string
+  currencyCode: string
+  direction: 'to' | 'from'
+}) => {
   const account = useEdgeAccount()
   const wallet = useEdgeCurrencyWallet({ account, walletId })
   const [name] = useName(wallet)
 
   return (
     <>
-      <FormLabel>From: {name}</FormLabel>
-      <div>
-        <span>
-          <Logo currencyCode={currencyCode} /> {name}{' '}
-          <Boundary>
-            <Balance wallet={wallet} currencyCode={currencyCode} />
-          </Boundary>
-        </span>
-      </div>
-    </>
-  )
-}
-
-const ToWallet = ({ walletId, currencyCode }: { walletId: string; currencyCode: string }) => {
-  const account = useEdgeAccount()
-  const wallet = useEdgeCurrencyWallet({ account, walletId })
-  const [name] = useName(wallet)
-
-  return (
-    <>
-      <FormLabel>To: {name} </FormLabel>
+      <FormLabel>
+        {direction === 'from' ? 'From' : 'To'}: {name}
+      </FormLabel>
       <div>
         <span>
           <Logo currencyCode={currencyCode} /> {name}{' '}

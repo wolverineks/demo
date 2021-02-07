@@ -42,12 +42,10 @@ const ExchangeRate: React.FC<{ currencyCode: string }> = ({ currencyCode }) => {
 
   return (
     <div style={{ paddingTop: 8, paddingBottom: 8 }}>
-      <Logo currencyCode={currencyCode} />
-
+      <Logo currencyCode={currencyCode} />{' '}
       <Boundary>
         <DisplayAmount nativeAmount={nativeAmount} currencyCode={currencyCode} /> ={' '}
       </Boundary>
-
       <Boundary>
         <FiatAmount nativeAmount={nativeAmount} fromCurrencyCode={currencyCode} fiatCurrencyCode={fiatCurrencyCode} />
       </Boundary>
