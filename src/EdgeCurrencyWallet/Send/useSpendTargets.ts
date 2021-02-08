@@ -14,16 +14,7 @@ export const useSpendTargets = () => {
     (state: State, action: Action) => {
       switch (action.type) {
         case 'ADD_SPEND_TARGET':
-          return [
-            ...state,
-            {
-              id: (spendTargetsCounter += 1),
-              publicAddress: '',
-              nativeAmount: '0',
-              uniqueIdentifier: '',
-              otherParams: {},
-            },
-          ]
+          return [...state, { id: (spendTargetsCounter += 1) }]
 
         case 'REMOVE_SPEND_TARGET':
           return state.filter((_, index) => index !== action.index)
@@ -37,7 +28,7 @@ export const useSpendTargets = () => {
           throw new Error('Invalid Action')
       }
     },
-    [{ id: 0, publicAddress: '', nativeAmount: '0', uniqueIdentifier: '', otherParams: {} }],
+    [{ id: 0 }],
   )
 
   const add = () => dispatch({ type: 'ADD_SPEND_TARGET' })
