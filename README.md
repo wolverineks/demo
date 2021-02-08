@@ -63,11 +63,18 @@
 
 - [x] input via crypto / fiat
 - [x] input via scan
+  - [x] amount
+  - [x] publicAddress
+  - [x] uniqueIdentifier
+  - [x] name
+  - [x] notes
+  - [x] category
 - [x] multiple targets
 - [x] destination tag
 - [x] change fee setting
 - [ ] custom fee setting
 - [x] metadata
+- [ ] payment protocol (BIP70)?
 
 ## Receive
 

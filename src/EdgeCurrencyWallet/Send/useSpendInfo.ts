@@ -7,18 +7,20 @@ import { useSpendTargets } from './useSpendTargets'
 
 export const useSpendInfo = (wallet: EdgeCurrencyWallet, currencyCode: string) => {
   const spendTargetRef = React.useRef<SpendTargetRef>(null)
+
+  const spendTargets = useSpendTargets()
+  const [metadata, setMetadata] = React.useState<EdgeSpendInfo['metadata']>({})
+  const [networkFeeOption, setNetworkFeeOption] = React.useState<EdgeSpendInfo['networkFeeOption']>('standard')
+  const updateMetadata = (metadata: EdgeMetadata) => setMetadata((current) => ({ ...current, ...metadata }))
+
   const [uri, setUri] = React.useState<string>()
   useParsedUri(wallet, uri, {
     enabled: !!uri,
-    onSuccess: ({ nativeAmount, publicAddress, uniqueIdentifier }) => {
+    onSuccess: ({ nativeAmount, publicAddress, uniqueIdentifier, metadata }) => {
       spendTargetRef.current?.setSpendTarget({ nativeAmount, publicAddress, uniqueIdentifier })
+      metadata && updateMetadata(metadata)
     },
   })
-
-  const spendTargets = useSpendTargets()
-  const [metadata, setMetadata] = React.useState({})
-  const [networkFeeOption, setNetworkFeeOption] = React.useState<EdgeSpendInfo['networkFeeOption']>('standard')
-  const updateMetadata = (metadata: EdgeMetadata) => setMetadata((current) => ({ ...current, ...metadata }))
 
   const spendInfo = React.useMemo(
     () => ({

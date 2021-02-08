@@ -74,15 +74,23 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
 
       <FormGroup>
         <FormLabel>Name</FormLabel>
-        <FormControl onChange={(event) => updateMetadata({ name: event.currentTarget.value })} />
+        <FormControl
+          value={spendInfo.metadata?.name}
+          onChange={(event) => updateMetadata({ name: event.currentTarget.value })}
+        />
       </FormGroup>
 
       <FormGroup>
         <FormLabel>Notes</FormLabel>
-        <FormControl as={'textarea'} onChange={(event) => updateMetadata({ notes: event.currentTarget.value })} />
+        <FormControl
+          as={'textarea'}
+          value={spendInfo.metadata?.notes}
+          onChange={(event) => updateMetadata({ notes: event.currentTarget.value })}
+        />
       </FormGroup>
 
       <Select
+        value={spendInfo.metadata?.category}
         title={'Category'}
         onSelect={(event) => updateMetadata({ category: event.currentTarget.value })}
         options={[{ value: 'none', display: '-' }, ...categories]}
@@ -138,6 +146,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
             spendInfo,
             maxSpendable,
             transaction,
+            clipboardUri,
           }}
         />
       </Debug>
