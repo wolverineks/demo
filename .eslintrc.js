@@ -56,7 +56,7 @@ module.exports = {
       'warn',
       { vars: 'all', varsIgnorePattern: '^_', args: 'after-used', argsIgnorePattern: '^_' },
     ],
-    'max-lines': ['error', { max: 200, skipComments: true, skipBlankLines: true }],
+    'max-lines': ['error', { max: 300, skipComments: true, skipBlankLines: true }],
   },
   settings: {
     react: {

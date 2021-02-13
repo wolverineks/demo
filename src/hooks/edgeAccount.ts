@@ -8,17 +8,11 @@ import {
 import React from 'react'
 import { UseQueryOptions, useMutation, useQuery } from 'react-query'
 
-import {
-  getActiveInfos,
-  getDeletedWalletIds,
-  getExchangeDenomination,
-  getFiatInfo,
-  getSortedCurrencyWallets,
-  nativeToDenominated,
-} from '../utils'
+import { getCustomTokenInfo } from './tokens'
+import { getFiatInfo, getInfo } from './useInfo'
 import { useInvalidateQueries } from './useInvalidateQueries'
 import { useWatch } from './watch'
-import { useDisplayDenomination } from '.'
+import { getExchangeDenomination, nativeToDenominated, useDisplayDenomination } from '.'
 
 export const useUsername = (account: EdgeAccount) => {
   useWatch(account, 'username')
@@ -41,7 +35,7 @@ export const useArchivedWalletIds = (account: EdgeAccount) => {
 export const useDeletedWalletIds = (account: EdgeAccount) => {
   useWatch(account, 'allKeys')
 
-  return getDeletedWalletIds(account)
+  return account.allKeys.filter(({ deleted }) => deleted).map(({ id }) => id)
 }
 
 export const useCurrencyWallets = (account: EdgeAccount) => {
@@ -51,31 +45,31 @@ export const useCurrencyWallets = (account: EdgeAccount) => {
 }
 
 export const useEdgeAccountTotal = (account: EdgeAccount) => {
-  const wallets = getSortedCurrencyWallets(account)
   const fiatCurrencyCode = useDefaultFiatCurrencyCode(account)[0]
   const displayDenomination = useDisplayDenomination(account, fiatCurrencyCode)[0]
 
-  const getTotal = () =>
-    Promise.all(
-      wallets.map(({ balances }) =>
-        Promise.all(
-          Object.entries(balances).map(([currencyCode, nativeAmount]) => {
-            const exchangeDenomination = getExchangeDenomination(account, currencyCode)
-            const exchangeAmount = nativeToDenominated({
-              nativeAmount: nativeAmount || String(0),
-              denomination: exchangeDenomination,
-            })
+  const getTotal = async () => {
+    let total = 0
 
-            return account.rateCache.convertCurrency(currencyCode, fiatCurrencyCode, Number(exchangeAmount))
-          }),
-        ),
-      ),
-    ).then((balances) => balances.flat().reduce((result, current) => result + current, 0))
+    for (const wallet of Object.values(account.currencyWallets)) {
+      for (const [currencyCode, nativeAmount] of Object.entries(wallet.balances)) {
+        const info = getInfo(account, currencyCode) || (await getCustomTokenInfo(wallet, currencyCode))
+        const exchangeDenomination = getExchangeDenomination(info)
+        const exchangeAmount = nativeToDenominated({
+          nativeAmount: nativeAmount || String(0),
+          denomination: exchangeDenomination,
+        })
+
+        total += await account.rateCache.convertCurrency(currencyCode, fiatCurrencyCode, Number(exchangeAmount))
+      }
+    }
+
+    return total
+  }
 
   const { data, refetch } = useQuery({
     queryKey: [account.username, 'accountTotal'],
     queryFn: () => getTotal(),
-    refetchInterval: 1000,
   })
 
   useOnRateChange(account, () => refetch())
@@ -161,16 +155,6 @@ export const useDefaultFiatInfo = (account: EdgeAccount) => {
   const [currencyCode] = useDefaultFiatCurrencyCode(account)
 
   return getFiatInfo(currencyCode)
-}
-
-export const useActiveInfos = (account: EdgeAccount) => {
-  const queryFn = () => getActiveInfos(account)
-  const queryKey = 'activeInfos'
-  const { refetch, data } = useQuery(queryKey, queryFn, { suspense: true })
-
-  useWatch(account, 'currencyWallets', () => refetch())
-
-  return data!
 }
 
 export const useEdgeCurrencyWallet = (

@@ -3,8 +3,7 @@ import React from 'react'
 
 import { useEdgeAccount } from '../auth'
 import { AmountInput, Boundary } from '../components'
-import { useDenominations } from '../hooks'
-import { denominatedToNative, nativeToDenominated } from '../utils'
+import { denominatedToNative, nativeToDenominated, useDenominations } from '../hooks'
 
 type FlipInputProps = {
   onChange: (nativeAmount: string) => any

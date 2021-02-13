@@ -1,15 +1,13 @@
-import { EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeMetaToken, EdgeTokenInfo } from 'edge-core-js'
 import React from 'react'
-import { Card, FormControl, ListGroup } from 'react-bootstrap'
+import { Accordion, Button, Form, FormControl, FormGroup, FormLabel, ListGroup } from 'react-bootstrap'
 
-import { useEdgeAccount } from '../../auth'
-import { Logo } from '../../components'
-import { useTokens } from '../../hooks'
+import { Boundary, Logo } from '../../components'
+import { useCustomTokens, useTokens } from '../../hooks'
 import { useFilter } from '../useFilter'
 
 export const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
-  const account = useEdgeAccount()
-  const { enabledTokens, enableToken, disableToken, availableTokenInfos } = useTokens(account, wallet)
+  const { enabledTokens, enableToken, disableToken, tokenInfos, customTokenInfos } = useTokens(wallet)
   const toggleToken = React.useCallback(
     (currencyCode: string) =>
       enabledTokens.includes(currencyCode) ? disableToken(currencyCode) : enableToken(currencyCode),
@@ -24,31 +22,34 @@ export const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => 
       normalize(token.contractAddress || '').includes(normalize(query))
     )
   }
-  const [visibleTokens, setSearchQuery] = useFilter(matches, availableTokenInfos)
+  const [visibleTokens, setSearchQuery] = useFilter(matches, [...customTokenInfos.all, ...tokenInfos])
 
   return (
-    <Card>
-      <Card.Header>
-        <Card.Title>Tokens</Card.Title>
-      </Card.Header>
-      <ListGroup>
-        <FormControl placeholder={'Search'} onChange={(event) => setSearchQuery(event.currentTarget.value)} />
-        {visibleTokens.length <= 0 ? (
-          <ListGroup.Item>No Tokens Available</ListGroup.Item>
-        ) : (
-          [...visibleTokens]
-            .sort()
-            .map((tokenInfo) => (
-              <TokenRow
-                key={tokenInfo.currencyCode}
-                tokenInfo={tokenInfo}
-                isEnabled={enabledTokens.includes(tokenInfo.currencyCode)}
-                onClick={toggleToken}
-              />
-            ))
-        )}
-      </ListGroup>
-    </Card>
+    <FormGroup>
+      <FormLabel>Tokens</FormLabel>
+      <Accordion>
+        <Accordion.Toggle eventKey={'addToken'}>
+          <Button>+</Button>
+        </Accordion.Toggle>
+        <Accordion.Collapse eventKey={'addToken'}>
+          <AddToken wallet={wallet} />
+        </Accordion.Collapse>
+      </Accordion>
+      <FormControl placeholder={'Search'} onChange={(event) => setSearchQuery(event.currentTarget.value)} />
+      {visibleTokens.length <= 0 ? (
+        <ListGroup.Item>No Tokens Available</ListGroup.Item>
+      ) : (
+        [...visibleTokens].sort().map((tokenInfo) => (
+          <Boundary key={tokenInfo.currencyCode}>
+            <TokenRow
+              tokenInfo={tokenInfo}
+              isEnabled={enabledTokens.includes(tokenInfo.currencyCode)}
+              onClick={toggleToken}
+            />
+          </Boundary>
+        ))
+      )}
+    </FormGroup>
   )
 }
 
@@ -57,7 +58,7 @@ const TokenRow: React.FC<{
   isEnabled: boolean
   onClick: (currencyCode: string) => void
 }> = ({ tokenInfo, isEnabled, onClick }) => {
-  const { currencyName } = tokenInfo
+  const { currencyName, displayName } = tokenInfo as any
 
   return (
     <ListGroup.Item
@@ -65,7 +66,52 @@ const TokenRow: React.FC<{
       variant={isEnabled ? 'primary' : undefined}
       onClick={() => onClick(tokenInfo.currencyCode)}
     >
-      <Logo currencyCode={tokenInfo.currencyCode} /> {tokenInfo.currencyCode} - {currencyName}
+      <Logo currencyCode={tokenInfo.currencyCode} /> {tokenInfo.currencyCode} - {currencyName || displayName}
     </ListGroup.Item>
+  )
+}
+
+const AddToken = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
+  const [currencyName, setCurrencyName] = React.useState('')
+  const [currencyCode, setCurrencyCode] = React.useState('')
+  const [contractAddress, setContractAddress] = React.useState('')
+  const [multiplier, setMultiplier] = React.useState('')
+  const tokenInfo: EdgeTokenInfo = { currencyName, currencyCode, contractAddress, multiplier }
+
+  const { add } = useCustomTokens(wallet)
+
+  const reset = () => {
+    setCurrencyCode('')
+    setCurrencyCode('')
+    setContractAddress('')
+    setMultiplier('')
+  }
+
+  return (
+    <Form>
+      <Form.Group>
+        <Form.Label>Token Name</Form.Label>
+        <FormControl onChange={(event) => setCurrencyName(event.currentTarget.value)} />
+      </Form.Group>
+
+      <Form.Group>
+        <Form.Label>Token Code</Form.Label>
+        <FormControl onChange={(event) => setCurrencyCode(event.currentTarget.value)} />
+      </Form.Group>
+
+      <Form.Group>
+        <Form.Label>Contract Address</Form.Label>
+        <FormControl onChange={(event) => setContractAddress(event.currentTarget.value)} />
+      </Form.Group>
+
+      <Form.Group>
+        <Form.Label>Multiplier</Form.Label>
+        <FormControl onChange={(event) => setMultiplier(event.currentTarget.value)} />
+      </Form.Group>
+
+      <Form.Group>
+        <Button onClick={() => add(tokenInfo).then(reset)}>Save</Button>
+      </Form.Group>
+    </Form>
   )
 }

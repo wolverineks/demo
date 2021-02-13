@@ -3,15 +3,13 @@ import { FormControl } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, FiatAmount, Logo } from '../components'
-import { useActiveInfos, useDefaultFiatCurrencyCode, useDisplayToNative } from '../hooks'
-import { isUnique } from '../utils'
+import { useActiveCurrencyCodes, useDefaultFiatCurrencyCode, useDisplayToNative } from '../hooks'
 
 export const ExchangeRates = () => {
   const [searchQuery, setSearchQuery] = React.useState('')
   const account = useEdgeAccount()
-  const currencyCodes = useActiveInfos(account)
-    .map(({ currencyCode }) => currencyCode)
-    .filter(isUnique)
+  const currencyCodes = useActiveCurrencyCodes(account)
+
   const visibleCurrencyCodes = currencyCodes.filter((currencyCode) =>
     currencyCode.toLowerCase().trim().includes(searchQuery.toLowerCase().trim()),
   )

@@ -22,15 +22,12 @@ export const useSpendInfo = (wallet: EdgeCurrencyWallet, currencyCode: string) =
     },
   })
 
-  const spendInfo = React.useMemo(
-    () => ({
-      currencyCode,
-      spendTargets: spendTargets.all.map(({ id: _id, ...spendTarget }) => spendTarget as EdgeSpendTarget),
-      metadata,
-      networkFeeOption,
-    }),
-    [currencyCode, metadata, networkFeeOption, spendTargets],
-  )
+  const spendInfo = {
+    currencyCode,
+    spendTargets: spendTargets.all.map(({ id: _id, ...spendTarget }) => spendTarget as EdgeSpendTarget),
+    metadata,
+    networkFeeOption,
+  }
 
   return {
     setNetworkFeeOption,

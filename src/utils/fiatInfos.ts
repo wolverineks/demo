@@ -8,6 +8,7 @@ export type FiatInfo = {
   symbol: string
   symbolImage: string
   denominations: EdgeDenomination[]
+  displayName: string
 }
 export const fiatInfos: FiatInfo[] = [
   { currencyCode: 'AED', symbol: 'Ø¯.Ø¥' },
@@ -178,4 +179,5 @@ export const fiatInfos: FiatInfo[] = [
   ],
   symbolImage: `https://www.countryflags.io/${toCountryCode(info.currencyCode)}/flat/64.png`,
   isoCurrencyCode: `iso:${info.currencyCode}`,
+  displayName: info.currencyCode,
 }))

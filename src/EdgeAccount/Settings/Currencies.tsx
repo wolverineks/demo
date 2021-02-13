@@ -4,38 +4,47 @@ import { FormControl, ListGroup, ListGroupItem } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../../auth'
 import { Boundary, Logo } from '../../components'
-import { useActiveInfos, useDefaultFiatInfo, useDenominations } from '../../hooks'
+import { useActiveCurrencyCodes, useDefaultFiatCurrencyCode, useDenominations, useInfo } from '../../hooks'
 import { FiatInfo, isFiat, isToken, normalize } from '../../utils'
+
+export const Currencies: React.FC = () => {
+  const account = useEdgeAccount()
+  const [searchQuery, setSearchQuery] = React.useState('')
+  const [fiatCurrencyCode] = useDefaultFiatCurrencyCode(account)
+  const settings = [fiatCurrencyCode, ...useActiveCurrencyCodes(account)]
+
+  return (
+    <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
+      <FormControl placeholder={'Search'} onChange={(event) => setSearchQuery(event.currentTarget.value)} />
+
+      {settings.map((currencyCode) => (
+        <Matcher key={currencyCode} currencyCode={currencyCode} query={searchQuery}>
+          <CurrencySetting currencyCode={currencyCode} />
+        </Matcher>
+      ))}
+    </ListGroup>
+  )
+}
 
 const matches = (query: string) => (info: EdgeCurrencyInfo | EdgeMetaToken | FiatInfo) =>
   normalize(info.currencyCode).includes(normalize(query)) ||
   (isToken(info)
     ? normalize(info.currencyName).includes(normalize(query))
     : isFiat(info)
-    ? normalize(info.currencyCode)
+    ? normalize(info.currencyCode).includes(normalize(query))
     : normalize(info.displayName).includes(normalize(query)))
 
-export const Currencies: React.FC = () => {
+const Matcher: React.FC<{ query: string; currencyCode: string }> = ({ query, currencyCode, children }) => {
   const account = useEdgeAccount()
-  const [searchQuery, setSearchQuery] = React.useState('')
-  const fiatInfo = useDefaultFiatInfo(account)
-  const visibleSettings = [(fiatInfo as unknown) as EdgeCurrencyInfo, ...useActiveInfos(account)].filter(
-    matches(searchQuery),
-  )
+  const info = useInfo(account, currencyCode)
 
-  return (
-    <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
-      <FormControl placeholder={'Search'} onChange={(event) => setSearchQuery(event.currentTarget.value)} />
-      {visibleSettings.length <= 0 ? (
-        <div>No matching settings</div>
-      ) : (
-        visibleSettings.map((currencyInfo) => <CurrencySetting key={currencyInfo.currencyCode} info={currencyInfo} />)
-      )}
-    </ListGroup>
-  )
+  return <>{matches(query)(info) ? children : null}</>
 }
 
-const CurrencySetting: React.FC<{ info: EdgeCurrencyInfo | EdgeMetaToken }> = ({ info }) => {
+const CurrencySetting: React.FC<{ currencyCode: string }> = ({ currencyCode }) => {
+  const account = useEdgeAccount()
+  const info = useInfo(account, currencyCode)
+
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       <ListGroupItem>

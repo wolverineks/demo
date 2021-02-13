@@ -4,8 +4,14 @@ import { Button, FormControl, Image, ListGroup, NavLink, Row } from 'react-boots
 
 import { useEdgeAccount } from '../../auth'
 import { DisplayAmount } from '../../components'
-import { useTransactionCount, useTransactions } from '../../hooks'
-import { getAddressExplorerUrl, getBlockExplorerUrl, getTransactionExplorerUrl, getXpubExplorerUrl } from '../../utils'
+import {
+  useAddressExplorerUrl,
+  useBlockExplorerUrl,
+  useTransactionCount,
+  useTransactionExplorerUrl,
+  useTransactions,
+  useXpubExplorerUrl,
+} from '../../hooks'
 import { useFilter } from '../useFilter'
 import { ExportTransactions } from './ExportTransactions'
 import { Metadata } from './Metadata'
@@ -48,10 +54,10 @@ export const TransactionList: React.FC<{ wallet: EdgeCurrencyWallet; currencyCod
 
 const TransactionListRow: React.FC<{ transaction: EdgeTransaction }> = ({ transaction }) => {
   const account = useEdgeAccount()
-  const transactionExplorerUrl = getTransactionExplorerUrl(account, transaction)
-  const addressExplorerUrl = getAddressExplorerUrl(account, transaction)
-  const xPubExplorerUrl = getXpubExplorerUrl(account, transaction)
-  const blockExplorerUrl = getBlockExplorerUrl(account, transaction)
+  const transactionExplorerUrl = useTransactionExplorerUrl(account, transaction)
+  const addressExplorerUrl = useAddressExplorerUrl(account, transaction)
+  const xPubExplorerUrl = useXpubExplorerUrl(account, transaction)
+  const blockExplorerUrl = useBlockExplorerUrl(account, transaction)
 
   return (
     <ListGroup.Item

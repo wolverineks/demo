@@ -74,7 +74,7 @@
 - [x] change fee setting
 - [ ] custom fee setting
 - [x] metadata
-- [ ] payment protocol (BIP70)?
+- [ ] JSON payment protocol
 
 ## Receive
 

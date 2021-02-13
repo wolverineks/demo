@@ -2,11 +2,11 @@ import React from 'react'
 import { Image } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
-import { getLogo } from '../utils'
+import { useInfo } from '../hooks'
 
 export const Logo: React.FC<{ currencyCode: string }> = ({ currencyCode }) => {
   const account = useEdgeAccount()
-  const logo = getLogo(account, currencyCode)
+  const info = useInfo(account, currencyCode)
 
-  return <Image src={logo} style={{ height: 80, width: 80 }} />
+  return <Image src={info.symbolImage || '../../unknown-currency.png'} style={{ height: 80, width: 80 }} />
 }
