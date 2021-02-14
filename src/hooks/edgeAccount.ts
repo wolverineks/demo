@@ -164,6 +164,7 @@ export const useEdgeCurrencyWallet = (
   const { data: wallet } = useQuery({
     queryKey: [walletId, 'wallet'],
     queryFn: () => account.waitForCurrencyWallet(walletId),
+    cacheTime: 1, // HACK: remove from cache ASAP to prevent trying to interact with a deactivated wallet, cacheTime: 0 causes infinite loop
     ...queryOptions,
   })
 
