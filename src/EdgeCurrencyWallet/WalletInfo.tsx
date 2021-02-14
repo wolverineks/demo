@@ -20,7 +20,7 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: st
   )
 
   return (
-    <Tabs id={'walletTabs'} defaultActiveKey={'history'} mountOnEnter>
+    <Tabs id={'walletTabs'} defaultActiveKey={'history'} mountOnEnter unmountOnExit>
       <Tab eventKey={'history'} title={'History'}>
         <Boundary>
           <TransactionList wallet={wallet} currencyCode={currencyCode} key={`${wallet.id}:${currencyCode}`} />
