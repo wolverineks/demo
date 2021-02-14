@@ -81,6 +81,7 @@ const AddToken = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
   const { add } = useCustomTokens(wallet)
 
   const reset = () => {
+    setCurrencyName('')
     setCurrencyCode('')
     setCurrencyCode('')
     setContractAddress('')
@@ -91,22 +92,22 @@ const AddToken = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
     <Form>
       <Form.Group>
         <Form.Label>Token Name</Form.Label>
-        <FormControl onChange={(event) => setCurrencyName(event.currentTarget.value)} />
+        <FormControl value={currencyName} onChange={(event) => setCurrencyName(event.currentTarget.value)} />
       </Form.Group>
 
       <Form.Group>
         <Form.Label>Token Code</Form.Label>
-        <FormControl onChange={(event) => setCurrencyCode(event.currentTarget.value)} />
+        <FormControl value={currencyCode} onChange={(event) => setCurrencyCode(event.currentTarget.value)} />
       </Form.Group>
 
       <Form.Group>
         <Form.Label>Contract Address</Form.Label>
-        <FormControl onChange={(event) => setContractAddress(event.currentTarget.value)} />
+        <FormControl value={contractAddress} onChange={(event) => setContractAddress(event.currentTarget.value)} />
       </Form.Group>
 
       <Form.Group>
         <Form.Label>Multiplier</Form.Label>
-        <FormControl onChange={(event) => setMultiplier(event.currentTarget.value)} />
+        <FormControl value={multiplier} onChange={(event) => setMultiplier(event.currentTarget.value)} />
       </Form.Group>
 
       <Form.Group>

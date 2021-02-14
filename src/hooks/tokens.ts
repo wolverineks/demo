@@ -74,10 +74,14 @@ export const useCustomTokens = (wallet: EdgeCurrencyWallet) => {
   const all = useReadCustomTokens(wallet).data!
   const write = useWriteCustomTokens(wallet)
   const add = async (tokenInfo: EdgeTokenInfo) => {
-    const metatoken: EdgeMetaToken = {
+    const metatoken = {
       ...tokenInfo,
       denominations: [{ name: tokenInfo.currencyName, multiplier: tokenInfo.multiplier }],
       symbolImage: '',
+      addressExplorer: wallet.currencyInfo.addressExplorer,
+      blockExplorer: wallet.currencyInfo.blockExplorer,
+      transactionExplorer: wallet.currencyInfo.transactionExplorer,
+      xpubExplorer: wallet.currencyInfo.xpubExplorer,
     }
 
     return write.mutateAsync({
@@ -95,7 +99,14 @@ export const useCustomTokens = (wallet: EdgeCurrencyWallet) => {
 
   return {
     all: Object.values(all),
-    add: React.useCallback(add, [all, write]),
+    add: React.useCallback(add, [
+      all,
+      wallet.currencyInfo.addressExplorer,
+      wallet.currencyInfo.blockExplorer,
+      wallet.currencyInfo.transactionExplorer,
+      wallet.currencyInfo.xpubExplorer,
+      write,
+    ]),
     update: React.useCallback(update, [all, write]),
   }
 }
