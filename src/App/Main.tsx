@@ -7,27 +7,36 @@ import { Settings } from '../EdgeAccount/Settings'
 import { Exchange } from '../Exchange'
 import { useActiveWalletIds } from '../hooks'
 import { Route, useRoute } from '../route'
-import { useSelectedWallet } from '../SelectedWallet'
+import { SelectedWalletBoundary, useSelectedWallet } from '../SelectedWallet'
 
 export const Main = () => {
   const route = useRoute()
   const account = useEdgeAccount()
   const activeWalletIds = useActiveWalletIds(account)
-  const [{ wallet, currencyCode }] = useSelectedWallet()
 
   return (
     <>
       {route === Route.account ? (
-        <SelectedWalletInfo />
+        <SelectedWalletBoundary fallback={<div>No Selected Wallet</div>}>
+          <SelectedWalletInfo />
+        </SelectedWalletBoundary>
       ) : route === Route.settings ? (
         <Settings />
       ) : route === Route.createWallet ? (
         <CreateWallet key={activeWalletIds.length} />
       ) : route === Route.exchange ? (
-        <Exchange wallet={wallet} currencyCode={currencyCode} />
+        <SelectedWalletBoundary>
+          <ExchangeWithSelectedWallet />
+        </SelectedWalletBoundary>
       ) : (
         <div>404</div>
       )}
     </>
   )
+}
+
+const ExchangeWithSelectedWallet = () => {
+  const [{ wallet, currencyCode }] = useSelectedWallet()
+
+  return <Exchange wallet={wallet} currencyCode={currencyCode} />
 }
