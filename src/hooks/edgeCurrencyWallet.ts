@@ -45,7 +45,9 @@ export const useBalance = (wallet: EdgeCurrencyWallet, currencyCode: string) => 
 }
 
 export const useWriteFiatCurrencyCode = (wallet: EdgeCurrencyWallet) => {
-  return useMutation(wallet.setFiatCurrencyCode)
+  return useMutation(wallet.setFiatCurrencyCode, {
+    ...useInvalidateQueries([['walletFiatCurrencyCodes']]),
+  })
 }
 
 export const useFiatCurrencyCode = (wallet: EdgeCurrencyWallet) => {

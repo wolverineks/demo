@@ -1,17 +1,29 @@
-import { EdgeCurrencyInfo, EdgeDenomination, EdgeMetaToken } from 'edge-core-js'
+import { EdgeAccount, EdgeCurrencyInfo, EdgeDenomination, EdgeMetaToken } from 'edge-core-js'
 import React from 'react'
 import { FormControl, ListGroup, ListGroupItem } from 'react-bootstrap'
+import { useQuery } from 'react-query'
 
 import { useEdgeAccount } from '../../auth'
 import { Boundary, Logo } from '../../components'
-import { useActiveCurrencyCodes, useDefaultFiatCurrencyCode, useDenominations, useInfo } from '../../hooks'
-import { FiatInfo, isFiat, isToken, normalize } from '../../utils'
+import { useActiveCurrencyCodes, useDefaultFiatCurrencyCode, useDenominations, useInfo, useWatch } from '../../hooks'
+import { FiatInfo, getSortedCurrencyWallets, isFiat, isToken, normalize, unique } from '../../utils'
+
+const useWalletFiatCurrencyCodes = (account: EdgeAccount) => {
+  const getWalletFiatCurrencyCodes = () =>
+    unique(getSortedCurrencyWallets(account).map(({ fiatCurrencyCode }) => fiatCurrencyCode))
+
+  const { refetch, data } = useQuery('walletFiatCurrencyCodes', () => getWalletFiatCurrencyCodes())
+  useWatch(account, 'currencyWallets', () => refetch())
+
+  return data!
+}
 
 export const Currencies: React.FC = () => {
   const account = useEdgeAccount()
   const [searchQuery, setSearchQuery] = React.useState('')
   const [fiatCurrencyCode] = useDefaultFiatCurrencyCode(account)
-  const settings = [fiatCurrencyCode, ...useActiveCurrencyCodes(account)]
+  const walletFiatCurrencyCodes = useWalletFiatCurrencyCodes(account)
+  const settings = unique([fiatCurrencyCode, ...walletFiatCurrencyCodes, ...useActiveCurrencyCodes(account)])
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
