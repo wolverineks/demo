@@ -1,10 +1,19 @@
+import { EdgeAccount } from 'edge-core-js'
 import React from 'react'
 import { Alert, Button, Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
 import { Select } from '../components'
 import { useCreateCurrencyWallet, useDefaultFiatInfo } from '../hooks'
-import { FiatInfo, fiatInfos, getWalletTypes } from '../utils'
+import { FiatInfo, fiatInfos, getCurrencyInfos } from '../utils'
+
+export const getWalletTypes = (account: EdgeAccount) => {
+  return getCurrencyInfos(account).map(({ displayName, walletType, ...currencyInfo }) => ({
+    name: displayName,
+    type: walletType,
+    ...currencyInfo,
+  }))
+}
 
 export const CreateWallet = () => {
   const account = useEdgeAccount()

@@ -1,8 +1,18 @@
+import { EdgeAccount } from 'edge-core-js'
 import React from 'react'
 
 import { useEdgeAccount } from '../auth'
 import { useActiveWalletIds, useEdgeCurrencyWallet, useTokens } from '../hooks'
-import { getCurrencyCodeFromWalletId } from '../utils'
+
+export const getCurrencyCodeFromWalletId = (account: EdgeAccount, id: string) => {
+  const { allKeys, currencyConfig } = account
+  const walletInfo = allKeys.find((walletInfo) => walletInfo.id === id)
+  const currencyCode = Object.values(currencyConfig).find(
+    ({ currencyInfo }) => currencyInfo.walletType === walletInfo?.type,
+  )!.currencyInfo.currencyCode
+
+  return currencyCode
+}
 
 type SelectedWalletInfo = { id: string; currencyCode: string }
 type SetSelectedWalletInfo = (selectedWalletInfo?: SelectedWalletInfo) => void

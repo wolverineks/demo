@@ -4,8 +4,9 @@ import { Accordion, Button, ListGroup } from 'react-bootstrap'
 import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, FiatAmount, Logo } from '../components'
 import { useChangeWalletState, useDeletedWalletIds, useReadWalletSnapshot } from '../hooks'
-import { getBalance, normalize } from '../utils'
+import { normalize } from '../utils'
 import { FallbackRender } from './FallbackRender'
+import { getBalance } from './utils'
 
 export const DeletedWalletList = ({ searchQuery }: { searchQuery: string }) => {
   const account = useEdgeAccount()

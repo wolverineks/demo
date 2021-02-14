@@ -4,9 +4,10 @@ import { Accordion, Button, ListGroup } from 'react-bootstrap'
 import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, FiatAmount, Logo } from '../components'
 import { useArchivedWalletIds, useChangeWalletState, useReadWalletSnapshot } from '../hooks'
-import { getBalance, normalize } from '../utils'
+import { normalize } from '../utils'
 import { WalletSnapshots } from '../WalletSnapshots'
 import { FallbackRender } from './FallbackRender'
+import { getBalance } from './utils'
 
 export const ArchivedWalletList = ({ searchQuery }: { searchQuery: string }) => {
   const account = useEdgeAccount()
