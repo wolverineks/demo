@@ -26,7 +26,8 @@
 - [x] archive wallet
 - [x] delete wallet
 - [ ] create default wallets
-- [ ] sort wallets
+- [x] sort wallets
+- [ ] drag to sort wallets
 
 ## Account Settings
 
@@ -50,7 +51,8 @@
 - [x] rename wallet
 - [x] set fiat currency code
 - [x] enable / disable tokens
-- [ ] add custom token
+- [x] add custom token
+- [ ] edit custom token
 - [x] display public seed
 - [x] display private seed
 - [x] display raw key
