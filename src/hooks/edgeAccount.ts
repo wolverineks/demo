@@ -124,16 +124,19 @@ export const useCreateCurrencyWallet = (account: EdgeAccount) => {
   return useMutation(mutationFn)
 }
 
-export const useReadDefaultFiatCurrencyCode = (account: EdgeAccount, queryOptions?: UseQueryOptions<string>) => {
+export const getDefaultFiatCurrencyCode = (account: EdgeAccount) => {
   const defaultFiatCurrencyCode = 'iso:USD'
 
+  return account.dataStore
+    .getItem('defaultFiatCurrencyCode', 'defaultFiatCurrencyCode.json')
+    .then(JSON.parse)
+    .catch(() => defaultFiatCurrencyCode) as Promise<string>
+}
+
+export const useReadDefaultFiatCurrencyCode = (account: EdgeAccount, queryOptions?: UseQueryOptions<string>) => {
   return useQuery({
     queryKey: [account.username, 'defaultFiatCurrencyCode'],
-    queryFn: () =>
-      account.dataStore
-        .getItem('defaultFiatCurrencyCode', 'defaultFiatCurrencyCode.json')
-        .then(JSON.parse)
-        .catch(() => defaultFiatCurrencyCode) as Promise<string>,
+    queryFn: () => getDefaultFiatCurrencyCode(account),
     ...queryOptions,
   })
 }
@@ -153,8 +156,10 @@ export const useDefaultFiatCurrencyCode = (account: EdgeAccount) => {
 
 export const useDefaultFiatInfo = (account: EdgeAccount) => {
   const [currencyCode] = useDefaultFiatCurrencyCode(account)
+  const fiatInfo = getFiatInfo(currencyCode)
+  if (!fiatInfo) throw new Error(`Invalid Currency Code: ${currencyCode}`)
 
-  return getFiatInfo(currencyCode)
+  return fiatInfo
 }
 
 export const useEdgeCurrencyWallet = (

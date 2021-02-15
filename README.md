@@ -25,7 +25,7 @@
 - [x] activate wallet
 - [x] archive wallet
 - [x] delete wallet
-- [ ] create default wallets
+- [x] create default wallets
 - [x] sort wallets
 - [ ] drag to sort wallets
 
