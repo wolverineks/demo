@@ -64,17 +64,19 @@ const FolderContents: React.FC<{ disklet: DiskletType; path: string; id: string 
 
   return (
     <ListGroup>
-      {Object.entries(folder.data!).map(([key, value]) =>
-        value === 'folder' ? (
-          <ListGroup.Item key={key}>
-            <Folder id={id} disklet={disklet} path={key} onDelete={folder.refetch} />
-          </ListGroup.Item>
-        ) : value === 'file' ? (
-          <ListGroup.Item key={key}>
-            <File disklet={disklet} path={key} id={id} onDelete={folder.refetch} />
-          </ListGroup.Item>
-        ) : null,
-      )}
+      {Object.entries(folder.data!)
+        .sort()
+        .map(([key, value]) =>
+          value === 'folder' ? (
+            <ListGroup.Item key={key}>
+              <Folder id={id} disklet={disklet} path={key} onDelete={folder.refetch} />
+            </ListGroup.Item>
+          ) : value === 'file' ? (
+            <ListGroup.Item key={key}>
+              <File disklet={disklet} path={key} id={id} onDelete={folder.refetch} />
+            </ListGroup.Item>
+          ) : null,
+        )}
     </ListGroup>
   )
 }

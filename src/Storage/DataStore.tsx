@@ -32,7 +32,7 @@ export const DataStoreContents: React.FC<{ dataStore: EdgeDataStore }> = ({ data
 
   return (
     <>
-      {storeIds!.map((storeId) => (
+      {storeIds!.sort().map((storeId) => (
         <ListGroup.Item key={storeId}>
           <Store dataStore={dataStore} storeId={storeId} onDelete={refetch} />
         </ListGroup.Item>
@@ -62,7 +62,7 @@ export const Store: React.FC<{ dataStore: EdgeDataStore; storeId: string; onDele
 const StoreContents: React.FC<{ dataStore: EdgeDataStore; storeId: string }> = ({ dataStore, storeId }) => {
   const { data: itemIds, refetch } = useItemIds({ dataStore, storeId })
 
-  if (Object.entries(itemIds!).length <= 0) {
+  if (Object.entries(itemIds!).sort().length <= 0) {
     return (
       <ListGroup>
         <ListGroup.Item>Empty</ListGroup.Item>
