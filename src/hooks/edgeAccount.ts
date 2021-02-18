@@ -8,7 +8,7 @@ import {
 import React from 'react'
 import { UseQueryOptions, useMutation, useQuery } from 'react-query'
 
-import { getCustomTokenInfo } from './tokens'
+import { readCustomTokenInfo } from './tokens'
 import { getFiatInfo, getInfo } from './useInfo'
 import { useInvalidateQueries } from './useInvalidateQueries'
 import { useWatch } from './watch'
@@ -53,7 +53,8 @@ export const useEdgeAccountTotal = (account: EdgeAccount) => {
 
     for (const wallet of Object.values(account.currencyWallets)) {
       for (const [currencyCode, nativeAmount] of Object.entries(wallet.balances)) {
-        const info = getInfo(account, currencyCode) || (await getCustomTokenInfo(wallet, currencyCode))
+        const info = getInfo(account, currencyCode) || (await readCustomTokenInfo(wallet, currencyCode))
+        if (!info) continue
         const exchangeDenomination = getExchangeDenomination(info)
         const exchangeAmount = nativeToDenominated({
           nativeAmount: nativeAmount || String(0),

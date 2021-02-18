@@ -7,11 +7,11 @@ import { Balance, Boundary, Logo } from '../../components'
 import {
   useActiveWalletIds,
   useEdgeCurrencyWallet,
-  useEnabledTokens,
   useFiatCurrencyCode,
   useName,
   useOnNewTransactions,
   useSyncRatio,
+  useTokens,
 } from '../../hooks'
 import { useSelectedWalletInfo } from '../../SelectedWallet'
 import { normalize } from '../../utils'
@@ -48,11 +48,11 @@ export const ActiveWalletList: React.FC<{ onSelect: () => void; searchQuery: str
 
 const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId, searchQuery, children }) => {
   const wallet = useEdgeCurrencyWallet({ account: useEdgeAccount(), walletId })
-  const enabledTokens = useEnabledTokens(wallet)
+  const tokens = useTokens(wallet)
   const [name] = useName(wallet)
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
 
-  const display = [name || '', wallet.currencyInfo.currencyCode, fiatCurrencyCode, ...enabledTokens].some((target) =>
+  const display = [name || '', wallet.currencyInfo.currencyCode, fiatCurrencyCode, ...tokens.enabled].some((target) =>
     normalize(target).includes(normalize(searchQuery)),
   )
 

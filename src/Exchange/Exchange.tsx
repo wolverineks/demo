@@ -5,7 +5,7 @@ import JSONPretty from 'react-json-pretty'
 
 import { useEdgeAccount } from '../auth'
 import { Balance, Boundary, Debug, FlipInput, Logo } from '../components'
-import { useDisplayDenomination, useEdgeCurrencyWallet, useEnabledTokens, useName, useSwapQuote } from '../hooks'
+import { useDisplayDenomination, useEdgeCurrencyWallet, useName, useSwapQuote, useTokens } from '../hooks'
 import { useFiatCurrencyCode } from '../hooks'
 import { getSortedCurrencyWallets } from '../utils'
 
@@ -148,13 +148,13 @@ const WalletRow = ({
   wallet: EdgeCurrencyWallet
   onSelect: ({ wallet, currencyCode }: { wallet: EdgeCurrencyWallet; currencyCode: string }) => void
 }) => {
-  const enabledTokens = useEnabledTokens(wallet)
+  const tokens = useTokens(wallet)
   const [name] = useName(wallet)
 
   return (
     <div>
       <div onClick={() => onSelect({ wallet, currencyCode: wallet.currencyInfo.currencyCode })}>{name}</div>
-      {enabledTokens.map((token) => (
+      {tokens.enabled.map((token) => (
         <div key={token} onClick={() => onSelect({ wallet, currencyCode: token })}>
           {token}
         </div>

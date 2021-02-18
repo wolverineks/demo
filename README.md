@@ -50,9 +50,6 @@
 
 - [x] rename wallet
 - [x] set fiat currency code
-- [x] enable / disable tokens
-- [x] add custom token
-- [ ] edit custom token
 - [x] display public seed
 - [x] display private seed
 - [x] display raw key
@@ -60,6 +57,12 @@
 - [x] local disklet explorer
 - [ ] split wallet
 - [ ] add / enable / disable custom nodes
+
+## Tokens
+
+- [x] enable / disable tokens
+- [x] add custom token
+- [x] edit custom token
 
 ## Send
 

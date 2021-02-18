@@ -3,17 +3,17 @@ import React from 'react'
 import { ListGroup } from 'react-bootstrap'
 
 import { Balance, Boundary, Logo } from '../../components'
-import { useEnabledTokens } from '../../hooks'
+import { useTokens } from '../../hooks'
 import { useSelectedWalletInfo } from '../../SelectedWallet'
 
 export const EnabledTokens: React.FC<{ wallet: EdgeCurrencyWallet; onSelect: () => void }> = ({ wallet, onSelect }) => {
-  const tokenCodes = useEnabledTokens(wallet)
+  const tokens = useTokens(wallet)
 
-  return tokenCodes.length > 0 ? (
+  return tokens.enabled.length > 0 ? (
     <ListGroup.Item>
       <ListGroup variant={'flush'}>
-        {tokenCodes.map((currencyCode) => (
-          <Boundary key={currencyCode}>
+        {tokens.enabled.map((currencyCode) => (
+          <Boundary key={currencyCode} error={{ fallbackRender: () => null }}>
             <EnabledToken wallet={wallet} currencyCode={currencyCode} onSelect={onSelect} />
           </Boundary>
         ))}

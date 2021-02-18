@@ -31,7 +31,7 @@ export const useCreateAccount = (
   >,
 ) => {
   return useMutation(({ username, password, pin, otp }) => context.createAccount(username, password, pin, { otp }), {
-    onSuccess: createDefaultWallets,
+    onSuccess: bootstrap,
     ...mutationOptions,
   })
 }
@@ -41,7 +41,7 @@ export const useLoginWithPin = (
   mutationOptions?: UseMutationOptions<EdgeAccount, unknown, { username: string; pin: string }>,
 ) => {
   return useMutation(({ username, pin }) => context.loginWithPIN(username, pin), {
-    onSuccess: createDefaultWallets,
+    onSuccess: bootstrap,
     ...mutationOptions,
   })
 }
@@ -51,9 +51,13 @@ export const useLoginWithPassword = (
   mutationOptions?: UseMutationOptions<EdgeAccount, unknown, { username: string; password: string }>,
 ) => {
   return useMutation(({ username, password }) => context.loginWithPassword(username, password), {
-    onSuccess: createDefaultWallets,
+    onSuccess: bootstrap,
     ...mutationOptions,
   })
+}
+
+const bootstrap = async (account: EdgeAccount) => {
+  await createDefaultWallets(account)
 }
 
 const createDefaultWallets = async (account: EdgeAccount) => {
