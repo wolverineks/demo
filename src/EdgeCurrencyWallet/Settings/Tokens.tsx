@@ -11,19 +11,20 @@ export const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => 
     tokens.enabled.includes(currencyCode) ? tokens.disable(currencyCode) : tokens.enable(currencyCode)
 
   const [searchQuery, setSearchQuery] = React.useState('')
-  const [enabledDisabledAll, setEnabledDisabledAll] = React.useState<'enabledOnly' | 'disabledOnly' | 'all'>('all')
+  const [statusFilter, setStatusFilter] = React.useState<'enabledOnly' | 'disabledOnly' | 'all'>('all')
+
   const matches = (tokenInfo: EdgeMetaToken): boolean => {
     const normalize = (text: string) => text.trim().toLowerCase()
 
     const isEnabled = tokens.enabled.includes(tokenInfo.currencyCode)
+    const displayFilter =
+      statusFilter === 'enabledOnly' ? isEnabled : statusFilter === 'disabledOnly' ? !isEnabled : true
+    const displayMatch =
+      normalize(tokenInfo.currencyCode).includes(normalize(searchQuery)) ||
+      normalize(tokenInfo.currencyName).includes(normalize(searchQuery)) ||
+      normalize(tokenInfo.contractAddress || '').includes(normalize(searchQuery))
 
-    return enabledDisabledAll === 'all'
-      ? normalize(tokenInfo.currencyCode).includes(normalize(searchQuery)) ||
-          normalize(tokenInfo.currencyName).includes(normalize(searchQuery)) ||
-          normalize(tokenInfo.contractAddress || '').includes(normalize(searchQuery))
-      : enabledDisabledAll === 'enabledOnly'
-      ? isEnabled
-      : !isEnabled
+    return displayFilter && displayMatch
   }
   const visibleTokens = Object.values(tokens.includedInfos).filter(matches)
   const visibleCustomTokens = Object.values(tokens.customTokenInfos).filter(matches)
@@ -38,57 +39,65 @@ export const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => 
   return (
     <FormGroup>
       <FormLabel>Tokens</FormLabel>
-      <Accordion activeKey={addToken}>
-        <Accordion.Toggle eventKey={'addToken'}>
-          <Button onClick={() => setAddToken(undefined)}>+</Button>
-        </Accordion.Toggle>
-        <Accordion.Collapse eventKey={'addToken'}>
-          <AddToken wallet={wallet} tokenInfo={editTokenInfo} onSuccess={() => setAddToken(undefined)} />
-        </Accordion.Collapse>
-      </Accordion>
-      <FormControl placeholder={'Search'} onChange={(event) => setSearchQuery(event.currentTarget.value)} />
-      <Select
-        onSelect={(event) => setEnabledDisabledAll(event.currentTarget.value)}
-        title={'Filter'}
-        options={[
-          { display: 'All', value: 'all' },
-          { display: 'Enabled', value: 'enabledOnly' },
-          { display: 'Disabled', value: 'disabledOnly' },
-        ]}
-        renderOption={(option) => (
-          <option key={option.value} value={option.value}>
-            {option.display}
-          </option>
-        )}
-      />
-      {[visibleCustomTokens, ...visibleTokens].length <= 0 ? (
+
+      {[...Object.values(tokens.customTokenInfos), ...Object.values(tokens.includedInfos)].length <= 0 ? (
         <ListGroup.Item>No Tokens Available</ListGroup.Item>
       ) : (
         <>
-          <TokenList
-            tokenInfos={visibleCustomTokens}
-            renderRow={(tokenInfo: EdgeMetaToken) => (
-              <TokenListRow
-                isEnabled={tokens.enabled.includes(tokenInfo.currencyCode)}
-                tokenInfo={tokenInfo}
-                onEdit={editToken}
-                onToggle={toggleToken}
-                canEdit
-              />
+          <Accordion activeKey={addToken}>
+            <Accordion.Toggle eventKey={'addToken'}>
+              <Button onClick={() => setAddToken(undefined)}>+</Button>
+            </Accordion.Toggle>
+            <Accordion.Collapse eventKey={'addToken'}>
+              <AddToken wallet={wallet} tokenInfo={editTokenInfo} onSuccess={() => setAddToken(undefined)} />
+            </Accordion.Collapse>
+          </Accordion>
+          <FormControl placeholder={'Search'} onChange={(event) => setSearchQuery(event.currentTarget.value)} />
+          <Select
+            onSelect={(event) => setStatusFilter(event.currentTarget.value)}
+            title={'Filter'}
+            options={[
+              { display: 'All', value: 'all' },
+              { display: 'Enabled', value: 'enabledOnly' },
+              { display: 'Disabled', value: 'disabledOnly' },
+            ]}
+            renderOption={(option) => (
+              <option key={option.value} value={option.value}>
+                {option.display}
+              </option>
             )}
           />
 
-          <TokenList
-            tokenInfos={visibleTokens}
-            renderRow={(tokenInfo: EdgeMetaToken) => (
-              <TokenListRow
-                isEnabled={tokens.enabled.includes(tokenInfo.currencyCode)}
-                tokenInfo={tokenInfo}
-                onEdit={editToken}
-                onToggle={toggleToken}
+          {[...Object.values(visibleCustomTokens), ...Object.values(visibleTokens)].length <= 0 ? (
+            <ListGroup.Item>No Matching Tokens</ListGroup.Item>
+          ) : (
+            <>
+              <TokenList
+                tokenInfos={visibleCustomTokens}
+                renderRow={(tokenInfo: EdgeMetaToken) => (
+                  <TokenListRow
+                    isEnabled={tokens.enabled.includes(tokenInfo.currencyCode)}
+                    tokenInfo={tokenInfo}
+                    onEdit={editToken}
+                    onToggle={toggleToken}
+                    canEdit
+                  />
+                )}
               />
-            )}
-          />
+
+              <TokenList
+                tokenInfos={visibleTokens}
+                renderRow={(tokenInfo: EdgeMetaToken) => (
+                  <TokenListRow
+                    isEnabled={tokens.enabled.includes(tokenInfo.currencyCode)}
+                    tokenInfo={tokenInfo}
+                    onEdit={editToken}
+                    onToggle={toggleToken}
+                  />
+                )}
+              />
+            </>
+          )}
         </>
       )}
     </FormGroup>
