@@ -12,6 +12,7 @@
     "format": "prettier --write",
     "lint": "yarn eslint --fix --ext .js,.jsx,.ts,.tsx",
     "precommit": "yarn lint-staged && tsc",
+    "serve": "serve -s build",
     "start": "react-scripts start",
     "test": "react-scripts test --env=jsdom"
   },

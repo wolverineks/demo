@@ -8,6 +8,7 @@
 
 - node 10.22.0
 - yarn
+- serve
 
 ### Setup
 
@@ -24,7 +25,11 @@ nvm use 10.22.0
 ```
 
 ```bash
-yarn & yarn start
+// development
+yarn && yarn start
+
+// prod
+yarn && yarn build && yarn serve
 ```
 
 ## Feature Set
@@ -104,7 +109,9 @@ yarn & yarn start
 - [x] multiple targets
 - [x] destination tag
 - [x] change fee setting
-- [ ] custom fee setting
+- [x] change fee setting
+- [x] categories
+- [ ] custom categories
 - [x] metadata
 - [ ] JSON payment protocol
 
