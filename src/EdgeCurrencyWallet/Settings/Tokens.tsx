@@ -2,34 +2,38 @@ import { EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
 import React from 'react'
 import { Accordion, Button, Form, FormControl, FormGroup, FormLabel, ListGroup } from 'react-bootstrap'
 
-import { Boundary, Logo } from '../../components'
+import { Boundary, Logo, Select } from '../../components'
 import { useTokens } from '../../hooks'
-import { useFilter } from '../useFilter'
 
 export const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const tokens = useTokens(wallet)
-  const toggleToken = React.useCallback(
-    (currencyCode: string) =>
-      tokens.enabled.includes(currencyCode) ? tokens.disable(currencyCode) : tokens.enable(currencyCode),
-    [tokens],
-  )
+  const toggleToken = (currencyCode: string) =>
+    tokens.enabled.includes(currencyCode) ? tokens.disable(currencyCode) : tokens.enable(currencyCode)
 
-  const matches = (query: string) => (token: EdgeMetaToken): boolean => {
+  const [searchQuery, setSearchQuery] = React.useState('')
+  const [enabledDisabledAll, setEnabledDisabledAll] = React.useState<'enabledOnly' | 'disabledOnly' | 'all'>('all')
+  const matches = (tokenInfo: EdgeMetaToken): boolean => {
     const normalize = (text: string) => text.trim().toLowerCase()
 
-    return (
-      normalize(token.currencyCode).includes(normalize(query)) ||
-      normalize(token.currencyName).includes(normalize(query)) ||
-      normalize(token.contractAddress || '').includes(normalize(query))
-    )
+    const isEnabled = tokens.enabled.includes(tokenInfo.currencyCode)
+
+    return enabledDisabledAll === 'all'
+      ? normalize(tokenInfo.currencyCode).includes(normalize(searchQuery)) ||
+          normalize(tokenInfo.currencyName).includes(normalize(searchQuery)) ||
+          normalize(tokenInfo.contractAddress || '').includes(normalize(searchQuery))
+      : enabledDisabledAll === 'enabledOnly'
+      ? isEnabled
+      : !isEnabled
   }
-  const [visibleTokens, setSearchQuery] = useFilter(matches, [
-    ...Object.values(tokens.customTokenInfos),
-    ...Object.values(tokens.includedInfos),
-  ])
+  const visibleTokens = Object.values(tokens.includedInfos).filter(matches)
+  const visibleCustomTokens = Object.values(tokens.customTokenInfos).filter(matches)
 
   const [addToken, setAddToken] = React.useState<'addToken' | undefined>()
   const [editTokenInfo, setEditTokenInfo] = React.useState<EdgeMetaToken | undefined>()
+  const editToken = (tokenInfo: EdgeMetaToken) => {
+    setAddToken('addToken')
+    setEditTokenInfo(tokenInfo)
+  }
 
   return (
     <FormGroup>
@@ -43,33 +47,87 @@ export const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => 
         </Accordion.Collapse>
       </Accordion>
       <FormControl placeholder={'Search'} onChange={(event) => setSearchQuery(event.currentTarget.value)} />
-      {visibleTokens.length <= 0 ? (
+      <Select
+        onSelect={(event) => setEnabledDisabledAll(event.currentTarget.value)}
+        title={'Filter'}
+        options={[
+          { display: 'All', value: 'all' },
+          { display: 'Enabled', value: 'enabledOnly' },
+          { display: 'Disabled', value: 'disabledOnly' },
+        ]}
+        renderOption={(option) => (
+          <option key={option.value} value={option.value}>
+            {option.display}
+          </option>
+        )}
+      />
+      {[visibleCustomTokens, ...visibleTokens].length <= 0 ? (
         <ListGroup.Item>No Tokens Available</ListGroup.Item>
       ) : (
-        visibleTokens.sort().map((tokenInfo) => (
-          <Boundary
-            key={tokenInfo.currencyCode}
-            error={{
-              fallback: (
-                <div>
-                  <Button onClick={() => wallet.disableTokens([tokenInfo.currencyCode])}>Disable</Button>
-                </div>
-              ),
-            }}
-          >
-            <TokenRow
-              onEdit={(tokenInfo) => {
-                setAddToken('addToken')
-                setEditTokenInfo(tokenInfo)
-              }}
-              tokenInfo={tokenInfo}
-              isEnabled={tokens.enabled.includes(tokenInfo.currencyCode)}
-              onClick={toggleToken}
-            />
-          </Boundary>
-        ))
+        <>
+          <TokenList
+            tokenInfos={visibleCustomTokens}
+            renderRow={(tokenInfo: EdgeMetaToken) => (
+              <TokenListRow
+                isEnabled={tokens.enabled.includes(tokenInfo.currencyCode)}
+                tokenInfo={tokenInfo}
+                onEdit={editToken}
+                onToggle={toggleToken}
+                canEdit
+              />
+            )}
+          />
+
+          <TokenList
+            tokenInfos={visibleTokens}
+            renderRow={(tokenInfo: EdgeMetaToken) => (
+              <TokenListRow
+                isEnabled={tokens.enabled.includes(tokenInfo.currencyCode)}
+                tokenInfo={tokenInfo}
+                onEdit={editToken}
+                onToggle={toggleToken}
+              />
+            )}
+          />
+        </>
       )}
     </FormGroup>
+  )
+}
+
+const TokenList = ({
+  tokenInfos,
+  renderRow,
+}: {
+  tokenInfos: EdgeMetaToken[]
+  renderRow: (tokenInfo: EdgeMetaToken) => JSX.Element
+}) => (
+  <>
+    {Object.values(tokenInfos)
+      .sort((a, b) => a.currencyCode.localeCompare(b.currencyCode))
+      .map(renderRow)}
+  </>
+)
+
+const TokenListRow = ({
+  tokenInfo,
+  onEdit,
+  onToggle,
+  isEnabled,
+  canEdit,
+}: {
+  tokenInfo: EdgeMetaToken
+  onEdit: (tokenInfo: EdgeMetaToken) => unknown
+  onToggle: (currencyCode: string) => unknown
+  isEnabled: boolean
+  canEdit?: boolean
+}) => {
+  return (
+    <>
+      <Boundary key={tokenInfo.currencyCode} error={{ fallback: null }}>
+        <TokenRow canEdit={canEdit} onEdit={onEdit} tokenInfo={tokenInfo} isEnabled={isEnabled} onClick={onToggle} />
+      </Boundary>
+    </>
   )
 }
 
@@ -78,9 +136,9 @@ const TokenRow: React.FC<{
   isEnabled: boolean
   onEdit: (tokenInfo: EdgeMetaToken) => void
   onClick: (currencyCode: string) => void
-}> = ({ tokenInfo, isEnabled, onClick, onEdit }) => {
+  canEdit?: boolean
+}> = ({ tokenInfo, isEnabled, onClick, onEdit, canEdit }) => {
   const { currencyName, displayName } = tokenInfo as any
-  const isCustomToken = true
 
   return (
     <ListGroup.Item
@@ -89,7 +147,7 @@ const TokenRow: React.FC<{
       onClick={() => onClick(tokenInfo.currencyCode)}
     >
       <Logo currencyCode={tokenInfo.currencyCode} /> {tokenInfo.currencyCode} - {currencyName || displayName}
-      {isCustomToken ? (
+      {canEdit ? (
         <Button
           onClick={(event) => {
             event.stopPropagation()
