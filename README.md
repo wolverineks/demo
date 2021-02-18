@@ -113,3 +113,17 @@
   - [ ] isFioAddressValid
   - [ ] getDomains
   - [ ] validateAccount
+
+## Internationalization / Localization
+
+- [ ] translations
+- [ ] commas, decimal points
+
+## Theme
+
+- [x] light theme
+- [ ] dark theme
+
+## Other
+
+- [ ] biggy string
