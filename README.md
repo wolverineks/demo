@@ -2,7 +2,34 @@
 
 # Edge React Hooks - Demo
 
-## Auth
+## Getting Started
+
+### Required Environment
+
+- node 10.22.0
+- yarn
+
+### Setup
+
+```bash
+git clone git@github.com:wolverineks/demo.git
+```
+
+```bash
+cd demo
+```
+
+```bash
+nvm use 10.22.0
+```
+
+```bash
+yarn & yarn start
+```
+
+## Feature Set
+
+### Auth
 
 - [x] create account
 - [ ] check password rules
@@ -19,7 +46,7 @@
 - [ ] approve voucher
 - [ ] reject voucher
 
-## Wallets
+### Wallets
 
 - [x] create wallet
 - [x] activate wallet
@@ -29,7 +56,7 @@
 - [x] sort wallets
 - [ ] drag to sort wallets
 
-## Account Settings
+### Account Settings
 
 - [x] enable / disable pin login
 - [x] change pin
@@ -46,7 +73,7 @@
 - [x] disklet explorer
 - [x] local disklet explorer
 
-## Wallet Settings
+### Wallet Settings
 
 - [x] rename wallet
 - [x] set fiat currency code
@@ -58,13 +85,13 @@
 - [ ] split wallet
 - [ ] add / enable / disable custom nodes
 
-## Tokens
+### Tokens
 
 - [x] enable / disable tokens
 - [x] add custom token
 - [x] edit custom token
 
-## Send
+### Send
 
 - [x] input via crypto / fiat
 - [x] input via scan
@@ -81,26 +108,26 @@
 - [x] metadata
 - [ ] JSON payment protocol
 
-## Receive
+### Receive
 
 - [x] input via crypto / fiat
 - [x] copy public address
 - [x] copy uri
 - [x] display qr code
 
-## Transactions
+### Transactions
 
 - [x] view / filter transactions
 - [x] export transactions
 - [x] view transaction explorers
 - [ ] edit metadata
 
-## Exchange Rates
+### Exchange Rates
 
 - [x] filter
 - [ ] add currency code
 
-## FIO
+### FIO
 
 - [ ] wallet.otherMethods
   - [ ] fioAction
@@ -114,16 +141,16 @@
   - [ ] getDomains
   - [ ] validateAccount
 
-## Internationalization / Localization
+### Internationalization / Localization
 
 - [ ] translations
 - [ ] commas, decimal points
 
-## Theme
+### Theme
 
 - [x] light theme
 - [ ] dark theme
 
-## Other
+### Other
 
 - [ ] biggy string
