@@ -10,7 +10,6 @@ import {
   useTransactionCount,
   useTransactionExplorerUrl,
   useTransactions,
-  useXpubExplorerUrl,
 } from '../../hooks'
 import { useFilter } from '../useFilter'
 import { ExportTransactions } from './ExportTransactions'
@@ -56,7 +55,6 @@ const TransactionListRow: React.FC<{ transaction: EdgeTransaction }> = ({ transa
   const account = useEdgeAccount()
   const transactionExplorerUrl = useTransactionExplorerUrl(account, transaction)
   const addressExplorerUrl = useAddressExplorerUrl(account, transaction)
-  const xPubExplorerUrl = useXpubExplorerUrl(account, transaction)
   const blockExplorerUrl = useBlockExplorerUrl(account, transaction)
 
   return (
@@ -82,12 +80,6 @@ const TransactionListRow: React.FC<{ transaction: EdgeTransaction }> = ({ transa
       {addressExplorerUrl ? (
         <NavLink target={'none'} href={addressExplorerUrl}>
           View Address Details
-        </NavLink>
-      ) : null}
-
-      {xPubExplorerUrl ? (
-        <NavLink target={'none'} href={xPubExplorerUrl}>
-          View Xpub Details
         </NavLink>
       ) : null}
 

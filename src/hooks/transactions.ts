@@ -15,9 +15,8 @@ export const useAddressExplorerUrl = (account: EdgeAccount, transaction: EdgeTra
 }
 
 export const useBlockExplorerUrl = (account: EdgeAccount, transaction: EdgeTransaction) => {
-  return (useInfo(account, transaction.currencyCode) as Explorers).blockExplorer?.replace('%s', transaction.txid)
-}
-
-export const useXpubExplorerUrl = (account: EdgeAccount, transaction: EdgeTransaction) => {
-  return (useInfo(account, transaction.currencyCode) as Explorers).xpubExplorer?.replace('%s', transaction.txid)
+  return (useInfo(account, transaction.currencyCode) as Explorers).blockExplorer?.replace(
+    '%s',
+    String(transaction.blockHeight),
+  )
 }
