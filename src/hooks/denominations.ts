@@ -136,41 +136,52 @@ export const useExchangeToNative = ({
   })
 }
 
-export const useReadDisplayDenomination = (
+export const useReadDisplayDenominationMultiplier = (
   account: EdgeAccount,
   currencyInfo: EdgeCurrencyInfo | EdgeMetaToken | FiatInfo,
-  queryOptions?: UseQueryOptions<EdgeDenomination>,
+  queryOptions?: UseQueryOptions<string>,
 ) => {
   return useQuery({
-    queryKey: [currencyInfo.currencyCode, 'displayDenomination'],
+    queryKey: [currencyInfo.currencyCode, 'displayDenominationMultiplier'],
     queryFn: () =>
       account.dataStore
-        .getItem('displayDenomination', currencyInfo.currencyCode)
+        .getItem('displayDenominationMultiplier', currencyInfo.currencyCode)
         .then(JSON.parse)
-        .catch(() => currencyInfo.denominations[0]),
+        .catch(() => currencyInfo.denominations[0].multiplier),
     ...queryOptions,
   })
 }
 
-export const useWriteDisplayDenomination = (
+export const useWriteDisplayDenominationMultiplier = (
   account: EdgeAccount,
   currencyInfo: EdgeCurrencyInfo | EdgeMetaToken | FiatInfo,
 ) => {
-  const queryFn = (displayDenomination: EdgeDenomination) =>
-    account.dataStore.setItem('displayDenomination', currencyInfo.currencyCode, JSON.stringify(displayDenomination))
+  const queryFn = (displayDenominationMultiplier: string) =>
+    account.dataStore.setItem(
+      'displayDenominationMultiplier',
+      currencyInfo.currencyCode,
+      JSON.stringify(displayDenominationMultiplier),
+    )
 
   return useMutation(queryFn, {
     ...useInvalidateQueries([
-      [currencyInfo.currencyCode, 'displayDenomination'],
-      ['displayDenomination', currencyInfo.currencyCode], // invalidate dataStore
+      [currencyInfo.currencyCode, 'displayDenominationMultiplier'],
+      ['displayDenominationMultiplier', currencyInfo.currencyCode], // invalidate dataStore
     ]),
   })
 }
 
 export const useDisplayDenomination = (account: EdgeAccount, currencyCode: string) => {
   const info = useInfo(account, currencyCode)
+  const multiplier = useReadDisplayDenominationMultiplier(account, info).data!
+  const displayDenomination =
+    info.denominations.find((denomination) => denomination.multiplier === multiplier) || info.denominations[0]
 
-  return [useReadDisplayDenomination(account, info).data!, useWriteDisplayDenomination(account, info).mutate] as const
+  if (!displayDenomination) {
+    throw new Error('Invalid Denomination Multiplier')
+  }
+
+  return [displayDenomination, useWriteDisplayDenominationMultiplier(account, info).mutateAsync] as const
 }
 
 export const useDenominations = (account: EdgeAccount, currencyCode: string) => {

@@ -84,7 +84,7 @@ const Denominations = ({ currencyCode }: { currencyCode: string }) => {
           <Denomination
             key={`${denomination.name} - ${denomination.symbol}`}
             denomination={denomination}
-            onSelect={() => denominations.setDisplay(denomination)}
+            onSelect={() => denominations.setDisplay(denomination.multiplier)}
             isSelected={denomination.multiplier === denominations.display.multiplier}
           />
         ))

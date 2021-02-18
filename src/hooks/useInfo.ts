@@ -1,4 +1,4 @@
-import { EdgeAccount } from 'edge-core-js'
+import { EdgeAccount, EdgeCurrencyInfo, EdgeMetaToken } from 'edge-core-js'
 import { useQuery } from 'react-query'
 
 import { FiatInfo, fiatInfos, getCurrencyInfos } from '../utils'
@@ -29,7 +29,7 @@ export const getInfo = (account: EdgeAccount, currencyCode: string) => {
   return getCurrencyInfo(account, currencyCode) || getTokenInfo(account, currencyCode) || getFiatInfo(currencyCode)
 }
 
-export const useInfo = (account: EdgeAccount, currencyCode: string) => {
+export const useInfo = (account: EdgeAccount, currencyCode: string): EdgeCurrencyInfo | EdgeMetaToken => {
   const { data } = useQuery(['info', currencyCode], async () => {
     const info = getInfo(account, currencyCode)
 
