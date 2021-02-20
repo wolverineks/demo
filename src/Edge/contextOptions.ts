@@ -31,7 +31,7 @@ export const currencyPlugins = {
   vertcoin: true,
   zcoin: true,
   // edge-currency-monero:
-  monero: true,
+  // monero: true,
 }
 
 export const ratePlugins = {
