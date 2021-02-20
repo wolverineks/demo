@@ -1,16 +1,8 @@
 import { EdgeAccount, EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
-import { UseQueryOptions, useMutation, useQuery, useQueryClient } from 'react-query'
+import { UseQueryOptions, useMutation, useQuery } from 'react-query'
 
 import { useInvalidateQueries } from '.'
-
-export const useWalletSnapshots = (walletIds: string[]) => {
-  const queryClient = useQueryClient()
-  const snapshots = queryClient.getQueryCache().findAll(['snapshot'])
-  const wallets = snapshots.map((query) => query.state.data) as InactiveWallet[]
-
-  return wallets.filter(({ id }) => walletIds.includes(id))
-}
 
 export const useReadWalletSnapshot = (
   account: EdgeAccount,
