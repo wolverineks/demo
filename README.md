@@ -48,6 +48,7 @@ yarn && yarn build && yarn serve
 - [ ] list recovery question choices
 - [ ] request edge login
 - [ ] request otp reset
+- [ ] pending vouchers
 - [ ] approve voucher
 - [ ] reject voucher
 
