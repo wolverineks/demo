@@ -1,8 +1,7 @@
 import React from 'react'
-import { Button, Image, Navbar } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
-import { Boundary } from '../components'
+import { Boundary, Button, Image, Navbar } from '../components'
 import { useEdgeCurrencyWallet, useLogout, useName, useUsername } from '../hooks'
 import { useSelectedWalletInfo } from '../SelectedWallet'
 

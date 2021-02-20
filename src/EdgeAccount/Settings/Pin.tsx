@@ -1,7 +1,7 @@
 import React from 'react'
-import { Button, Form, FormGroup, ListGroup, ListGroupItem, Tab, Tabs } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../../auth'
+import { Button, Form, FormGroup, ListGroup, ListGroupItem, Tab, Tabs } from '../../components'
 import { useEdgeContext } from '../../Edge'
 import { usePin } from '../../hooks'
 

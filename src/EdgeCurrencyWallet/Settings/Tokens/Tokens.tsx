@@ -1,8 +1,17 @@
 import { EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
 import React from 'react'
-import { Accordion, Button, FormControl, FormGroup, FormLabel, ListGroup } from 'react-bootstrap'
 
-import { Boundary, Logo, Select } from '../../../components'
+import {
+  Accordion,
+  Boundary,
+  Button,
+  FormControl,
+  FormGroup,
+  FormLabel,
+  ListGroup,
+  Logo,
+  Select,
+} from '../../../components'
 import { useTokens } from '../../../hooks'
 import { AddToken } from './AddToken'
 import { StatusFilter, useFilteredTokenInfos } from './useFilteredTokenInfos'

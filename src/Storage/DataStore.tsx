@@ -1,9 +1,8 @@
 import { EdgeDataStore } from 'edge-core-js'
 import React from 'react'
-import { Button, Card, ListGroup } from 'react-bootstrap'
 import Json from 'react-json-pretty'
 
-import { Boundary } from '../components'
+import { Boundary, Button, Card, ListGroup } from '../components'
 import { useItem, useItemIds, usePrefetchItem, usePrefetchItemIds, usePrefetchStoreIds, useStoreIds } from '../hooks'
 
 export const DataStore: React.FC<{ dataStore: EdgeDataStore; title: string }> = ({ dataStore, title }) => {

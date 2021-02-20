@@ -1,9 +1,8 @@
 import { Disklet as DiskletType } from 'disklet'
 import React from 'react'
-import { Button, Card, ListGroup } from 'react-bootstrap'
 import Json from 'react-json-pretty'
 
-import { Boundary } from '../components'
+import { Boundary, Button, Card, ListGroup } from '../components'
 import { useFile, useFolder, usePrefetchFile, usePrefetchFolder } from '../hooks'
 
 export const fileName = (path: string) => (path.match(/\w*.\w+$/) || [])[0] || '/'

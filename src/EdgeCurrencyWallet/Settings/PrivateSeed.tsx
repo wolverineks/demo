@@ -1,6 +1,7 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
-import { Button, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
+
+import { Button, FormControl, FormGroup, FormLabel } from '../../components'
 
 export const PrivateSeed: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const [showPrivateSeed, setShowPrivateSeed] = React.useState(false)

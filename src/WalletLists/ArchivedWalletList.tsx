@@ -1,8 +1,7 @@
 import React from 'react'
-import { Accordion, Button, ListGroup } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
-import { Boundary, DisplayAmount, FiatAmount, Logo } from '../components'
+import { Accordion, Boundary, Button, DisplayAmount, FiatAmount, ListGroup, Logo } from '../components'
 import { useArchivedWalletIds, useChangeWalletState, useReadWalletSnapshot } from '../hooks'
 import { normalize } from '../utils'
 import { WalletSnapshots } from '../WalletSnapshots'

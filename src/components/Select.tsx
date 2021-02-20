@@ -1,5 +1,6 @@
 import React from 'react'
-import { FormControl, FormGroup, FormLabel } from 'react-bootstrap'
+
+import { FormControl, FormGroup, FormLabel } from '../components'
 
 export const Select = <T,>({
   options,

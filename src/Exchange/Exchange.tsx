@@ -1,10 +1,9 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
-import { Form, FormGroup, FormLabel } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
 
 import { useEdgeAccount } from '../auth'
-import { Balance, Boundary, Debug, FlipInput, Logo } from '../components'
+import { Balance, Boundary, Debug, FlipInput, Form, FormGroup, FormLabel, Logo } from '../components'
 import { useDisplayDenomination, useEdgeCurrencyWallet, useName, useSwapQuote, useTokens } from '../hooks'
 import { useFiatCurrencyCode } from '../hooks'
 import { getSortedCurrencyWallets } from '../utils'

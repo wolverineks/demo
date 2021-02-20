@@ -1,6 +1,7 @@
 import { EdgeDenomination } from 'edge-core-js'
 import React from 'react'
-import { FormControl, InputGroup } from 'react-bootstrap'
+
+import { FormControl, InputGroup } from '../components'
 
 export const AmountInput = ({
   onChange,

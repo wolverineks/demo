@@ -1,9 +1,8 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
-import { Accordion, ListGroup, ProgressBar } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../../auth'
-import { Balance, Boundary, Logo } from '../../components'
+import { Accordion, Balance, Boundary, ListGroup, Logo, ProgressBar } from '../../components'
 import {
   useActiveWalletIds,
   useEdgeCurrencyWallet,

@@ -1,8 +1,7 @@
 import { EdgeAccount } from 'edge-core-js'
 import React from 'react'
-import { Tab, Tabs } from 'react-bootstrap'
 
-import { Boundary } from '../components'
+import { Boundary, Tab, Tabs } from '../components'
 import { useEdgeContext } from '../Edge'
 import { useSetAccount } from './AccountProvider'
 import { CreateAccount } from './CreateAccount'

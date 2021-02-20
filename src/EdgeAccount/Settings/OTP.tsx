@@ -1,7 +1,7 @@
 import React from 'react'
-import { Form, FormGroup, ListGroup, ListGroupItem } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../../auth'
+import { Form, FormGroup, ListGroup, ListGroupItem } from '../../components'
 import { useOTP } from '../../hooks'
 
 export const OTP = () => {

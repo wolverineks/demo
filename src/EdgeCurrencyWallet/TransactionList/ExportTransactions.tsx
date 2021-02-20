@@ -1,11 +1,10 @@
 import { EdgeCurrencyWallet, EdgeGetTransactionsOptions } from 'edge-core-js'
 import React from 'react'
-import { Accordion, Button, Col, Form, FormControl, Row } from 'react-bootstrap'
 import DatePicker from 'react-date-picker'
 import JSONPretty from 'react-json-pretty'
 
 import { useEdgeAccount } from '../../auth'
-import { Debug } from '../../components'
+import { Accordion, Button, Col, Debug, Form, FormControl, Row } from '../../components'
 import { useDenominations, useExportTransactions } from '../../hooks'
 
 export const ExportTransactions = ({

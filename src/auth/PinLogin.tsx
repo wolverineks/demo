@@ -1,8 +1,7 @@
 import { EdgeAccount, EdgeContext } from 'edge-core-js'
 import React from 'react'
-import { Alert, Button, Card, Form, FormControl, ListGroup } from 'react-bootstrap'
 
-import { Boundary, Select } from '../components'
+import { Alert, Boundary, Button, Card, Form, FormControl, ListGroup, Select } from '../components'
 import { useAccountsWithPinLogin, useLoginMessages, useLoginWithPin } from '../hooks'
 
 export const PinLogin: React.FC<{ context: EdgeContext; onLogin: (account: EdgeAccount) => any }> = ({

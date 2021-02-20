@@ -1,8 +1,7 @@
 import { EdgeSpendTarget } from 'edge-core-js'
 import * as React from 'react'
-import { FormControl, FormGroup, FormLabel, InputGroup } from 'react-bootstrap'
 
-import { FlipInput, FlipInputRef } from '../../components'
+import { FlipInput, FlipInputRef, FormControl, FormGroup, FormLabel, InputGroup } from '../../components'
 
 const UNIQUE_IDENTIFIER_CURRENCIES = ['BNB', 'EOS', 'TLOS', 'XLM', 'XRP']
 

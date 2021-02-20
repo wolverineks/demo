@@ -1,8 +1,7 @@
 import React from 'react'
-import { FormControl } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
-import { Boundary, DisplayAmount, FiatAmount, Logo } from '../components'
+import { Boundary, DisplayAmount, FiatAmount, FormControl, Logo } from '../components'
 import { useActiveCurrencyCodes, useDefaultFiatCurrencyCode, useDisplayToNative } from '../hooks'
 
 export const ExchangeRates = () => {

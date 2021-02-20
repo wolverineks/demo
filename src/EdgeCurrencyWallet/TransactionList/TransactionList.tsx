@@ -1,9 +1,8 @@
 import { EdgeCurrencyWallet, EdgeTransaction } from 'edge-core-js'
 import React from 'react'
-import { Button, FormControl, Image, ListGroup, NavLink, Row } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../../auth'
-import { DisplayAmount } from '../../components'
+import { Button, DisplayAmount, FormControl, Image, ListGroup, NavLink, Row } from '../../components'
 import {
   useAddressExplorerUrl,
   useBlockExplorerUrl,

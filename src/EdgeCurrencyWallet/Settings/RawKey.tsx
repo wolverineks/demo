@@ -1,9 +1,9 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
-import { Button, FormGroup, FormLabel } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
 
 import { useEdgeAccount } from '../../auth'
+import { Button, FormGroup, FormLabel } from '../../components'
 
 export const RawKey: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const [showRawKey, setShowRawKey] = React.useState(false)

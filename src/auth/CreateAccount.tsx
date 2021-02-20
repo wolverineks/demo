@@ -1,7 +1,7 @@
 import { EdgeAccount, EdgeContext } from 'edge-core-js'
 import React from 'react'
-import { Alert, Button, Form, FormGroup } from 'react-bootstrap'
 
+import { Alert, Button, Form, FormGroup } from '../components'
 import { useCreateAccount } from '../hooks'
 
 const onChange = (cb: (value: string) => any) => (event: any) => cb(event.currentTarget.value)

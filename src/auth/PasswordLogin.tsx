@@ -1,7 +1,7 @@
 import { EdgeAccount, EdgeContext } from 'edge-core-js'
 import React from 'react'
-import { Alert, Button, Form, FormGroup } from 'react-bootstrap'
 
+import { Alert, Button, Form, FormGroup } from '../components'
 import { useLoginWithPassword } from '../hooks'
 
 export const PasswordLogin: React.FC<{ context: EdgeContext; onLogin: (account: EdgeAccount) => any }> = ({

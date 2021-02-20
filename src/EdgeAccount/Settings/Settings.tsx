@@ -1,7 +1,6 @@
 import React from 'react'
-import { ListGroup, Tab, Tabs } from 'react-bootstrap'
 
-import { Boundary } from '../../components'
+import { Boundary, ListGroup, Tab, Tabs } from '../../components'
 import { Storage } from '../../Storage'
 import { AutoLogout } from './AutoLogout'
 import { Currencies } from './Currencies'

@@ -1,7 +1,6 @@
 import React from 'react'
-import { Col, Row } from 'react-bootstrap'
 
-import { Boundary } from '../components'
+import { Boundary, Col, Row } from '../components'
 import { ExchangeRates } from './ExchangeRates'
 import { Main } from './Main'
 import { SideMenu } from '.'

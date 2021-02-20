@@ -1,7 +1,7 @@
 import React from 'react'
-import { Image } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
+import { Image } from '../components'
 import { useInfo } from '../hooks'
 
 export const Logo: React.FC<{ currencyCode: string }> = ({ currencyCode }) => {

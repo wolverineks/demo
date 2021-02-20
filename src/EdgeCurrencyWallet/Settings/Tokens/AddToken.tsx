@@ -1,7 +1,7 @@
 import { EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
 import React from 'react'
-import { Button, Form, FormControl } from 'react-bootstrap'
 
+import { Button, Form, FormControl } from '../../../components'
 import { useTokens } from '../../../hooks'
 
 export const AddToken = ({

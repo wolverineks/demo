@@ -1,7 +1,7 @@
 import React from 'react'
-import { Button } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
+import { Button } from '../components'
 import { useChangeWalletState } from '../hooks'
 
 export const FallbackRender = ({ walletId }: { walletId: string }) => {

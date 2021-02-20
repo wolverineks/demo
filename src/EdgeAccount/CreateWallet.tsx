@@ -1,9 +1,8 @@
 import { EdgeAccount } from 'edge-core-js'
 import React from 'react'
-import { Alert, Button, Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
-import { Select } from '../components'
+import { Alert, Button, Form, FormControl, FormGroup, FormLabel, Select } from '../components'
 import { useCreateCurrencyWallet, useDefaultFiatInfo } from '../hooks'
 import { FiatInfo, fiatInfos, getCurrencyInfos } from '../utils'
 

@@ -1,8 +1,7 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
-import { ListGroup } from 'react-bootstrap'
 
-import { Balance, Boundary, Logo } from '../../components'
+import { Balance, Boundary, ListGroup, Logo } from '../../components'
 import { useTokens } from '../../hooks'
 import { useSelectedWalletInfo } from '../../SelectedWallet'
 

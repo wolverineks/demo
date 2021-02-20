@@ -1,10 +1,9 @@
 import { EdgeCurrencyWallet, EdgeTransaction } from 'edge-core-js'
 import * as React from 'react'
-import { Alert, Button, Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
 import JSONPretty from 'react-json-pretty'
 import QrReader from 'react-qr-scanner'
 
-import { Debug, DisplayAmount, Select } from '../../components'
+import { Alert, Button, Debug, DisplayAmount, Form, FormControl, FormGroup, FormLabel, Select } from '../../components'
 import { useClipboardUri, useFiatCurrencyCode, useMaxSpendable, useNewTransaction } from '../../hooks'
 import { categories } from '../../utils'
 import { SpendTarget } from './SpendTarget'

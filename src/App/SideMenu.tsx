@@ -1,8 +1,7 @@
 import React from 'react'
-import { FormControl, ListGroup } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../auth'
-import { Boundary } from '../components'
+import { Boundary, FormControl, ListGroup } from '../components'
 import { useEdgeAccountTotal } from '../hooks'
 import { Route, useRoute, useSetRoute } from '../route'
 import { ActiveWalletList, ArchivedWalletList, DeletedWalletList } from '../WalletLists'

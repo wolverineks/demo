@@ -1,8 +1,18 @@
 import { EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
 import React from 'react'
-import { Accordion, Button, Form, FormControl, FormGroup, FormLabel, ListGroup } from 'react-bootstrap'
 
-import { Boundary, Logo, Select } from '../../components'
+import {
+  Accordion,
+  Boundary,
+  Button,
+  Form,
+  FormControl,
+  FormGroup,
+  FormLabel,
+  ListGroup,
+  Logo,
+  Select,
+} from '../../components'
 import { useTokens } from '../../hooks'
 
 export const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {

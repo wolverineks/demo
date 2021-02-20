@@ -1,8 +1,7 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
-import { Button, FormGroup } from 'react-bootstrap'
 
-import { Select } from '../../components'
+import { Button, FormGroup, Select } from '../../components'
 import { useFiatCurrencyCode } from '../../hooks'
 import { fiatInfos } from '../../utils'
 

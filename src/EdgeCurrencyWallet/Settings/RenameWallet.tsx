@@ -1,7 +1,7 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
-import { Button, Form, FormControl, FormGroup } from 'react-bootstrap'
 
+import { Button, Form, FormControl, FormGroup } from '../../components'
 import { useName } from '../../hooks'
 
 export const RenameWallet: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {

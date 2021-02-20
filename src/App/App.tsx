@@ -1,9 +1,8 @@
 import React from 'react'
-import { Container } from 'react-bootstrap'
 
 import { AccountConsumer, AccountProvider, Login } from '../auth'
 import { AutologoutProvider } from '../AutoLogout'
-import { Boundary } from '../components'
+import { Boundary, Container } from '../components'
 import { Edge } from '../Edge'
 import { RouteProvider } from '../route'
 import { SelectedWalletInfoProvider } from '../SelectedWallet'

@@ -1,8 +1,7 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
-import { Tab, Tabs } from 'react-bootstrap'
 
-import { Boundary } from '../components'
+import { Boundary, Tab, Tabs } from '../components'
 import { useOnNewTransactions } from '../hooks'
 import { Disklet } from '../Storage'
 import { Request } from './Request'

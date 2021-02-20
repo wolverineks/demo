@@ -1,8 +1,8 @@
 import React from 'react'
-import { Form, FormControl, FormGroup, FormLabel, ListGroup, ListGroupItem } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../../auth'
 import { AutologoutContext } from '../../AutoLogout'
+import { Form, FormControl, FormGroup, FormLabel, ListGroup, ListGroupItem } from '../../components'
 import { useAutoLogout } from '../../hooks'
 
 export const AutoLogout = () => {

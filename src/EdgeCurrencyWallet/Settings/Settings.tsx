@@ -1,8 +1,7 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
-import { FormControl } from 'react-bootstrap'
 
-import { Boundary } from '../../components'
+import { Boundary, FormControl } from '../../components'
 import { FiatCurrencyCode, PrivateSeed, PublicSeed, RawKey, RenameWallet, Tokens } from '.'
 
 const Matcher: React.FC<{ query: string; match: string }> = ({ children, query, match }) => {

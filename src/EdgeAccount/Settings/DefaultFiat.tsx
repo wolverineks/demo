@@ -1,8 +1,7 @@
 import React from 'react'
-import { Form, FormGroup, ListGroup, ListGroupItem } from 'react-bootstrap'
 
 import { useEdgeAccount } from '../../auth'
-import { Select } from '../../components'
+import { Form, FormGroup, ListGroup, ListGroupItem, Select } from '../../components'
 import { useDefaultFiatCurrencyCode, useDefaultFiatInfo } from '../../hooks'
 import { FiatInfo, fiatInfos } from '../../utils'
 

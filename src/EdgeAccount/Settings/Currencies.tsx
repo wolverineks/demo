@@ -1,10 +1,9 @@
 import { EdgeAccount, EdgeCurrencyInfo, EdgeDenomination, EdgeMetaToken } from 'edge-core-js'
 import React from 'react'
-import { FormControl, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { useQuery } from 'react-query'
 
 import { useEdgeAccount } from '../../auth'
-import { Boundary, Logo } from '../../components'
+import { Boundary, FormControl, ListGroup, ListGroupItem, Logo } from '../../components'
 import { useActiveCurrencyCodes, useDefaultFiatCurrencyCode, useDenominations, useInfo, useWatch } from '../../hooks'
 import { FiatInfo, getSortedCurrencyWallets, isFiat, isToken, normalize, unique } from '../../utils'
 

@@ -1,4 +1,3 @@
-/* eslint-disable import/no-unresolved */
 export * from './Logo'
 export * from './Boundary'
 export * from './DisplayAmount'
@@ -8,3 +7,4 @@ export * from './FlipInput'
 export * from './Balance'
 export * from './FiatAmount'
 export * from './Debug'
+export * from 'react-bootstrap'
