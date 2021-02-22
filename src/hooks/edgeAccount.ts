@@ -234,3 +234,12 @@ export const useSwapQuote = ({
     ...rest,
   }
 }
+
+export const useSplitWallet = (account: EdgeAccount, walletId: string) => {
+  return {
+    walletTypes: useQuery([walletId, 'splittableWalletTypes'], () => account.listSplittableWalletTypes(walletId)).data!,
+    splitWallet: useMutation((walletType: string) => account.splitWalletInfo(walletId, walletType), {
+      ...useInvalidateQueries([[walletId, 'splittableWalletTypes']]),
+    }).mutateAsync,
+  }
+}
