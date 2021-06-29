@@ -86,10 +86,10 @@ export const useChangeWalletState = (account: EdgeAccount, walletId: string) => 
   const { mutate: changeWalletStates, ...rest } = useMutation(account.changeWalletStates)
 
   const activateWallet = React.useCallback(() => changeWalletStates(toActive(walletId)), [changeWalletStates, walletId])
-  const archiveWallet = React.useCallback(() => changeWalletStates(toArchived(walletId)), [
-    changeWalletStates,
-    walletId,
-  ])
+  const archiveWallet = React.useCallback(
+    () => changeWalletStates(toArchived(walletId)),
+    [changeWalletStates, walletId],
+  )
   const deleteWallet = React.useCallback(() => changeWalletStates(toDeleted(walletId)), [changeWalletStates, walletId])
 
   return {
