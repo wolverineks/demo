@@ -2,6 +2,7 @@ import { EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
 import React from 'react'
 
 import { useTokens } from '../../../hooks'
+import { normalize } from '../../../utils'
 
 export enum StatusFilter {
   enabledOnly = 'enabledOnly',
@@ -16,8 +17,6 @@ export const useFilteredTokenInfos = (wallet: EdgeCurrencyWallet) => {
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>(StatusFilter.all)
 
   const matches = (tokenInfo: EdgeMetaToken): boolean => {
-    const normalize = (text: string) => text.trim().toLowerCase()
-
     const isEnabled = tokens.enabled.includes(tokenInfo.currencyCode)
     const displayFilter =
       statusFilter === StatusFilter.enabledOnly

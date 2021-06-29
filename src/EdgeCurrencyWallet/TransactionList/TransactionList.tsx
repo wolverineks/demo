@@ -10,6 +10,7 @@ import {
   useTransactionExplorerUrl,
   useTransactions,
 } from '../../hooks'
+import { normalize } from '../../utils'
 import { useFilter } from '../useFilter'
 import { ExportTransactions } from './ExportTransactions'
 import { Metadata } from './Metadata'
@@ -99,17 +100,19 @@ const DisplayDate: React.FC<{ transaction: EdgeTransaction }> = ({ transaction }
   return <>{formattedDate}</>
 }
 
-const matches = (query: string) => (transaction: EdgeTransaction): boolean => {
-  const normalize = (text: string) => text.trim().toLowerCase()
+const matches =
+  (query: string) =>
+  (transaction: EdgeTransaction): boolean => {
+    const normalizedQuery = normalize(query)
 
-  return (
-    transaction.txid.includes(query) ||
-    normalize(new Date(transaction.date * 1000).toLocaleString()).includes(normalize(query)) ||
-    normalize(transaction.currencyCode).includes(normalize(query)) ||
-    normalize(transaction.nativeAmount).includes(normalize(query)) ||
-    normalize(transaction.metadata?.name || '').includes(normalize(query)) ||
-    normalize(transaction.metadata?.category || '').includes(normalize(query)) ||
-    normalize(transaction.metadata?.notes || '').includes(normalize(query)) ||
-    normalize(String(transaction.metadata?.amountFiat) || '').includes(normalize(query))
-  )
-}
+    return (
+      transaction.txid.includes(query) ||
+      normalize(new Date(transaction.date * 1000).toLocaleString()).includes(normalizedQuery) ||
+      normalize(transaction.currencyCode).includes(normalizedQuery) ||
+      normalize(transaction.nativeAmount).includes(normalizedQuery) ||
+      normalize(transaction.metadata?.name || '').includes(normalizedQuery) ||
+      normalize(transaction.metadata?.category || '').includes(normalizedQuery) ||
+      normalize(transaction.metadata?.notes || '').includes(normalizedQuery) ||
+      normalize(String(transaction.metadata?.amountFiat) || '').includes(normalizedQuery)
+    )
+  }
