@@ -4,7 +4,8 @@ import React from 'react'
 import { Alert, Button, Form, FormGroup } from '../components'
 import { useCreateAccount } from '../hooks'
 
-const onChange = (cb: (value: string) => any) => (event: any) => cb(event.currentTarget.value)
+const onChange = (cb: (value: string) => any) => (event: React.ChangeEvent<HTMLInputElement>) =>
+  cb(event.currentTarget.value)
 
 export const CreateAccount: React.FC<{ context: EdgeContext; onLogin: (account: EdgeAccount) => any }> = ({
   onLogin,
