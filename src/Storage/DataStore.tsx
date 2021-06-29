@@ -126,7 +126,7 @@ const ToggleRow: React.FC<{
     <div>
       <Button
         onMouseEnter={onHover}
-        onClick={(event: any) => {
+        onClick={(event) => {
           event.stopPropagation()
           setShowContents((x) => !x)
         }}
