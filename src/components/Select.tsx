@@ -12,9 +12,9 @@ export const Select = <T,>({
   defaultValue,
   value,
 }: {
-  options: T[]
+  options: ReadonlyArray<T>
   renderOption: (item: T) => React.ReactElement
-  onSelect: (event: React.ChangeEvent<any>) => any
+  onSelect: React.ChangeEventHandler<HTMLSelectElement & T>
   disabled?: boolean
   title?: string
   id?: string
