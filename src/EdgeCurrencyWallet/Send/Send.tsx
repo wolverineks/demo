@@ -3,11 +3,25 @@ import * as React from 'react'
 import JSONPretty from 'react-json-pretty'
 import QrReader from 'react-qr-scanner'
 
-import { Alert, Button, Debug, DisplayAmount, Form, FormControl, FormGroup, FormLabel, Select } from '../../components'
-import { useClipboardUri, useFiatCurrencyCode, useMaxSpendable, useNewTransaction } from '../../hooks'
+import { useEdgeAccount } from '../../auth'
+import {
+  Alert,
+  AmountInput,
+  Button,
+  Debug,
+  DisplayAmount,
+  Form,
+  FormControl,
+  FormGroup,
+  FormLabel,
+  Matcher,
+  Select,
+} from '../../components'
+import { useClipboardUri, useDenominations, useFiatCurrencyCode, useMaxSpendable, useNewTransaction } from '../../hooks'
+import { useSelectedWallet } from '../../SelectedWallet'
 import { categories } from '../../utils'
 import { SpendTarget } from './SpendTarget'
-import { useSpendInfo } from './useSpendInfo'
+import { CustomFee, useSpendInfo } from './useSpendInfo'
 
 const MULTIPLE_TARGETS_CURRENCIES = ['BCH', 'BTC', 'BSV']
 
@@ -16,10 +30,18 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
   const [scan, setScan] = React.useState(false)
   const clipboardUri = useClipboardUri(wallet)
 
-  const { updateMetadata, setNetworkFeeOption, setUri, spendTargetRef, spendTargets, spendInfo } = useSpendInfo(
-    wallet,
-    currencyCode,
-  )
+  const {
+    customNetworkFee,
+    setCustomNetworkFee,
+    updateMetadata,
+    networkFeeOption,
+    setNetworkFeeOption,
+    feeOptions,
+    setUri,
+    spendTargetRef,
+    spendTargets,
+    spendInfo,
+  } = useSpendInfo(wallet, currencyCode)
 
   const maxSpendable = useMaxSpendable(wallet, spendInfo)
 
@@ -100,14 +122,11 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
         )}
       />
 
+      {/* {wallet.currencyInfo.canAdjustFees ? ( */}
       <Select
         title={'Fee Option'}
         onSelect={(event) => setNetworkFeeOption(event.currentTarget.value)}
-        options={[
-          { value: 'high', display: 'high' },
-          { value: 'standard', display: 'standard' },
-          { value: 'low', display: 'low' },
-        ]}
+        options={feeOptions}
         defaultValue={'standard'}
         renderOption={(category) => (
           <option value={category.value} key={category.value}>
@@ -115,6 +134,11 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
           </option>
         )}
       />
+      {/* ) : null} */}
+
+      {networkFeeOption === 'custom' ? (
+        <CustomFeeForm customFee={customNetworkFee} setCustomFee={setCustomNetworkFee} />
+      ) : null}
 
       {transaction?.networkFee ? <Fee transaction={transaction} /> : null}
 
@@ -153,6 +177,40 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
   )
 }
 
+const CustomFeeForm = ({
+  customFee,
+  setCustomFee,
+}: {
+  customFee: CustomFee
+  setCustomFee: (customFee: CustomFee) => any
+}) => {
+  const account = useEdgeAccount()
+  const [{ wallet, currencyCode }] = useSelectedWallet()
+  const { display } = useDenominations(account, currencyCode)
+
+  return (
+    <div>
+      <div>{JSON.stringify(customFee, null, 2)}</div>
+      {wallet.currencyInfo.defaultSettings.customFeeSettings.map((setting: string) => {
+        return (
+          <div key={setting}>
+            {setting}
+            <div>
+              <AmountInput
+                onChange={(amount) => setCustomFee({ [setting]: amount })}
+                amount={customFee[setting]}
+                denomination={display}
+              />
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+
+  // return null
+}
+
 const Fee = ({ transaction }: { transaction: EdgeTransaction }) => {
   return (
     <div>
@@ -168,17 +226,7 @@ const Scanner: React.FC<{ onScan: (data: string) => any; show: boolean }> = ({ o
     <div>
       {error && <Alert variant={'danger'}>{error.message}</Alert>}
 
-      <QrReader delay={300} onError={setError} onScan={(data) => onScan(data || '')} style={{ width: '50%' }} />
+      <QrReader delay={300} onError={setError} onScan={(data: string) => onScan(data || '')} style={{ width: '50%' }} />
     </div>
   ) : null
-}
-
-const Matcher: React.FC<{ query: string; matchers: string[] }> = ({ children, query, matchers }) => {
-  const matches = (query: string, match: string) => {
-    const normalize = (text: string) => text.trim().toLowerCase()
-
-    return normalize(match).includes(normalize(query))
-  }
-
-  return <>{matchers.some((match) => matches(query, match)) ? children : null}</>
 }

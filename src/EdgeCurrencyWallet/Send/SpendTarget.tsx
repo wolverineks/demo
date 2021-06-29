@@ -1,7 +1,7 @@
 import { EdgeSpendTarget } from 'edge-core-js'
 import * as React from 'react'
 
-import { FlipInput, FlipInputRef, FormControl, FormGroup, FormLabel, InputGroup } from '../../components'
+import { FlipInput, FlipInputRef, FormControl, FormGroup, FormLabel, InputGroup, Matcher } from '../../components'
 
 const UNIQUE_IDENTIFIER_CURRENCIES = ['BNB', 'EOS', 'TLOS', 'XLM', 'XRP']
 
@@ -72,13 +72,3 @@ export const SpendTarget = React.forwardRef<SpendTargetRef, SpendTargetProps>(fu
     </>
   )
 })
-
-const Matcher: React.FC<{ query: string; matchers: string[] }> = ({ children, query, matchers }) => {
-  const matches = (query: string, match: string) => {
-    const normalize = (text: string) => text.trim().toLowerCase()
-
-    return normalize(match).includes(normalize(query))
-  }
-
-  return <>{matchers.some((match) => matches(query, match)) ? children : null}</>
-}
