@@ -1,13 +1,12 @@
 import React from 'react'
 
 import { useEdgeAccount } from '../auth'
-import { Boundary, Button, Image, Navbar } from '../components'
-import { useEdgeCurrencyWallet, useLogout, useName, useUsername } from '../hooks'
-import { useSelectedWalletInfo } from '../SelectedWallet'
+import { Button, Image, Navbar } from '../components'
+import { useLogout, useName, useUsername } from '../hooks'
+import { SelectedWalletBoundary, useSelectedWallet } from '../SelectedWallet'
 
 export const Header = () => {
   const account = useEdgeAccount()
-  const [walletInfo] = useSelectedWalletInfo()
   const logout = useLogout()
   const username = useUsername(account)
 
@@ -18,13 +17,9 @@ export const Header = () => {
       </Navbar.Brand>
       <Navbar.Toggle />
 
-      {walletInfo ? (
-        <Boundary>
-          <WalletName walletId={walletInfo.id} currencyCode={walletInfo.currencyCode} />
-        </Boundary>
-      ) : (
-        <Navbar.Text>No Selected Wallet </Navbar.Text>
-      )}
+      <SelectedWalletBoundary fallback={<Navbar.Text>No Selected Wallet </Navbar.Text>}>
+        <SelectedWalletName />
+      </SelectedWalletBoundary>
 
       <Navbar.Collapse className="justify-content-end">
         <Navbar.Text>{username}</Navbar.Text>
@@ -36,8 +31,8 @@ export const Header = () => {
   )
 }
 
-const WalletName: React.FC<{ walletId: string; currencyCode: string }> = ({ walletId, currencyCode }) => {
-  const wallet = useEdgeCurrencyWallet({ account: useEdgeAccount(), walletId })
+const SelectedWalletName: React.FC = () => {
+  const [{ wallet, currencyCode }] = useSelectedWallet()
   const [name] = useName(wallet)
 
   return (

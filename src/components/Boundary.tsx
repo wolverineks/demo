@@ -1,5 +1,5 @@
 import React from 'react'
-import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
+import { ErrorBoundary, ErrorBoundaryProps, FallbackProps } from 'react-error-boundary'
 
 const defaultSuspense = { fallback: <div>Loading...</div> }
 
@@ -8,7 +8,7 @@ const defaultError = { fallbackRender }
 
 export const Boundary: React.FC<{
   suspense?: Partial<React.ComponentProps<typeof React.Suspense>>
-  error?: Partial<React.ComponentProps<typeof ErrorBoundary>>
+  error?: Partial<ErrorBoundaryProps>
   suspend?: boolean
   catch?: boolean
 }> = ({ children, ...props }) => {
@@ -17,7 +17,7 @@ export const Boundary: React.FC<{
 
   return (
     <SuspendBoundary {...defaultSuspense} {...props.suspense}>
-      <CatchBoundary {...defaultError} {...props.error}>
+      <CatchBoundary {...defaultError} {...(props.error as any)}>
         {children}
       </CatchBoundary>
     </SuspendBoundary>
