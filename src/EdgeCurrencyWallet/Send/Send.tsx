@@ -21,7 +21,7 @@ import { useClipboardUri, useDenominations, useFiatCurrencyCode, useMaxSpendable
 import { useSelectedWallet } from '../../SelectedWallet'
 import { categories } from '../../utils'
 import { SpendTarget } from './SpendTarget'
-import { CustomFee, useSpendInfo } from './useSpendInfo'
+import { CustomFee, canAdjustFees, useSpendInfo } from './useSpendInfo'
 
 const MULTIPLE_TARGETS_CURRENCIES = ['BCH', 'BTC', 'BSV']
 
@@ -122,19 +122,19 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
         )}
       />
 
-      {/* {wallet.currencyInfo.canAdjustFees ? ( */}
-      <Select
-        title={'Fee Option'}
-        onSelect={(event) => setNetworkFeeOption(event.currentTarget.value)}
-        options={feeOptions}
-        defaultValue={'standard'}
-        renderOption={(category) => (
-          <option value={category.value} key={category.value}>
-            {category.display}
-          </option>
-        )}
-      />
-      {/* ) : null} */}
+      {canAdjustFees(wallet) ? (
+        <Select
+          title={'Fee Option'}
+          onSelect={(event) => setNetworkFeeOption(event.currentTarget.value)}
+          options={feeOptions}
+          defaultValue={'standard'}
+          renderOption={(category) => (
+            <option value={category.value} key={category.value}>
+              {category.display}
+            </option>
+          )}
+        />
+      ) : null}
 
       {networkFeeOption === 'custom' ? (
         <CustomFeeForm customFee={customNetworkFee} setCustomFee={setCustomNetworkFee} />
