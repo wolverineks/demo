@@ -8,11 +8,15 @@ interface ItemQuery {
 }
 
 const queryKey = ({ storeId, itemId }: { storeId: string; itemId: string }) => [storeId, itemId]
-const queryFn = ({ dataStore, storeId, itemId }: ItemQuery) => () =>
-  dataStore.getItem(storeId, itemId).then((data) => JSON.parse(data) as unknown)
+const queryFn =
+  ({ dataStore, storeId, itemId }: ItemQuery) =>
+  () =>
+    dataStore.getItem(storeId, itemId).then((data) => JSON.parse(data) as unknown)
 
 export const useItem = ({ dataStore, storeId, itemId }: ItemQuery, options?: UseQueryOptions) =>
-  useQuery(queryKey({ storeId, itemId }), queryFn({ dataStore, storeId, itemId }), {
+  useQuery({
+    queryKey: queryKey({ storeId, itemId }),
+    queryFn: queryFn({ dataStore, storeId, itemId }),
     suspense: true,
     staleTime: 0,
     ...options,

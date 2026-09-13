@@ -1,11 +1,13 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 
+import { useSelectWallet } from '../../App'
 import { Balance, Boundary, ListGroup, Logo } from '../../components'
 import { useTokens } from '../../hooks'
-import { useSelectedWalletInfo } from '../../SelectedWallet'
 
-export const EnabledTokens: React.FC<{ wallet: EdgeCurrencyWallet; onSelect: () => void }> = ({ wallet, onSelect }) => {
+export const EnabledTokens: React.FC<{
+  wallet: EdgeCurrencyWallet
+}> = ({ wallet }) => {
   const tokens = useTokens(wallet)
 
   return tokens.enabled.length > 0 ? (
@@ -13,7 +15,7 @@ export const EnabledTokens: React.FC<{ wallet: EdgeCurrencyWallet; onSelect: () 
       <ListGroup variant={'flush'}>
         {tokens.enabled.map((currencyCode) => (
           <Boundary key={currencyCode} error={{ fallbackRender: () => null }}>
-            <EnabledToken wallet={wallet} currencyCode={currencyCode} onSelect={onSelect} />
+            <EnabledToken wallet={wallet} currencyCode={currencyCode} />
           </Boundary>
         ))}
       </ListGroup>
@@ -21,20 +23,13 @@ export const EnabledTokens: React.FC<{ wallet: EdgeCurrencyWallet; onSelect: () 
   ) : null
 }
 
-const EnabledToken: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string; onSelect: () => void }> = ({
-  wallet,
-  currencyCode,
-  onSelect,
-}) => {
-  const [selected, select] = useSelectedWalletInfo()
+const EnabledToken: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
+  const [selected, select] = useSelectWallet()
 
   return (
     <ListGroup.Item
       variant={wallet.id === selected?.id && currencyCode === selected?.currencyCode ? 'primary' : undefined}
-      onClick={() => {
-        onSelect()
-        select({ id: wallet.id, currencyCode })
-      }}
+      onClick={() => select({ id: wallet.id, currencyCode })}
     >
       <span className={'float-left'}>
         <Logo currencyCode={currencyCode} />

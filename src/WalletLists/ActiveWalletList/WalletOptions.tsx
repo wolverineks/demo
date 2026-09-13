@@ -2,7 +2,7 @@ import { EdgeAccount } from 'edge-core-js'
 import React from 'react'
 
 import { useEdgeAccount } from '../../auth'
-import { Button } from '../../components'
+import { Boundary, Button } from '../../components'
 import { useActiveWalletIds, useChangeWalletState, useSortWallets, useSplitWallet } from '../../hooks'
 
 export const WalletOptions = ({ walletId }: { walletId: string }) => {
@@ -18,7 +18,10 @@ export const WalletOptions = ({ walletId }: { walletId: string }) => {
       {!isBottom ? <MoveDownButton walletId={walletId} /> : null}
       <ArchiveWalletButton walletId={walletId} />
       <DeleteWalletButton walletId={walletId} />
-      <SplitWalletButtons walletId={walletId} />
+
+      <Boundary>
+        <SplitWalletButtons walletId={walletId} />
+      </Boundary>
     </span>
   )
 }

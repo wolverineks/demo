@@ -18,7 +18,10 @@ const getIncludedInfos = (wallet: EdgeCurrencyWallet) => {
 }
 
 const useCustomInfos = (wallet: EdgeCurrencyWallet) => {
-  return useQuery<MetaTokenMap>([wallet.id, 'customTokenInfos'], () => readCustomTokenInfos(wallet))
+  return useQuery<MetaTokenMap>({
+    queryKey: [wallet.id, 'customTokenInfos'],
+    queryFn: () => readCustomTokenInfos(wallet),
+  })
 }
 
 const useAddCustomInfo = (wallet: EdgeCurrencyWallet) => {
@@ -89,6 +92,7 @@ const useEnableToken = (wallet: EdgeCurrencyWallet) => {
   }
 
   return useMutation(enableToken, {
+    useErrorBoundary: true,
     ...useInvalidateQueries([['activeCurrencyCodes'], [wallet.id, 'enabledTokenCurrencyCodes']]),
   })
 }
@@ -106,7 +110,9 @@ const useDisableToken = (wallet: EdgeCurrencyWallet) => {
 const useEnabledTokenCurrencyCodes = (wallet: EdgeCurrencyWallet, queryOptions?: UseQueryOptions<string[]>) => {
   const queryKey = [wallet.id, 'enabledTokenCurrencyCodes']
 
-  return useQuery(queryKey, () => readEnabledTokenCurrencyCodes(wallet), {
+  return useQuery({
+    queryKey,
+    queryFn: () => readEnabledTokenCurrencyCodes(wallet),
     suspense: true,
     ...queryOptions,
   })
@@ -115,9 +121,9 @@ const useEnabledTokenCurrencyCodes = (wallet: EdgeCurrencyWallet, queryOptions?:
 export const useTokens = (wallet: EdgeCurrencyWallet) => ({
   includedInfos: getIncludedInfos(wallet),
   customTokenInfos: useCustomInfos(wallet).data!,
-  addCustomInfo: useAddCustomInfo(wallet).mutateAsync,
-  removeCustomInfo: useRemoveCustomInfo(wallet).mutateAsync,
+  addCustomInfo: useAddCustomInfo(wallet).mutate,
+  removeCustomInfo: useRemoveCustomInfo(wallet).mutate,
   enabled: useEnabledTokenCurrencyCodes(wallet).data!,
-  enable: useEnableToken(wallet).mutateAsync,
-  disable: useDisableToken(wallet).mutateAsync,
+  enable: useEnableToken(wallet).mutate,
+  disable: useDisableToken(wallet).mutate,
 })

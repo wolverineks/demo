@@ -6,7 +6,7 @@ import { useAutoLogout, useLogout } from '../hooks'
 
 export const AutologoutContext = React.createContext<number>(Infinity)
 
-export const AutologoutProvider: React.FC = ({ children }) => {
+export const AutoLogoutProvider: React.FC = ({ children }) => {
   const account = useEdgeAccount()
   const [{ enabled, delay }] = useAutoLogout(account)
   const logout = useLogout()

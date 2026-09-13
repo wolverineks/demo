@@ -11,16 +11,13 @@ export type CustomFee = { [key: string]: string }
 
 export const useSpendInfo = (wallet: EdgeCurrencyWallet, currencyCode: string) => {
   const spendTargetRef = React.useRef<SpendTargetRef>(null)
-  const standardFeeOptions = [
-    { value: 'high', display: 'high' },
-    { value: 'standard', display: 'standard' },
-    { value: 'low', display: 'low' },
-  ] as const
+  const spendTargets = useSpendTargets()
+  const [metadata, setMetadata] = React.useState<EdgeSpendInfo['metadata']>({})
+
+  //FEES
   const feeOptions = canAdjustFees(wallet)
     ? ([...standardFeeOptions, { value: 'custom', display: 'custom' }] as const)
     : standardFeeOptions
-  const spendTargets = useSpendTargets()
-  const [metadata, setMetadata] = React.useState<EdgeSpendInfo['metadata']>({})
   const [networkFeeOption, setNetworkFeeOption] =
     React.useState<NonNullable<EdgeSpendInfo['networkFeeOption']>>('standard')
   const [customNetworkFee, _setCustomNetworkFee] = React.useState<NonNullable<EdgeSpendInfo['customNetworkFee']>>(
@@ -35,6 +32,7 @@ export const useSpendInfo = (wallet: EdgeCurrencyWallet, currencyCode: string) =
     _setCustomNetworkFee((current) => ({ ...current, ...networkFee }))
   const updateMetadata = (metadata: EdgeMetadata) => setMetadata((current) => ({ ...current, ...metadata }))
 
+  // URI
   const [uri, setUri] = React.useState<string>()
   useParsedUri(wallet, uri, {
     enabled: !!uri,
@@ -65,3 +63,9 @@ export const useSpendInfo = (wallet: EdgeCurrencyWallet, currencyCode: string) =
     updateMetadata,
   }
 }
+
+const standardFeeOptions = [
+  { value: 'high', display: 'high' },
+  { value: 'standard', display: 'standard' },
+  { value: 'low', display: 'low' },
+] as const

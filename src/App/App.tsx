@@ -1,7 +1,7 @@
-import React from 'react'
+import * as React from 'react'
 
 import { AccountConsumer, AccountProvider, Login } from '../auth'
-import { AutologoutProvider } from '../AutoLogout'
+import { AutoLogoutProvider } from '../AutoLogout'
 import { Boundary, Container } from '../components'
 import { Edge } from '../Edge'
 import { RouteProvider } from '../route'
@@ -17,7 +17,7 @@ export const App = () => {
           <AccountConsumer>
             {(account) =>
               account ? (
-                <AutologoutProvider>
+                <AutoLogoutProvider>
                   <SelectedWalletInfoProvider>
                     <RouteProvider>
                       <Header />
@@ -27,7 +27,7 @@ export const App = () => {
                       </Boundary>
                     </RouteProvider>
                   </SelectedWalletInfoProvider>
-                </AutologoutProvider>
+                </AutoLogoutProvider>
               ) : (
                 <Container style={{ top: '100px' }}>
                   <Login />

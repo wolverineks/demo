@@ -138,7 +138,9 @@ export const useTransactions = (
 }
 
 export const useParsedUri = (wallet: EdgeCurrencyWallet, uri?: string, options?: UseQueryOptions<EdgeParsedUri>) => {
-  return useQuery([wallet.id, uri], () => wallet.parseUri(uri!), {
+  return useQuery({
+    queryKey: [wallet.id, uri],
+    queryFn: () => wallet.parseUri(uri!),
     suspense: false,
     ...options,
   }).data
@@ -149,7 +151,9 @@ export const useClipboardUri = (wallet: EdgeCurrencyWallet, queryOptions?: UseQu
   const queryFn = () =>
     navigator.clipboard.readText().then((clipboard) => wallet.parseUri(clipboard).then(() => clipboard))
 
-  const { data: clipboardUri } = useQuery(queryKey, queryFn, {
+  const { data: clipboardUri } = useQuery({
+    queryKey,
+    queryFn,
     suspense: false,
     useErrorBoundary: false,
     ...queryOptions,
@@ -227,7 +231,9 @@ export const useExportTransactions = (
   options: EdgeGetTransactionsOptions,
   format: 'CSV' | 'QBO',
 ) => {
-  return useQuery([wallet.id, 'export-transaction', options, format], () =>
-    format === 'CSV' ? wallet.exportTransactionsToCSV(options) : wallet.exportTransactionsToQBO(options),
-  )
+  return useQuery({
+    queryKey: [wallet.id, 'export-transaction', options, format],
+    queryFn: () =>
+      format === 'CSV' ? wallet.exportTransactionsToCSV(options) : wallet.exportTransactionsToQBO(options),
+  })
 }

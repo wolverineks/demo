@@ -5,10 +5,15 @@ interface StoreIdsQuery {
   dataStore: EdgeDataStore
 }
 const queryKey = 'dataStore'
-const queryFn = ({ dataStore }: StoreIdsQuery) => () => dataStore.listStoreIds()
+const queryFn =
+  ({ dataStore }: StoreIdsQuery) =>
+  () =>
+    dataStore.listStoreIds()
 
 export const useStoreIds = ({ dataStore }: StoreIdsQuery, queryOptions?: UseQueryOptions<string[]>) =>
-  useQuery(queryKey, queryFn({ dataStore }), {
+  useQuery({
+    queryKey: queryKey,
+    queryFn: queryFn({ dataStore }),
     suspense: true,
     staleTime: 0,
     ...queryOptions,

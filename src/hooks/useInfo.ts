@@ -32,22 +32,25 @@ export const getInfo = (account: EdgeAccount, currencyCode: string) => {
 }
 
 export const useInfo = (account: EdgeAccount, currencyCode: string) => {
-  const { data } = useQuery(['info', currencyCode], async () => {
-    const info = getInfo(account, currencyCode)
+  const { data } = useQuery({
+    queryKey: ['info', currencyCode],
+    queryFn: async () => {
+      const info = getInfo(account, currencyCode)
 
-    if (info) {
-      return info
-    }
-
-    const wallets = Object.values(account.currencyWallets)
-    for (const wallet of wallets) {
-      const tokenInfos = await readCustomTokenInfos(wallet)
-      const match = tokenInfos[currencyCode]
-
-      if (match) {
-        return match
+      if (info) {
+        return info
       }
-    }
+
+      const wallets = Object.values(account.currencyWallets)
+      for (const wallet of wallets) {
+        const tokenInfos = await readCustomTokenInfos(wallet)
+        const match = tokenInfos[currencyCode]
+
+        if (match) {
+          return match
+        }
+      }
+    },
   })
 
   if (!data) throw new Error(`Invalid Currency Code: ${currencyCode}`)

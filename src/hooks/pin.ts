@@ -7,7 +7,11 @@ export const usePinExists = (context: EdgeContext, account: EdgeAccount, queryOp
   const queryKey = [account.username, 'pinExists']
   const queryFn = () => context.pinExists(account.username)
 
-  return useQuery(queryKey, queryFn, { ...queryOptions })
+  return useQuery({
+    queryKey,
+    queryFn,
+    ...queryOptions,
+  })
 }
 
 export const usePinLoginEnabled = (
@@ -18,7 +22,9 @@ export const usePinLoginEnabled = (
   const queryKey = [account.username, 'pinLoginEnabled']
   const queryFn = () => context.pinLoginEnabled(account.username)
 
-  return useQuery(queryKey, queryFn, {
+  return useQuery({
+    queryKey,
+    queryFn,
     ...queryOptions,
   })
 }

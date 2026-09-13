@@ -11,7 +11,10 @@ const useWalletFiatCurrencyCodes = (account: EdgeAccount) => {
   const getWalletFiatCurrencyCodes = () =>
     unique(getSortedCurrencyWallets(account).map(({ fiatCurrencyCode }) => fiatCurrencyCode))
 
-  const { refetch, data } = useQuery('walletFiatCurrencyCodes', () => getWalletFiatCurrencyCodes())
+  const { refetch, data } = useQuery({
+    queryKey: 'walletFiatCurrencyCodes',
+    queryFn: () => getWalletFiatCurrencyCodes(),
+  })
   useWatch(account, 'currencyWallets', () => refetch())
 
   return data!

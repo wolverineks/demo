@@ -6,10 +6,15 @@ interface ItemIdsQuery {
   storeId: string
 }
 
-const queryFn = ({ dataStore, storeId }: ItemIdsQuery) => () => dataStore.listItemIds(storeId)
+const queryFn =
+  ({ dataStore, storeId }: ItemIdsQuery) =>
+  () =>
+    dataStore.listItemIds(storeId)
 
 export const useItemIds = ({ dataStore, storeId }: ItemIdsQuery, options?: UseQueryOptions<string[]>) =>
-  useQuery(storeId, queryFn({ dataStore, storeId }), {
+  useQuery({
+    queryKey: storeId,
+    queryFn: queryFn({ dataStore, storeId }),
     suspense: true,
     staleTime: 0,
     ...options,

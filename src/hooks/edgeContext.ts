@@ -19,7 +19,11 @@ export const useLoginMessages = (
   username: string,
   queryOptions?: UseQueryOptions<EdgeLoginMessages>,
 ) => {
-  return useQuery(['loginMessages'], () => context.fetchLoginMessages(), queryOptions).data![username]
+  return useQuery({
+    queryKey: ['loginMessages'],
+    queryFn: () => context.fetchLoginMessages(),
+    ...queryOptions,
+  }).data![username]
 }
 
 export const useCreateAccount = (
@@ -69,13 +73,13 @@ const createDefaultWallets = async (account: EdgeAccount) => {
     await account.createCurrencyWallet('wallet:bitcoin', { name: 'My Bitcoin Wallet', ...options })
   }
 
-  if (!account.allKeys.find(({ type }) => type === 'wallet:ethereum')) {
-    console.log('Creating default wallet: Ethereum')
-    await account.createCurrencyWallet('wallet:ethereum', { name: 'My Ethereum Wallet', ...options })
-  }
+  // if (!account.allKeys.find(({ type }) => type === 'wallet:ethereum')) {
+  //   console.log('Creating default wallet: Ethereum')
+  //   await account.createCurrencyWallet('wallet:ethereum', { name: 'My Ethereum Wallet', ...options })
+  // }
 
-  if (!account.allKeys.find(({ type }) => type === 'wallet:bitcoincash')) {
-    console.log('Creating default wallet: Bitcoincash')
-    await account.createCurrencyWallet('wallet:bitcoincash', { name: 'My Bitcoincash Wallet', ...options })
-  }
+  // if (!account.allKeys.find(({ type }) => type === 'wallet:bitcoincash')) {
+  //   console.log('Creating default wallet: Bitcoincash')
+  //   await account.createCurrencyWallet('wallet:bitcoincash', { name: 'My Bitcoincash Wallet', ...options })
+  // }
 }

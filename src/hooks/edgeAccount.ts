@@ -6,7 +6,7 @@ import {
   EdgeSwapRequest,
 } from 'edge-core-js'
 import React from 'react'
-import { UseQueryOptions, useMutation, useQuery } from 'react-query'
+import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
 import { readCustomTokenInfo } from './tokens'
 import { getFiatInfo, getInfo } from './useInfo'
@@ -118,11 +118,21 @@ export const useSortWallets = (account: EdgeAccount) => {
   )
 }
 
-export const useCreateCurrencyWallet = (account: EdgeAccount) => {
+export const useCreateCurrencyWallet = (
+  account: EdgeAccount,
+  mutationOptions?: UseMutationOptions<
+    EdgeCurrencyWallet,
+    Error,
+    { type: string; options: EdgeCreateCurrencyWalletOptions }
+  >,
+) => {
   const mutationFn = ({ type, options }: { type: string; options: EdgeCreateCurrencyWalletOptions }) =>
     account.createCurrencyWallet(type, options)
 
-  return useMutation(mutationFn)
+  return useMutation<EdgeCurrencyWallet, Error, { type: string; options: EdgeCreateCurrencyWalletOptions }>(
+    mutationFn,
+    mutationOptions,
+  )
 }
 
 export const getDefaultFiatCurrencyCode = (account: EdgeAccount) => {
@@ -237,7 +247,10 @@ export const useSwapQuote = ({
 
 export const useSplitWallet = (account: EdgeAccount, walletId: string) => {
   return {
-    walletTypes: useQuery([walletId, 'splittableWalletTypes'], () => account.listSplittableWalletTypes(walletId)).data!,
+    walletTypes: useQuery({
+      queryKey: [walletId, 'splittableWalletTypes'],
+      queryFn: () => account.listSplittableWalletTypes(walletId),
+    }).data!,
     splitWallet: useMutation((walletType: string) => account.splitWalletInfo(walletId, walletType), {
       ...useInvalidateQueries([[walletId, 'splittableWalletTypes']]),
     }).mutateAsync,

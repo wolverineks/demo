@@ -11,7 +11,7 @@ export const Header = () => {
   const username = useUsername(account)
 
   return (
-    <Navbar>
+    <Navbar style={{ paddingLeft: 16, paddingRight: 16 }}>
       <Navbar.Brand>
         <Image alt={'logo'} src={'../logo.jpg'} style={{ height: 80, width: 80 }} />
       </Navbar.Brand>

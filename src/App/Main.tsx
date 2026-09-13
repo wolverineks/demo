@@ -65,8 +65,10 @@ const enableTokens = async (wallet: EdgeCurrencyWallet) => {
   wallet.enableTokens(enabledTokenCurrencyCodes)
 }
 
-const isEnabled = (enabledTokenCurrencyCodes: string[]) => ({ currencyCode }: EdgeMetaToken) =>
-  !enabledTokenCurrencyCodes.includes(currencyCode)
+const isEnabled =
+  (enabledTokenCurrencyCodes: string[]) =>
+  ({ currencyCode }: EdgeMetaToken) =>
+    !enabledTokenCurrencyCodes.includes(currencyCode)
 
 const toToken = (token: EdgeMetaToken): EdgeTokenInfo => ({
   currencyCode: token.currencyCode,

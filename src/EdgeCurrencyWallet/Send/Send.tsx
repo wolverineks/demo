@@ -57,13 +57,13 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
 
   return (
     <Form>
-      {spendTargets.all.map((spendTarget, index) => (
-        <div key={spendTarget.id}>
+      {spendTargets.all.map(({ id }, index) => (
+        <div key={id}>
           {index === 0 ? (
             <SpendTarget
               currencyCode={currencyCode}
               fiatCurrencyCode={fiatCurrencyCode}
-              onChange={(spendTarget) => spendTargets.update(index, spendTarget)}
+              onChange={(newSpendTarget) => spendTargets.update(id, newSpendTarget)}
               ref={spendTargetRef}
             />
           ) : (
@@ -90,6 +90,26 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
           Spend Max
         </Button>
       ) : null}
+
+      {canAdjustFees(wallet) ? (
+        <Select
+          title={'Fee Option'}
+          onSelect={(event) => setNetworkFeeOption(event.currentTarget.value)}
+          options={feeOptions}
+          defaultValue={'standard'}
+          renderOption={(category) => (
+            <option value={category.value} key={category.value}>
+              {category.display}
+            </option>
+          )}
+        />
+      ) : null}
+
+      {networkFeeOption === 'custom' ? (
+        <CustomFeeForm customFee={customNetworkFee} setCustomFee={setCustomNetworkFee} />
+      ) : null}
+
+      {transaction?.networkFee ? <Fee transaction={transaction} /> : null}
 
       {clipboardUri ? <Button onClick={() => setUri(clipboardUri)}>Paste From Clipboard</Button> : null}
 
@@ -121,26 +141,6 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
           </option>
         )}
       />
-
-      {canAdjustFees(wallet) ? (
-        <Select
-          title={'Fee Option'}
-          onSelect={(event) => setNetworkFeeOption(event.currentTarget.value)}
-          options={feeOptions}
-          defaultValue={'standard'}
-          renderOption={(category) => (
-            <option value={category.value} key={category.value}>
-              {category.display}
-            </option>
-          )}
-        />
-      ) : null}
-
-      {networkFeeOption === 'custom' ? (
-        <CustomFeeForm customFee={customNetworkFee} setCustomFee={setCustomNetworkFee} />
-      ) : null}
-
-      {transaction?.networkFee ? <Fee transaction={transaction} /> : null}
 
       {error && <Alert>{(error as Error).message}</Alert>}
 
