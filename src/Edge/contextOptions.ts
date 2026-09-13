@@ -1,14 +1,20 @@
 export const currencyPlugins = {
-  // edge-currency-accountbased:
+  // edge-currency-accountbased 0.10.x (last line compatible with edge-core-js 0.18):
   binance: true,
   eos: true,
   ethereum: true,
   ethereumclassic: true,
+  fantom: true,
   fio: true,
+  hedera: false,
+  polygon: true,
   ripple: true,
   rsk: true,
   stellar: true,
+  telos: true,
   tezos: true,
+  wax: true,
+  zcash: false,
   // edge-currency-bitcoin:
   bitcoin: true,
   bitcoincash: true,
