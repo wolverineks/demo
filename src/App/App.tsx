@@ -6,6 +6,7 @@ import { Boundary, Container } from '../components'
 import { Edge } from '../Edge'
 import { RouteProvider } from '../route'
 import { SelectedWalletInfoProvider } from '../SelectedWallet'
+import { Debug } from './Debug'
 import { Header } from './Header'
 import { Layout } from './Layout'
 
@@ -36,6 +37,7 @@ export const App = () => {
             }
           </AccountConsumer>
         </AccountProvider>
+        <Debug />
       </Edge>
     </Boundary>
   )

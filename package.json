@@ -50,7 +50,7 @@
     "edge-currency-accountbased": "0.11.4",
     "edge-currency-bitcoin": "4.9.23",
     "edge-currency-monero": "^0.2.10",
-    "edge-exchange-plugins": "^0.11.27",
+    "edge-exchange-plugins": "0.16.17",
     "react": "^17.0.2",
     "react-bootstrap": "^1.6.0",
     "react-date-picker": "^8.3.5",

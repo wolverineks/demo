@@ -42,17 +42,32 @@ export const currencyPlugins = {
 }
 
 export const ratePlugins = {
-  'shapeshift-rate': false,
-  compound: true,
+  bitmax: true,
   coinbase: true,
   coincap: true,
+  coingecko: true,
+  coinmonitor: true,
+  compound: true,
   constantRate: true,
-  coincapLegacy: false,
-  xagau: false,
+  currencyconverterapi: true,
+  edgeRates: true,
+  nomics: false,
   wazirx: true,
 }
 
 export const swapPlugins = {
+  changehero: false,
+  changenow: false,
+  exolix: false,
+  godex: false,
+  letsexchange: false,
+  sideshift: false,
+  spookySwap: false,
+  swapuz: false,
+  switchain: false,
+  thorchain: false,
+  thorchainda: false,
+  tombSwap: false,
   transfer: true,
 }
 
