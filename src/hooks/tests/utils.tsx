@@ -7,13 +7,12 @@ import { fakeUser } from './fake-user'
 export const makeFakeEdgeContext = async (plugins: EdgeContextOptions['plugins'] = {}) => {
   const quiet = { onLog: () => null }
   const world = await makeFakeEdgeWorld([fakeUser], quiet)
-  const context = await world.makeEdgeContext({
+
+  return world.makeEdgeContext({
     apiKey: '',
     appId: '',
     plugins,
   })
-
-  return context
 }
 
 export const render = (callback: () => any, options?: RenderHookOptions<any>) => {

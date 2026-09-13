@@ -19,6 +19,7 @@ const fakeUserDump: EdgeFakeUser = {
 
   server: {
     appId: '',
+    created: '2018-02-01T00:00:00.000Z',
     loginAuthBox: {
       encryptionType: 0,
       iv_hex: '785bcaf5ccfffef9e063f2bdb487a641',
