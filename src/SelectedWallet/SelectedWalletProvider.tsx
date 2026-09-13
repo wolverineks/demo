@@ -71,9 +71,12 @@ export const CurrencyCodeBoundary: React.FC<{ fallback?: React.ReactNode }> = ({
   const account = useEdgeAccount()
   const wallet = useEdgeCurrencyWallet({ account, walletId: walletInfo.id }) // never settles if archived id
   const tokens = useTokens(wallet)
+  const nativeCurrencyCode = wallet.currencyInfo.currencyCode
+  const isEnabled =
+    walletInfo.currencyCode === nativeCurrencyCode || tokens.enabled.includes(walletInfo.currencyCode)
 
-  // selected currency code deactivated
-  if (!tokens.enabled.includes(walletInfo.currencyCode)) {
+  // selected token deactivated
+  if (!isEnabled) {
     selectWallet(undefined)
 
     return <>{fallback}</>

@@ -97,6 +97,8 @@ const ActiveWalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
 
 const SyncRatio = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
   const syncRatio = useSyncRatio(wallet)
+  const nativeBalance = wallet.balances[wallet.currencyInfo.currencyCode]
+  const isSyncing = nativeBalance == null && syncRatio > 0 && syncRatio < 1
 
-  return syncRatio < 1 ? <ProgressBar min={0} now={Math.max(syncRatio, 0.1)} max={1} striped animated /> : null
+  return isSyncing ? <ProgressBar min={0} now={syncRatio} max={1} striped animated /> : null
 }

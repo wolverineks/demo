@@ -240,6 +240,7 @@ export const useFiatAmount = (
     queryKey: [{ fromCurrencyCode, fiatCurrencyCode, exchangeAmount }],
     queryFn: () => account.rateCache.convertCurrency(fromCurrencyCode, fiatCurrencyCode, Number(exchangeAmount)),
     suspense: true,
+    refetchInterval: 5000,
     ...queryOptions,
   })
 

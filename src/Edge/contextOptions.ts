@@ -49,7 +49,7 @@ export const ratePlugins = {
   coinmonitor: true,
   compound: true,
   constantRate: true,
-  currencyconverterapi: true,
+  currencyconverterapi: false,
   edgeRates: true,
   nomics: false,
   wazirx: true,

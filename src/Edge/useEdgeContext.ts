@@ -1,7 +1,7 @@
 import { EdgeContext, EdgeContextOptions, makeEdgeContext, makeFakeEdgeWorld } from 'edge-core-js'
 import { UseQueryOptions, useQuery } from 'react-query'
 
-import { contextOptions } from './contextOptions'
+import { contextOptions, ratePlugins } from './contextOptions'
 import { fakeUser } from './fake-user'
 
 export const isTesting = process.env.NODE_ENV === 'test'
@@ -13,14 +13,20 @@ export const makeFakeEdgeContext = async (plugins: EdgeContextOptions['plugins']
   return world.makeEdgeContext({
     apiKey: '',
     appId: '',
+    allowNetworkAccess: true,
     plugins,
   })
 }
 
-const queryKey = ['context', 'fake-user-dump']
+const queryKey = ['context', 'fake-user-dump', 'rate-plugins-3']
 const queryFn = () =>
   isTesting || isDevelopment
-    ? makeFakeEdgeContext({ bitcoin: true, bitcoingold: true, ethereum: true })
+    ? makeFakeEdgeContext({
+        bitcoin: true,
+        bitcoingold: true,
+        ethereum: true,
+        ...ratePlugins,
+      })
     : makeEdgeContext(contextOptions)
 
 export const useEdgeContext = ({
