@@ -9,7 +9,7 @@ export const PublicSeed: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet })
   return (
     <FormGroup>
       <FormLabel>Public Seed</FormLabel>
-      <FormControl readOnly value={showPublicSeed ? wallet.getDisplayPublicSeed() || '' : ''} />
+      <FormControl readOnly value={showPublicSeed ? wallet.displayPublicSeed || '' : ''} />
       <Button onClick={() => setShowPublicSeed((x) => !x)}>Show Public Seed</Button>
     </FormGroup>
   )

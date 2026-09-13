@@ -2,6 +2,7 @@ import { EdgeAccount, EdgeContext } from 'edge-core-js'
 import React from 'react'
 
 import { Alert, Button, Form, FormGroup } from '../components'
+import { fakeUser } from '../Edge'
 import { useLoginWithPassword } from '../hooks'
 
 export const PasswordLogin: React.FC<{ context: EdgeContext; onLogin: (account: EdgeAccount) => any }> = ({
@@ -56,7 +57,19 @@ export const PasswordLogin: React.FC<{ context: EdgeContext; onLogin: (account: 
           }}
         >
           {status === 'loading' ? '...' : 'Login'}
-        </Button>
+        </Button>{' '}
+        {process.env.NODE_ENV !== 'production' && (
+          <Button
+            variant="secondary"
+            disabled={status === 'loading'}
+            onClick={(event: React.MouseEvent) => {
+              event.preventDefault()
+              loginWithPassword({ username: fakeUser.username, password: fakeUser.password })
+            }}
+          >
+            {status === 'loading' ? '...' : 'Login with fake user'}
+          </Button>
+        )}
       </FormGroup>
     </Form>
   )

@@ -233,7 +233,20 @@ export const useExportTransactions = (
 ) => {
   return useQuery({
     queryKey: [wallet.id, 'export-transaction', options, format],
-    queryFn: () =>
-      format === 'CSV' ? wallet.exportTransactionsToCSV(options) : wallet.exportTransactionsToQBO(options),
+    queryFn: async () => {
+      // CSV/QBO helpers left the core in 0.18; dump txs as CSV from getTransactions.
+      const transactions = await wallet.getTransactions(options)
+      if (format === 'QBO') {
+        throw new Error('QBO export was removed from edge-core-js in 0.18.0')
+      }
+
+      const header = 'txid,date,currencyCode,nativeAmount'
+      const rows = transactions.map(
+        (tx) =>
+          `${tx.txid},${tx.date},${tx.currencyCode},${tx.nativeAmount}`,
+      )
+
+      return [header, ...rows].join('\n')
+    },
   })
 }

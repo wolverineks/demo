@@ -9,7 +9,7 @@ export const PrivateSeed: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }
   return (
     <FormGroup>
       <FormLabel>Private Seed</FormLabel>
-      <FormControl readOnly value={showPrivateSeed ? wallet.getDisplayPrivateSeed() || '' : ''} />
+      <FormControl readOnly value={showPrivateSeed ? wallet.displayPrivateSeed || '' : ''} />
       <Button onClick={() => setShowPrivateSeed((x) => !x)}>Show Private Seed</Button>
     </FormGroup>
   )
