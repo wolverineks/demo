@@ -1,25 +1,17 @@
 /**
- * edge-core-js 0.18.14 saveUser round-trips a cleaned login dump through
- * asLoginPayload(wasLoginDump(server)). asLoginDump.created is a custom
- * cleaner that does not uncleaner Dates, so makeEdgeContext throws and the
- * fake user never lands on disk.
+ * edge-core-js install patches for this CRA demo.
  *
- * Apply this after yarn install.
+ * saveUser: 0.18+ round-trips a cleaned login dump through
+ * asLoginPayload(wasLoginDump(server)). asLoginDump.created does not
+ * uncleaner Dates, so makeEdgeContext throws and the fake user never
+ * lands on disk.
+ *
+ * plugins-selectors: 0.19 ships an ESM-only file with no imports.
+ * CRA webpack 4 then reports named exports as missing. Keep a real
+ * import so the module graph exports findCurrencyPluginId.
  */
 const fs = require('fs')
 const path = require('path')
-
-const target = path.join(__dirname, '../node_modules/edge-core-js/lib/core/fake/fake-world.js')
-
-if (!fs.existsSync(target)) {
-  console.warn('skip fake-world patch: edge-core-js not installed')
-  process.exit(0)
-}
-
-const source = fs.readFileSync(target, 'utf8')
-if (source.includes('EDGE_DEMO_SAVEUSER_PATCH')) {
-  process.exit(0)
-}
 
 const needle = `async function saveUser(io, user) {
   const { lastLogin, loginId, loginKey, repos, server } = user
@@ -81,10 +73,35 @@ async function saveUser(io, user) {
   await io.disklet.setText(path, text)
 `
 
-if (!source.includes(needle)) {
-  console.error('skip fake-world patch: saveUser source changed')
-  process.exit(1)
+function patchFile(relPath, apply) {
+  const target = path.join(__dirname, '..', relPath)
+  if (!fs.existsSync(target)) {
+    console.warn('skip patch, missing', relPath)
+    return
+  }
+  const source = fs.readFileSync(target, 'utf8')
+  const next = apply(source)
+  if (next == null) return
+  if (next === source) {
+    console.error('skip patch, source changed', relPath)
+    process.exitCode = 1
+    return
+  }
+  fs.writeFileSync(target, next)
+  console.log('patched', relPath)
 }
 
-fs.writeFileSync(target, source.replace(needle, replacement))
-console.log('patched edge-core-js fake-world saveUser')
+patchFile('node_modules/edge-core-js/lib/core/fake/fake-world.js', source => {
+  if (source.includes('EDGE_DEMO_SAVEUSER_PATCH')) return null
+  if (!source.includes(needle)) return source
+  return source.replace(needle, replacement)
+})
+
+patchFile('node_modules/edge-core-js/lib/core/plugins/plugins-selectors.js', source => {
+  if (source.includes('EDGE_DEMO_ESM_PATCH')) return null
+  return (
+    "import { makeLog } from '../log/log'\n\n// EDGE_DEMO_ESM_PATCH\n" +
+    source +
+    '\nexport const __edgeDemoKeepEsm = makeLog\n'
+  )
+})

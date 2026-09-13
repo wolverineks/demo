@@ -1,5 +1,6 @@
 export const currencyPlugins = {
-  // edge-currency-accountbased 0.10.x (last line compatible with edge-core-js 0.18):
+  // edge-currency-accountbased 0.11.x (edge-core-js 0.19, CRA-safe):
+  avalanche: true,
   binance: true,
   eos: true,
   ethereum: true,

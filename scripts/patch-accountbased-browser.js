@@ -1,8 +1,7 @@
 /**
- * edge-currency-accountbased 0.10.x always imports Hedera and Zcash.
- * Hedera's @hashgraph/sdk protobuf filenames break CRA's case-sensitive
- * webpack plugin; Zcash wants react-native-zcash. Strip both from the
- * browser plugin map after install.
+ * edge-currency-accountbased 0.11.x always imports Hedera and Zcash.
+ * Hedera's protobuf filenames break CRA's case-sensitive webpack plugin;
+ * Zcash wants react-native-zcash. Strip both from the browser plugin map.
  */
 const fs = require('fs')
 const path = require('path')
@@ -19,21 +18,63 @@ if (source.includes('EDGE_DEMO_ACCOUNTBASED_BROWSER_PATCH')) {
   process.exit(0)
 }
 
-let next = source
-next = next.replace("import { makeHederaPlugin } from './hedera/hederaInfo.js'\n", '')
-next = next.replace("import { makeZcashPlugin } from './zcash/zecPlugin.js'\n", '')
-next = next.replace('  zcash: makeZcashPlugin,\n', '')
-next = next.replace('  hedera: makeHederaPlugin,\n', '')
+const needle = `import { makeFioPlugin } from './fio/fioPlugin'
+import { makeHederaPlugin } from './hedera/hederaInfo.js'
+import { makeStellarPlugin } from './stellar/stellarPlugin.js'
+import { makeTezosPlugin } from './tezos/tezosPlugin.js'
+import { makeRipplePlugin } from './xrp/xrpPlugin.js'
+import { makeZcashPlugin } from './zcash/zecPlugin.js'
 
-if (next === source) {
+const plugins = {
+  eos: makeEosPlugin,
+  telos: makeTelosPlugin,
+  wax: makeWaxPlugin,
+  ethereum: makeEthereumPlugin,
+  ethereumclassic: makeEthereumClassicPlugin,
+  fantom: makeFantomPlugin,
+  fio: makeFioPlugin,
+  zcash: makeZcashPlugin,
+  // "ripple" is network name. XRP is just an asset:
+  ripple: makeRipplePlugin,
+  stellar: makeStellarPlugin,
+  tezos: makeTezosPlugin,
+  rsk: makeRskPlugin,
+  binance: makeBinancePlugin,
+  hedera: makeHederaPlugin,
+  polygon: makePolygonPlugin,
+  avalanche: makeAvalanchePlugin
+}
+`
+
+const replacement = `import { makeFioPlugin } from './fio/fioPlugin'
+import { makeStellarPlugin } from './stellar/stellarPlugin.js'
+import { makeTezosPlugin } from './tezos/tezosPlugin.js'
+import { makeRipplePlugin } from './xrp/xrpPlugin.js'
+
+// EDGE_DEMO_ACCOUNTBASED_BROWSER_PATCH
+const plugins = {
+  eos: makeEosPlugin,
+  telos: makeTelosPlugin,
+  wax: makeWaxPlugin,
+  ethereum: makeEthereumPlugin,
+  ethereumclassic: makeEthereumClassicPlugin,
+  fantom: makeFantomPlugin,
+  fio: makeFioPlugin,
+  // "ripple" is network name. XRP is just an asset:
+  ripple: makeRipplePlugin,
+  stellar: makeStellarPlugin,
+  tezos: makeTezosPlugin,
+  rsk: makeRskPlugin,
+  binance: makeBinancePlugin,
+  polygon: makePolygonPlugin,
+  avalanche: makeAvalanchePlugin
+}
+`
+
+if (!source.includes(needle)) {
   console.error('skip accountbased patch: plugin map source changed')
   process.exit(1)
 }
 
-next = next.replace(
-  "import 'regenerator-runtime/runtime'\n",
-  "import 'regenerator-runtime/runtime'\n\n// EDGE_DEMO_ACCOUNTBASED_BROWSER_PATCH\n",
-)
-
-fs.writeFileSync(target, next)
+fs.writeFileSync(target, source.replace(needle, replacement))
 console.log('patched edge-currency-accountbased browser plugin map')
