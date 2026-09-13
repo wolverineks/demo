@@ -49,20 +49,27 @@ const WalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
   const balance = getBalance(snapshot, snapshot.currencyInfo.currencyCode) || '0'
 
   return (
-    <ListGroup.Item>
-      <span className={'float-left'}>
-        <Logo currencyCode={snapshot.currencyInfo.currencyCode} /> {snapshot.name}{' '}
-        <DisplayAmount nativeAmount={balance} currencyCode={snapshot.currencyInfo.currencyCode} /> -{' '}
-        <FiatAmount
-          nativeAmount={balance}
-          fromCurrencyCode={snapshot.currencyInfo.currencyCode}
-          fiatCurrencyCode={snapshot.fiatCurrencyCode}
-        />
-      </span>
+    <ListGroup.Item className="wallet-row">
+      <div className="wallet-row__body">
+        <div className="wallet-row__main">
+          <Logo currencyCode={snapshot.currencyInfo.currencyCode} />
+          <div className="wallet-row__text">
+            <div className="wallet-row__name">{snapshot.name}</div>
+            <div className="wallet-row__balance">
+              <DisplayAmount nativeAmount={balance} currencyCode={snapshot.currencyInfo.currencyCode} /> -{' '}
+              <FiatAmount
+                nativeAmount={balance}
+                fromCurrencyCode={snapshot.currencyInfo.currencyCode}
+                fiatCurrencyCode={snapshot.fiatCurrencyCode}
+              />
+            </div>
+          </div>
+        </div>
 
-      <span className={'float-right'}>
-        <WalletOptions walletId={snapshot.id} />
-      </span>
+        <span className="wallet-actions">
+          <WalletOptions walletId={snapshot.id} />
+        </span>
+      </div>
     </ListGroup.Item>
   )
 }
@@ -73,10 +80,10 @@ const WalletOptions = ({ walletId }: { walletId: string }) => {
 
   return (
     <>
-      <Button variant={'warning'} disabled={status === 'loading'} onClick={activateWallet}>
+      <Button size="sm" variant={'warning'} disabled={status === 'loading'} onClick={activateWallet}>
         A
       </Button>
-      <Button variant={'warning'} disabled={status === 'loading'} onClick={archiveWallet}>
+      <Button size="sm" variant={'warning'} disabled={status === 'loading'} onClick={archiveWallet}>
         A
       </Button>
       {error && <DisplayError error={error} />}

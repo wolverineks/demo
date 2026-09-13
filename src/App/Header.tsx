@@ -11,22 +11,22 @@ export const Header = () => {
   const username = useUsername(account)
 
   return (
-    <Navbar style={{ paddingLeft: 16, paddingRight: 16 }}>
-      <Navbar.Brand>
-        <Image alt={'logo'} src={'../logo.jpg'} style={{ height: 80, width: 80 }} />
+    <Navbar className="app-header">
+      <Navbar.Brand className="app-header__brand">
+        <Image alt="Edge" src="/logo.jpg" className="app-header__logo" />
+        <span className="app-header__title">Edge Hooks</span>
       </Navbar.Brand>
-      <Navbar.Toggle />
 
-      <SelectedWalletBoundary fallback={<Navbar.Text>No Selected Wallet </Navbar.Text>}>
+      <SelectedWalletBoundary fallback={<span className="app-header__wallet">No selected wallet</span>}>
         <SelectedWalletName />
       </SelectedWalletBoundary>
 
-      <Navbar.Collapse className="justify-content-end">
+      <div className="app-header__user">
         <Navbar.Text>{username}</Navbar.Text>
-        <Button variant={'warning'} onClick={() => logout()}>
+        <Button size="sm" variant="outline-secondary" onClick={() => logout()}>
           Logout
         </Button>
-      </Navbar.Collapse>
+      </div>
     </Navbar>
   )
 }
@@ -36,8 +36,8 @@ const SelectedWalletName: React.FC = () => {
   const [name] = useName(wallet)
 
   return (
-    <Navbar.Text>
-      {name}:{currencyCode}
-    </Navbar.Text>
+    <span className="app-header__wallet">
+      {name} · {currencyCode}
+    </span>
   )
 }

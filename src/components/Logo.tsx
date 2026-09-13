@@ -8,5 +8,5 @@ export const Logo: React.FC<{ currencyCode: string }> = ({ currencyCode }) => {
   const account = useEdgeAccount()
   const info = useInfo(account, currencyCode)
 
-  return <Image src={info.symbolImage || '../../unknown-currency.png'} style={{ height: 80, width: 80 }} />
+  return <Image alt="" src={info.symbolImage || '/unknown-currency.png'} className="currency-logo" />
 }

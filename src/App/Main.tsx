@@ -19,7 +19,7 @@ export const Main = () => {
   return (
     <>
       {route === Route.account ? (
-        <SelectedWalletBoundary fallback={<div>No Selected Wallet</div>}>
+        <SelectedWalletBoundary fallback={<div className="empty-state">No selected wallet</div>}>
           <SelectedWalletInfo />
         </SelectedWalletBoundary>
       ) : route === Route.settings ? (

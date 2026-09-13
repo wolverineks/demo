@@ -9,7 +9,7 @@ import { useEdgeContext } from './useEdgeContext'
 export const Edge: React.FC = ({ children }) => {
   return (
     <EdgeCache>
-      <ReactQueryDevtools />
+      <ReactQueryDevtools initialIsOpen={false} />
       <UseEdge />
       {children}
     </EdgeCache>

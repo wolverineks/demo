@@ -28,15 +28,18 @@ const EnabledToken: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string 
 
   return (
     <ListGroup.Item
+      className="wallet-row"
       variant={wallet.id === selected?.id && currencyCode === selected?.currencyCode ? 'primary' : undefined}
       onClick={() => select({ id: wallet.id, currencyCode })}
     >
-      <span className={'float-left'}>
+      <div className="wallet-row__main">
         <Logo currencyCode={currencyCode} />
-        <Boundary suspense={{ fallback: <span>Loading...</span> }}>
-          <Balance wallet={wallet} currencyCode={currencyCode} />
-        </Boundary>
-      </span>
+        <div className="wallet-row__balance">
+          <Boundary suspense={{ fallback: <span>Loading...</span> }}>
+            <Balance wallet={wallet} currencyCode={currencyCode} />
+          </Boundary>
+        </div>
+      </div>
     </ListGroup.Item>
   )
 }

@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import { AccountConsumer, AccountProvider, Login } from '../auth'
 import { AutoLogoutProvider } from '../AutoLogout'
-import { Boundary, Container } from '../components'
+import { Boundary } from '../components'
 import { Edge } from '../Edge'
 import { RouteProvider } from '../route'
 import { SelectedWalletInfoProvider } from '../SelectedWallet'
@@ -21,18 +21,23 @@ export const App = () => {
                 <AutoLogoutProvider>
                   <SelectedWalletInfoProvider>
                     <RouteProvider>
-                      <Header />
+                      <div className="app-shell">
+                        <Header />
 
-                      <Boundary>
-                        <Layout />
-                      </Boundary>
+                        <Boundary>
+                          <Layout />
+                        </Boundary>
+                      </div>
                     </RouteProvider>
                   </SelectedWalletInfoProvider>
                 </AutoLogoutProvider>
               ) : (
-                <Container style={{ top: '100px' }}>
-                  <Login />
-                </Container>
+                <div className="login-shell">
+                  <div className="login-card">
+                    <img className="login-brand" src="/logo.jpg" alt="Edge" />
+                    <Login />
+                  </div>
+                </div>
               )
             }
           </AccountConsumer>

@@ -69,17 +69,25 @@ const ActiveWalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
   return (
     <>
       <ListGroup.Item
+        className="wallet-row"
         variant={wallet.id === selected?.id && currencyCode === selected?.currencyCode ? 'primary' : undefined}
       >
         <SyncRatio wallet={wallet} />
-        <span onClick={() => select({ id: walletId, currencyCode })} className={'float-left'}>
-          <Logo currencyCode={currencyCode} /> {name}{' '}
-          <Boundary>
-            <Balance wallet={wallet} currencyCode={currencyCode} />
-          </Boundary>
-        </span>
+        <div className="wallet-row__body">
+          <div className="wallet-row__main" onClick={() => select({ id: walletId, currencyCode })}>
+            <Logo currencyCode={currencyCode} />
+            <div className="wallet-row__text">
+              <div className="wallet-row__name">{name || currencyCode}</div>
+              <div className="wallet-row__balance">
+                <Boundary>
+                  <Balance wallet={wallet} currencyCode={currencyCode} />
+                </Boundary>
+              </div>
+            </div>
+          </div>
 
-        <WalletOptions walletId={wallet.id} />
+          <WalletOptions walletId={wallet.id} />
+        </div>
       </ListGroup.Item>
 
       <EnabledTokens wallet={wallet} />

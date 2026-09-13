@@ -27,7 +27,7 @@ export const SideMenu = () => {
   const [searchQuery, setSearchQuery] = React.useState('')
 
   return (
-    <div>
+    <div className="side-menu">
       <FormControl placeholder={'Search'} onChange={(event) => setSearchQuery(event.currentTarget.value)} />
 
       <Boundary>

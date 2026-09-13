@@ -15,7 +15,7 @@ export const ExchangeRates = () => {
 
   return (
     <div>
-      <div>Exchange Rates</div>
+      <div className="panel-title">Exchange Rates</div>
 
       <FormControl
         placeholder={'Search'}
@@ -44,14 +44,16 @@ const ExchangeRate: React.FC<{ currencyCode: string }> = ({ currencyCode }) => {
   const nativeAmount = useDisplayToNative({ account, displayAmount: '1', currencyCode })
 
   return (
-    <div style={{ paddingTop: 8, paddingBottom: 8 }}>
-      <Logo currencyCode={currencyCode} />{' '}
-      <Boundary error={{ fallback: null }}>
-        <DisplayAmount nativeAmount={nativeAmount} currencyCode={currencyCode} /> ={' '}
-      </Boundary>
-      <Boundary error={{ fallback: null }}>
-        <FiatAmount nativeAmount={nativeAmount} fromCurrencyCode={currencyCode} fiatCurrencyCode={fiatCurrencyCode} />
-      </Boundary>
+    <div className="rate-row">
+      <Logo currencyCode={currencyCode} />
+      <span>
+        <Boundary error={{ fallback: null }}>
+          <DisplayAmount nativeAmount={nativeAmount} currencyCode={currencyCode} /> ={' '}
+        </Boundary>
+        <Boundary error={{ fallback: null }}>
+          <FiatAmount nativeAmount={nativeAmount} fromCurrencyCode={currencyCode} fiatCurrencyCode={fiatCurrencyCode} />
+        </Boundary>
+      </span>
     </div>
   )
 }

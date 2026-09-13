@@ -13,7 +13,7 @@ export const WalletOptions = ({ walletId }: { walletId: string }) => {
   const isBottom = activeWalletIds[activeWalletIds.length - 1] === walletId
 
   return (
-    <span className={'float-right'}>
+    <span className="wallet-actions">
       {!isTop ? <MoveUpButton walletId={walletId} /> : null}
       {!isBottom ? <MoveDownButton walletId={walletId} /> : null}
       <ArchiveWalletButton walletId={walletId} />
@@ -31,7 +31,7 @@ const ArchiveWalletButton = ({ walletId }: { walletId: string }) => {
   const { archiveWallet, isLoading } = useChangeWalletState(account, walletId)
 
   return (
-    <Button variant={'warning'} disabled={isLoading} onClick={archiveWallet}>
+    <Button size="sm" variant={'warning'} disabled={isLoading} onClick={archiveWallet}>
       A
     </Button>
   )
@@ -42,7 +42,7 @@ const DeleteWalletButton = ({ walletId }: { walletId: string }) => {
   const { deleteWallet, isLoading } = useChangeWalletState(account, walletId)
 
   return (
-    <Button variant={'danger'} disabled={isLoading} onClick={deleteWallet}>
+    <Button size="sm" variant={'danger'} disabled={isLoading} onClick={deleteWallet}>
       X
     </Button>
   )
@@ -62,7 +62,11 @@ const MoveUpButton = ({ walletId }: { walletId: string }) => {
     sortWallets(newOrder)
   }
 
-  return <Button onClick={moveUp}>↑</Button>
+  return (
+    <Button size="sm" onClick={moveUp}>
+      ↑
+    </Button>
+  )
 }
 
 const MoveDownButton = ({ walletId }: { walletId: string }) => {
@@ -79,7 +83,11 @@ const MoveDownButton = ({ walletId }: { walletId: string }) => {
     sortWallets(newOrder)
   }
 
-  return <Button onClick={moveDown}>↓</Button>
+  return (
+    <Button size="sm" onClick={moveDown}>
+      ↓
+    </Button>
+  )
 }
 
 const SplitWalletButtons = ({ walletId }: { walletId: string }) => {
@@ -89,7 +97,7 @@ const SplitWalletButtons = ({ walletId }: { walletId: string }) => {
   return (
     <>
       {walletTypes.map((walletType: string) => (
-        <Button key={walletType} variant={'warning'} onClick={() => splitWallet(walletType)}>
+        <Button size="sm" key={walletType} variant={'warning'} onClick={() => splitWallet(walletType)}>
           S - {getCurrencyInfoFromWalletType(account, walletType).displayName}
         </Button>
       ))}

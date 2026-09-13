@@ -7,19 +7,25 @@ import { SideMenu } from '.'
 
 export const Layout = () => {
   return (
-    <Row>
-      <Col xl={3} lg={3} md={3} sm={3}>
-        <SideMenu />
+    <Row className="app-layout">
+      <Col xl={3} lg={3} md={4} sm={12}>
+        <div className="panel">
+          <SideMenu />
+        </div>
       </Col>
 
       <Col>
-        <Main />
+        <div className="panel panel--main">
+          <Main />
+        </div>
       </Col>
 
-      <Col xl={3} lg={3} md={3} sm={3}>
-        <Boundary>
-          <ExchangeRates />
-        </Boundary>
+      <Col xl={3} lg={3} md={4} sm={12}>
+        <div className="panel">
+          <Boundary>
+            <ExchangeRates />
+          </Boundary>
+        </div>
       </Col>
     </Row>
   )
