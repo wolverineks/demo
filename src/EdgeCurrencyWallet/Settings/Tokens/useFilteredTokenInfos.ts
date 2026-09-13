@@ -26,7 +26,7 @@ export const useFilteredTokenInfos = (wallet: EdgeCurrencyWallet) => {
         : true
     const displayMatch =
       normalize(tokenInfo.currencyCode).includes(normalize(searchQuery)) ||
-      normalize(tokenInfo.currencyName).includes(normalize(searchQuery)) ||
+      normalize(tokenInfo.currencyName || '').includes(normalize(searchQuery)) ||
       normalize(tokenInfo.contractAddress || '').includes(normalize(searchQuery))
 
     return displayFilter && displayMatch

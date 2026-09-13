@@ -20,28 +20,9 @@ export const useSyncRatio = (wallet: EdgeCurrencyWallet) => {
 }
 
 export const useBalance = (wallet: EdgeCurrencyWallet, currencyCode: string) => {
-  const waitForBalance = (wallet: EdgeCurrencyWallet): Promise<string> => {
-    return wallet.balances[currencyCode] != null
-      ? Promise.resolve(wallet.balances[currencyCode])
-      : new Promise((resolve) => {
-          const unsubscribe = wallet.watch('balances', (balances) => {
-            if (balances[currencyCode] != null) {
-              unsubscribe()
-              resolve(balances[currencyCode])
-            }
-          })
-        })
-  }
+  useWatch(wallet, 'balances')
 
-  const { refetch, data } = useQuery({
-    queryKey: [wallet.id, 'balance', currencyCode],
-    queryFn: () => waitForBalance(wallet),
-    enabled: !!wallet,
-  })
-
-  useWatch(wallet, 'balances', () => refetch())
-
-  return data!
+  return wallet.balances[currencyCode] ?? '0'
 }
 
 export const useWriteFiatCurrencyCode = (wallet: EdgeCurrencyWallet) => {

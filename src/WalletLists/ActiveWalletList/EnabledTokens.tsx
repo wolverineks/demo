@@ -1,4 +1,4 @@
-import { EdgeCurrencyWallet } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
 import React from 'react'
 
 import { useSelectWallet } from '../../App'
@@ -14,17 +14,25 @@ export const EnabledTokens: React.FC<{
     <ListGroup.Item>
       <ListGroup variant={'flush'}>
         {tokens.enabled.map((currencyCode) => (
-          <Boundary key={currencyCode} error={{ fallbackRender: () => null }}>
-            <EnabledToken wallet={wallet} currencyCode={currencyCode} />
-          </Boundary>
+          <EnabledToken
+            key={currencyCode}
+            wallet={wallet}
+            currencyCode={currencyCode}
+            tokenInfo={tokens.includedInfos[currencyCode] || tokens.customTokenInfos[currencyCode]}
+          />
         ))}
       </ListGroup>
     </ListGroup.Item>
   ) : null
 }
 
-const EnabledToken: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
+const EnabledToken: React.FC<{
+  wallet: EdgeCurrencyWallet
+  currencyCode: string
+  tokenInfo?: EdgeMetaToken
+}> = ({ wallet, currencyCode, tokenInfo }) => {
   const [selected, select] = useSelectWallet()
+  const extra = tokenInfo as (EdgeMetaToken & { pluginId?: string; tokenId?: string }) | undefined
 
   return (
     <ListGroup.Item
@@ -33,7 +41,14 @@ const EnabledToken: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string 
       onClick={() => select({ id: wallet.id, currencyCode })}
     >
       <div className="wallet-row__main">
-        <Logo currencyCode={currencyCode} />
+        <Boundary error={{ fallback: null }} suspense={{ fallback: null }}>
+          <Logo
+            currencyCode={currencyCode}
+            pluginId={extra?.pluginId || wallet.currencyInfo.pluginId}
+            tokenId={extra?.tokenId}
+            contractAddress={extra?.contractAddress}
+          />
+        </Boundary>
         <div className="wallet-row__balance">
           <Boundary suspense={{ fallback: <span>Loading...</span> }}>
             <Balance wallet={wallet} currencyCode={currencyCode} />

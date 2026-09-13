@@ -55,20 +55,17 @@ const useBootstapWallets = () => {
 }
 
 const enableTokens = async (wallet: EdgeCurrencyWallet) => {
-  await wallet.disableTokens(await wallet.getEnabledTokens()) // HACK: all wallets should start with an empty list of enabled tokens
-
   const customTokenInfos = await readCustomTokenInfos(wallet)
   const enabledTokenCurrencyCodes = await readEnabledTokenCurrencyCodes(wallet)
-  const enabledCustomTokens = Object.values(customTokenInfos).filter(isEnabled(enabledTokenCurrencyCodes)).map(toToken)
-
-  await Promise.all(enabledCustomTokens.map(wallet.addCustomToken))
-  wallet.enableTokens(enabledTokenCurrencyCodes)
+  await Promise.all(
+    Object.values(customTokenInfos)
+      .filter(({ currencyCode }) => enabledTokenCurrencyCodes.includes(currencyCode))
+      .map((token) => wallet.addCustomToken(toToken(token))),
+  )
+  if (enabledTokenCurrencyCodes.length > 0) {
+    await wallet.enableTokens(enabledTokenCurrencyCodes)
+  }
 }
-
-const isEnabled =
-  (enabledTokenCurrencyCodes: string[]) =>
-  ({ currencyCode }: EdgeMetaToken) =>
-    !enabledTokenCurrencyCodes.includes(currencyCode)
 
 const toToken = (token: EdgeMetaToken): EdgeTokenInfo => ({
   currencyCode: token.currencyCode,

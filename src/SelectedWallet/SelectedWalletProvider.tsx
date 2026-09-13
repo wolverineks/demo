@@ -75,9 +75,9 @@ export const CurrencyCodeBoundary: React.FC<{ fallback?: React.ReactNode }> = ({
   const isEnabled =
     walletInfo.currencyCode === nativeCurrencyCode || tokens.enabled.includes(walletInfo.currencyCode)
 
-  // selected token deactivated
+  // selected token deactivated: keep the wallet, fall back to the native coin
   if (!isEnabled) {
-    selectWallet(undefined)
+    selectWallet({ id: walletInfo.id, currencyCode: nativeCurrencyCode })
 
     return <>{fallback}</>
   }

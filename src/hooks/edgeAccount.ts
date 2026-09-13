@@ -73,7 +73,10 @@ export const useEdgeAccountTotal = (account: EdgeAccount) => {
     queryFn: () => getTotal(),
   })
 
-  useOnRateChange(account, () => refetch())
+  useOnRateChange(
+    account,
+    React.useCallback(() => refetch(), [refetch]),
+  )
 
   return { total: data!, denomination: displayDenomination }
 }
