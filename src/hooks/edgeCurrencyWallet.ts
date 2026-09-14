@@ -1,8 +1,8 @@
 import {
+  EdgeAddress,
   EdgeCurrencyWallet,
   EdgeGetTransactionsOptions,
   EdgeParsedUri,
-  EdgeReceiveAddress,
   EdgeSpendInfo,
   EdgeTokenId,
   EdgeTransaction,
@@ -10,20 +10,20 @@ import {
 import React from 'react'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
-import { getTokenId } from '../utils'
+import { getCurrencyCodeFromTokenId, getNativeBalance, getPublicAddress, getTokenId } from '../utils'
 import { useInvalidateQueries } from './useInvalidateQueries'
 import { useWatch } from './watch'
 
 export const useSyncRatio = (wallet: EdgeCurrencyWallet) => {
-  useWatch(wallet, 'syncRatio')
+  useWatch(wallet, 'syncStatus')
 
-  return wallet.syncRatio
+  return wallet.syncStatus.totalRatio
 }
 
 export const useBalance = (wallet: EdgeCurrencyWallet, currencyCode: string) => {
-  useWatch(wallet, 'balances')
+  useWatch(wallet, 'balanceMap')
 
-  return wallet.balances[currencyCode] ?? '0'
+  return getNativeBalance(wallet, getTokenId(wallet, currencyCode))
 }
 
 export const useWriteFiatCurrencyCode = (wallet: EdgeCurrencyWallet) => {
@@ -61,22 +61,21 @@ export const useReceiveAddressAndEncodeUri = ({
   wallet: EdgeCurrencyWallet
   nativeAmount: string
   options?: { currencyCode?: string; tokenId?: EdgeTokenId }
-  queryOptions?: UseQueryOptions<{ receiveAddress: EdgeReceiveAddress; uri: string }>
+  queryOptions?: UseQueryOptions<{ publicAddress: string; addresses: EdgeAddress[]; uri: string }>
 }) => {
   return useQuery({
     queryKey: [wallet.id, 'receiveAddressAndEncodeUri', nativeAmount, options],
-    queryFn: () => {
-      const receiveAddress = wallet.getReceiveAddress({
-        tokenId: options?.tokenId ?? getTokenId(wallet, options?.currencyCode),
+    queryFn: async () => {
+      const tokenId = options?.tokenId ?? getTokenId(wallet, options?.currencyCode)
+      const addresses = await wallet.getAddresses({ tokenId })
+      const publicAddress = getPublicAddress(addresses)
+      if (!publicAddress) throw new Error('No receive address')
+      const uri = await wallet.encodeUri({
+        publicAddress,
+        nativeAmount: nativeAmount || '0',
       })
-      const uri = receiveAddress.then(({ publicAddress }) =>
-        wallet.encodeUri({
-          publicAddress,
-          nativeAmount: nativeAmount || '0',
-        }),
-      )
 
-      return Promise.all([receiveAddress, uri]).then(([receiveAddress, uri]) => ({ receiveAddress, uri }))
+      return { publicAddress, addresses, uri }
     },
     suspense: false,
     ...queryOptions,
@@ -278,7 +277,11 @@ export const useExportTransactions = (
       }
 
       const header = 'txid,date,currencyCode,nativeAmount'
-      const rows = transactions.map((tx) => `${tx.txid},${tx.date},${tx.currencyCode},${tx.nativeAmount}`)
+      const rows = transactions.map((tx) => {
+        const currencyCode = getCurrencyCodeFromTokenId(wallet, tx.tokenId)
+
+        return `${tx.txid},${tx.date},${currencyCode},${tx.nativeAmount}`
+      })
 
       return [header, ...rows].join('\n')
     },

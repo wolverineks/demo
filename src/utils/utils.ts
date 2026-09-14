@@ -1,4 +1,11 @@
-import { EdgeAccount, EdgeCurrencyInfo, EdgeCurrencyWallet, EdgeMetaToken, EdgeTokenId } from 'edge-core-js'
+import {
+  EdgeAccount,
+  EdgeAddress,
+  EdgeCurrencyInfo,
+  EdgeCurrencyWallet,
+  EdgeMetaToken,
+  EdgeTokenId,
+} from 'edge-core-js'
 
 import { FiatInfo } from './fiatInfos'
 
@@ -37,3 +44,15 @@ export const getTokenId = (wallet: EdgeCurrencyWallet, currencyCode?: string): E
 
   return match?.[0] ?? null
 }
+
+export const getCurrencyCodeFromTokenId = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId): string => {
+  if (tokenId == null) return wallet.currencyInfo.currencyCode
+
+  return wallet.currencyConfig.allTokens[tokenId]?.currencyCode ?? wallet.currencyInfo.currencyCode
+}
+
+export const getNativeBalance = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId): string =>
+  wallet.balanceMap.get(tokenId) ?? '0'
+
+export const getPublicAddress = (addresses: EdgeAddress[]): string | undefined =>
+  addresses.find((address) => address.addressType === 'publicAddress')?.publicAddress ?? addresses[0]?.publicAddress

@@ -26,7 +26,7 @@ import {
   useSignBroadcastAndSaveTx,
 } from '../../hooks'
 import { useSelectedWallet } from '../../SelectedWallet'
-import { categories } from '../../utils'
+import { categories, getCurrencyCodeFromTokenId } from '../../utils'
 import { SpendTarget } from './SpendTarget'
 import { CustomFee, canAdjustFees, useSpendInfo } from './useSpendInfo'
 
@@ -116,7 +116,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
         <CustomFeeForm customFee={customNetworkFee} setCustomFee={setCustomNetworkFee} />
       ) : null}
 
-      {transaction?.networkFee ? <Fee transaction={transaction} /> : null}
+      {transaction?.networkFees?.length ? <Fee wallet={wallet} transaction={transaction} /> : null}
 
       {clipboardUri ? <Button onClick={() => setUri(clipboardUri)}>Paste From Clipboard</Button> : null}
 
@@ -219,11 +219,23 @@ const CustomFeeForm = ({
   // return null
 }
 
-const Fee = ({ transaction }: { transaction: EdgeTransaction }) => {
+const Fee = ({ wallet, transaction }: { wallet: EdgeCurrencyWallet; transaction: EdgeTransaction }) => {
+  if (transaction.networkFees.length === 0) return null
+
   return (
-    <div>
-      fee: <DisplayAmount nativeAmount={transaction.networkFee} currencyCode={transaction.currencyCode} />
-    </div>
+    <FormGroup>
+      <FormLabel>Fees</FormLabel>
+      <ul>
+        {transaction.networkFees.map((fee, index) => (
+          <li key={`${fee.tokenId ?? 'native'}-${index}`}>
+            <DisplayAmount
+              nativeAmount={fee.nativeAmount}
+              currencyCode={getCurrencyCodeFromTokenId(wallet, fee.tokenId)}
+            />
+          </li>
+        ))}
+      </ul>
+    </FormGroup>
   )
 }
 

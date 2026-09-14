@@ -1,4 +1,4 @@
-import { EdgeCurrencyWallet, EdgeMetadata, EdgeSpendInfo, EdgeSpendTarget } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeMemo, EdgeMetadata, EdgeSpendInfo } from 'edge-core-js'
 import * as React from 'react'
 
 import { useParsedUri } from '../../hooks'
@@ -42,7 +42,10 @@ export const useSpendInfo = (wallet: EdgeCurrencyWallet, currencyCode: string) =
 
   const spendInfo: EdgeSpendInfo = {
     tokenId: getTokenId(wallet, currencyCode),
-    spendTargets: spendTargets.all.map(({ id: _id, ...spendTarget }) => spendTarget as EdgeSpendTarget),
+    spendTargets: spendTargets.all.map(
+      ({ id: _id, uniqueIdentifier: _uniqueIdentifier, memo: _memo, ...spendTarget }) => spendTarget,
+    ),
+    memos: toMemos(spendTargets.all),
     metadata,
     networkFeeOption,
     customNetworkFee,
@@ -67,3 +70,12 @@ const standardFeeOptions = [
   { value: 'standard', display: 'standard' },
   { value: 'low', display: 'low' },
 ] as const
+
+const toMemos = (spendTargets: Array<{ uniqueIdentifier?: string; memo?: string }>): EdgeMemo[] | undefined => {
+  const memos = spendTargets
+    .map(({ uniqueIdentifier, memo }) => uniqueIdentifier || memo)
+    .filter((value): value is string => !!value)
+    .map((value) => ({ type: 'text' as const, value }))
+
+  return memos.length > 0 ? memos : undefined
+}

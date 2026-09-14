@@ -19,11 +19,11 @@ export const Request: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: strin
       <FormGroup>
         <FormLabel>Public Address:</FormLabel>
         <InputGroup>
-          <FormControl value={data?.receiveAddress.publicAddress || ''} readOnly />
+          <FormControl value={data?.publicAddress || ''} readOnly />
           <InputGroup.Append>
             <Button
               variant="outline-secondary"
-              onClick={() => navigator.clipboard.writeText(data?.receiveAddress.publicAddress || '')}
+              onClick={() => navigator.clipboard.writeText(data?.publicAddress || '')}
             >
               Copy
             </Button>
@@ -60,7 +60,8 @@ export const Request: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: strin
             displayDenomination: useDisplayDenomination(account, currencyCode)[0],
             currencyCodeOptions: { currencyCode },
             uri: data?.uri,
-            receiveAddress: data?.receiveAddress,
+            publicAddress: data?.publicAddress,
+            addresses: data?.addresses,
           }}
         />
       </Debug>

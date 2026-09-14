@@ -9,7 +9,7 @@ import {
 import React from 'react'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
-import { getTokenId } from '../utils'
+import { getCurrencyCodeFromTokenId, getTokenId } from '../utils'
 import { walletTransactionQueryKeys } from './edgeCurrencyWallet'
 import { convertCurrency, useOnRateChange } from './rates'
 import { readCustomTokenInfo } from './tokens'
@@ -55,7 +55,8 @@ export const useEdgeAccountTotal = (account: EdgeAccount) => {
   const getTotal = async () => {
     const parts = await Promise.all(
       Object.values(account.currencyWallets).flatMap((wallet) =>
-        Object.entries(wallet.balances).map(async ([currencyCode, nativeAmount]) => {
+        Array.from(wallet.balanceMap.entries()).map(async ([tokenId, nativeAmount]) => {
+          const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
           const info = getInfo(account, currencyCode) || (await readCustomTokenInfo(wallet, currencyCode))
           if (!info) return 0
 
@@ -265,8 +266,18 @@ export const useSplitWallet = (account: EdgeAccount, walletId: string) => {
         queryFn: () => account.listSplittableWalletTypes(walletId),
       }).data ?? []
     ).filter((walletType) => enabledTypes.has(walletType)),
-    splitWallet: useMutation((walletType: string) => account.splitWalletInfo(walletId, walletType), {
-      ...useInvalidateQueries([[walletId, 'splittableWalletTypes']]),
-    }).mutateAsync,
+    splitWallet: useMutation(
+      async (walletType: string) => {
+        const wallet = await account.waitForCurrencyWallet(walletId)
+        const [result] = await wallet.split([{ walletType }])
+        if (result == null) throw new Error('Wallet split failed')
+        if (!result.ok) throw result.error instanceof Error ? result.error : new Error(String(result.error))
+
+        return result.result
+      },
+      {
+        ...useInvalidateQueries([[walletId, 'splittableWalletTypes']]),
+      },
+    ).mutateAsync,
   }
 }

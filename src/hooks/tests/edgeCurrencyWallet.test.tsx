@@ -61,21 +61,17 @@ describe('EdgeCurrencyWallet', () => {
     const { result, waitFor } = render(() => useReceiveAddressAndEncodeUri({ wallet, nativeAmount: '0' }))
     await waitFor(() => !!result.current.data)
 
-    const { receiveAddress, uri } = result.current.data
+    const { publicAddress, addresses, uri } = result.current.data
     expect(uri).toBe('bitcoin:3HpJi2bWVLv7L5iCwnCj935wiqAuTZZnZk?amount=0')
-    expect(receiveAddress).toEqual({
-      legacyAddress: '3HpJi2bWVLv7L5iCwnCj935wiqAuTZZnZk',
-      metadata: {
-        bizId: 0,
-        category: '',
-        exchangeAmount: {},
-        name: '',
-        notes: '',
-      },
-      nativeAmount: '0',
-      publicAddress: '3HpJi2bWVLv7L5iCwnCj935wiqAuTZZnZk',
-      segwitAddress: undefined,
-    })
+    expect(publicAddress).toBe('3HpJi2bWVLv7L5iCwnCj935wiqAuTZZnZk')
+    expect(addresses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          addressType: expect.any(String),
+          publicAddress: '3HpJi2bWVLv7L5iCwnCj935wiqAuTZZnZk',
+        }),
+      ]),
+    )
   })
 
   it('useTransactions', async () => {

@@ -13,7 +13,7 @@ import {
   useName,
   useSwapQuote,
 } from '../hooks'
-import { getSortedCurrencyWallets } from '../utils'
+import { getCurrencyCodeFromTokenId, getSortedCurrencyWallets } from '../utils'
 
 type AssetChoice = {
   key: string
@@ -279,7 +279,7 @@ const SwapQuote = ({
               <span>Fee</span>
               <DisplayAmount
                 nativeAmount={swapQuote.networkFee.nativeAmount}
-                currencyCode={swapQuote.networkFee.currencyCode}
+                currencyCode={getCurrencyCodeFromTokenId(fromWallet, swapQuote.networkFee.tokenId)}
               />
             </div>
           ) : null}

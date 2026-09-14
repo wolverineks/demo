@@ -12,6 +12,7 @@ import {
   useOnNewTransactions,
   useSyncRatio,
   useTokens,
+  useWatch,
 } from '../../hooks'
 import { normalize } from '../../utils'
 import { EnabledTokens } from './EnabledTokens'
@@ -97,7 +98,8 @@ const ActiveWalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
 
 const SyncRatio = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
   const syncRatio = useSyncRatio(wallet)
-  const nativeBalance = wallet.balances[wallet.currencyInfo.currencyCode]
+  useWatch(wallet, 'balanceMap')
+  const nativeBalance = wallet.balanceMap.get(null)
   const isSyncing = nativeBalance == null && syncRatio > 0 && syncRatio < 1
 
   return isSyncing ? <ProgressBar min={0} now={syncRatio} max={1} striped animated /> : null
