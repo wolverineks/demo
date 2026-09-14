@@ -210,6 +210,62 @@ iframe {
   line-height: 1.3;
 }
 
+.token-row.list-group-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 4px 42px;
+}
+
+.token-row .currency-logo {
+  width: 20px;
+  height: 20px;
+}
+
+.token-row__text {
+  min-width: 0;
+}
+
+.token-row__name {
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.token-row__balance {
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 1.2;
+  color: var(--app-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.token-picker-row.list-group-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.token-picker-row .currency-logo {
+  width: 20px;
+  height: 20px;
+}
+
+.token-picker-row .btn {
+  margin-left: auto;
+  padding: 0.1rem 0.4rem;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
 .list-group-item-primary {
   color: inherit;
   background: #eefbf3;

@@ -51,23 +51,23 @@ export const useEdgeAccountTotal = (account: EdgeAccount) => {
   const [displayDenomination] = useDisplayDenomination(account, fiatCurrencyCode)
 
   const getTotal = async () => {
-    let total = 0
+    const parts = await Promise.all(
+      Object.values(account.currencyWallets).flatMap((wallet) =>
+        Object.entries(wallet.balances).map(async ([currencyCode, nativeAmount]) => {
+          const info = getInfo(account, currencyCode) || (await readCustomTokenInfo(wallet, currencyCode))
+          if (!info) return 0
 
-    for (const wallet of Object.values(account.currencyWallets)) {
-      for (const [currencyCode, nativeAmount] of Object.entries(wallet.balances)) {
-        const info = getInfo(account, currencyCode) || (await readCustomTokenInfo(wallet, currencyCode))
-        if (!info) continue
-        const exchangeDenomination = getExchangeDenomination(info)
-        const exchangeAmount = nativeToDenominated({
-          nativeAmount: nativeAmount || String(0),
-          denomination: exchangeDenomination,
-        })
+          const exchangeAmount = nativeToDenominated({
+            nativeAmount: nativeAmount || String(0),
+            denomination: getExchangeDenomination(info),
+          })
 
-        total += await convertCurrency(currencyCode, fiatCurrencyCode, Number(exchangeAmount))
-      }
-    }
+          return convertCurrency(currencyCode, fiatCurrencyCode, Number(exchangeAmount))
+        }),
+      ),
+    )
 
-    return total
+    return parts.reduce((total, amount) => total + amount, 0)
   }
 
   const { data, refetch } = useQuery({

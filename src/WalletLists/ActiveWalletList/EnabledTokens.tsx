@@ -10,20 +10,20 @@ export const EnabledTokens: React.FC<{
 }> = ({ wallet }) => {
   const tokens = useTokens(wallet)
 
-  return tokens.enabled.length > 0 ? (
-    <ListGroup.Item>
-      <ListGroup variant={'flush'}>
-        {tokens.enabled.map((currencyCode) => (
-          <EnabledToken
-            key={currencyCode}
-            wallet={wallet}
-            currencyCode={currencyCode}
-            tokenInfo={tokens.includedInfos[currencyCode] || tokens.customTokenInfos[currencyCode]}
-          />
-        ))}
-      </ListGroup>
-    </ListGroup.Item>
-  ) : null
+  if (tokens.enabled.length === 0) return null
+
+  return (
+    <>
+      {tokens.enabled.map((currencyCode) => (
+        <EnabledToken
+          key={currencyCode}
+          wallet={wallet}
+          currencyCode={currencyCode}
+          tokenInfo={tokens.includedInfos[currencyCode] || tokens.customTokenInfos[currencyCode]}
+        />
+      ))}
+    </>
+  )
 }
 
 const EnabledToken: React.FC<{
@@ -36,20 +36,21 @@ const EnabledToken: React.FC<{
 
   return (
     <ListGroup.Item
-      className="wallet-row"
+      className="token-row"
       variant={wallet.id === selected?.id && currencyCode === selected?.currencyCode ? 'primary' : undefined}
       onClick={() => select({ id: wallet.id, currencyCode })}
     >
-      <div className="wallet-row__main">
-        <Boundary error={{ fallback: null }} suspense={{ fallback: null }}>
-          <Logo
-            currencyCode={currencyCode}
-            pluginId={extra?.pluginId || wallet.currencyInfo.pluginId}
-            tokenId={extra?.tokenId}
-            contractAddress={extra?.contractAddress}
-          />
-        </Boundary>
-        <div className="wallet-row__balance">
+      <Boundary error={{ fallback: null }} suspense={{ fallback: null }}>
+        <Logo
+          currencyCode={currencyCode}
+          pluginId={extra?.pluginId || wallet.currencyInfo.pluginId}
+          tokenId={extra?.tokenId}
+          contractAddress={extra?.contractAddress}
+        />
+      </Boundary>
+      <div className="token-row__text">
+        <div className="token-row__name">{currencyCode}</div>
+        <div className="token-row__balance">
           <Boundary suspense={{ fallback: <span>Loading...</span> }}>
             <Balance wallet={wallet} currencyCode={currencyCode} />
           </Boundary>

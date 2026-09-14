@@ -179,6 +179,7 @@ const TokenRow: React.FC<{
   return (
     <ListGroup.Item
       key={tokenInfo.currencyCode}
+      className="token-picker-row"
       variant={isEnabled ? 'primary' : undefined}
       onClick={() => onClick(tokenInfo.currencyCode)}
     >
