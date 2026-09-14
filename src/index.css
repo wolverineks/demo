@@ -84,7 +84,26 @@ iframe {
 }
 
 .app-layout > [class*='col'] {
+  min-width: 0;
   padding: 8px;
+}
+
+@media (min-width: 768px) {
+  .app-layout {
+    flex-wrap: nowrap;
+  }
+
+  .app-layout__rates {
+    flex-shrink: 0;
+  }
+
+  .panel--rates {
+    height: auto;
+    position: sticky;
+    top: 72px;
+    max-height: calc(100vh - 88px);
+    overflow: auto;
+  }
 }
 
 .panel {
@@ -98,8 +117,11 @@ iframe {
 }
 
 .panel--main {
+  min-width: 0;
   min-height: 480px;
+  max-width: 100%;
   padding: 16px 18px 24px;
+  overflow: auto;
 }
 
 .panel-title {
@@ -390,6 +412,26 @@ iframe {
 .debug-row__version {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Courier New', monospace;
   font-weight: 600;
+}
+
+.swap-quote {
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  box-shadow: var(--app-shadow);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.swap-quote__provider {
+  margin-bottom: 4px;
+  font-weight: 650;
+}
+
+.swap-quote__hint {
+  color: var(--app-muted);
+  font-size: 13px;
 }
 
 .react-query-devtools-btn,

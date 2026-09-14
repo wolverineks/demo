@@ -21,6 +21,7 @@ export const currencyPlugins = {
 
 export const swapPlugins = {
   transfer: true,
+  godex: true,
 }
 
 export const contextOptions = {

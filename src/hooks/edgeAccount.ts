@@ -209,15 +209,16 @@ export const useSwapQuote = ({
   toWallet: EdgeCurrencyWallet | undefined
   toCurrencyCode: string | undefined
 }) => {
+  const hasAmount = Number(nativeAmount) > 0
   const swapRequest: EdgeSwapRequest | undefined =
-    toWallet && toCurrencyCode
+    toWallet && toCurrencyCode && hasAmount
       ? {
           fromWallet,
           toWallet,
           fromTokenId: getTokenId(fromWallet, fromCurrencyCode),
           toTokenId: getTokenId(toWallet, toCurrencyCode),
           nativeAmount,
-          quoteFor: 'to',
+          quoteFor: 'from',
         }
       : undefined
 
@@ -229,6 +230,7 @@ export const useSwapQuote = ({
         fromCurrencyCode,
         toWalletId: toWallet?.id,
         toCurrencyCode,
+        quoteFor: 'from',
       },
     ],
     () => account.fetchSwapQuote(swapRequest as EdgeSwapRequest),

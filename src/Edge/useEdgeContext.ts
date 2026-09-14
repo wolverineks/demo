@@ -1,7 +1,7 @@
 import { EdgeContext, EdgeContextOptions, makeEdgeContext, makeFakeEdgeWorld } from 'edge-core-js'
 import { UseQueryOptions, useQuery } from 'react-query'
 
-import { contextOptions, currencyPlugins } from './contextOptions'
+import { contextOptions, currencyPlugins, swapPlugins } from './contextOptions'
 import { fakeUser } from './fake-user'
 
 export const isTesting = process.env.NODE_ENV === 'test'
@@ -18,10 +18,11 @@ export const makeFakeEdgeContext = async (plugins: EdgeContextOptions['plugins']
   })
 }
 
-const queryKey = ['context', 'fake-user-dump', 'utxo-eth-plugins-1']
+const fakePlugins = { ...currencyPlugins, ...swapPlugins }
+const queryKey = ['context', 'fake-user-dump', 'utxo-eth-swap-1']
 const queryFn = () =>
   isTesting || isDevelopment
-    ? makeFakeEdgeContext(currencyPlugins)
+    ? makeFakeEdgeContext(fakePlugins)
     : makeEdgeContext(contextOptions)
 
 export const useEdgeContext = ({

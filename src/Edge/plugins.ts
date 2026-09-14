@@ -1,6 +1,8 @@
 import { addEdgeCorePlugins, lockEdgeCorePlugins } from 'edge-core-js'
 import { ethereum } from 'edge-currency-accountbased/lib/ethereum/info/ethereumInfo'
 import utxoPlugins from 'edge-currency-plugins'
+import { makeGodexPlugin } from 'edge-exchange-plugins/lib/swap/central/godex'
+import { makeTransferPlugin } from 'edge-exchange-plugins/lib/swap/transfer'
 
 let locked = false
 
@@ -8,7 +10,11 @@ export const ensureEdgePlugins = () => {
   if (locked) return
 
   addEdgeCorePlugins(utxoPlugins)
-  addEdgeCorePlugins({ ethereum })
+  addEdgeCorePlugins({
+    ethereum,
+    transfer: makeTransferPlugin,
+    godex: makeGodexPlugin,
+  })
   lockEdgeCorePlugins()
   locked = true
 }
