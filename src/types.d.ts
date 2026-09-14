@@ -5,6 +5,16 @@ declare module 'edge-currency-accountbased/lib/ethereum/info/ethereumInfo' {
 
   export const ethereum: (env: EdgeCorePluginOptions) => EdgeCurrencyPlugin
 }
+declare module 'edge-currency-accountbased/lib/ethereum/info/polygonInfo' {
+  import type { EdgeCorePluginOptions, EdgeCurrencyPlugin } from 'edge-core-js/types'
+
+  export const polygon: (env: EdgeCorePluginOptions) => EdgeCurrencyPlugin
+}
+declare module 'edge-currency-accountbased/lib/ethereum/info/optimismInfo' {
+  import type { EdgeCorePluginOptions, EdgeCurrencyPlugin } from 'edge-core-js/types'
+
+  export const optimism: (env: EdgeCorePluginOptions) => EdgeCurrencyPlugin
+}
 declare module 'edge-exchange-plugins'
 declare module 'edge-exchange-plugins/lib/swap/transfer' {
   import type { EdgeCorePluginOptions, EdgeSwapPlugin } from 'edge-core-js/types'

@@ -1,5 +1,7 @@
 export const currencyPlugins = {
   ethereum: true,
+  polygon: true,
+  optimism: true,
   bitcoin: true,
   bitcoincash: true,
   bitcoingold: true,

@@ -1,6 +1,6 @@
 /**
  * npm's lib/ build omits ethereum ABI JSON files. Copy the shims into place
- * and slim ethereumInfos to ETH-only so CRA does not pull Filecoin/Solana.
+ * and slim ethereumInfos to ETH/Polygon/Optimism so CRA does not pull Filecoin/Solana.
  */
 const fs = require('fs')
 const path = require('path')
@@ -22,7 +22,9 @@ fs.writeFileSync(
   path.join(ethereumDir, 'ethereumInfos.js'),
   `'use strict'
 const { ethereum } = require('./info/ethereumInfo')
-exports.ethereumPlugins = { ethereum }
+const { polygon } = require('./info/polygonInfo')
+const { optimism } = require('./info/optimismInfo')
+exports.ethereumPlugins = { ethereum, polygon, optimism }
 `,
 )
 

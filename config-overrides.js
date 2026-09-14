@@ -34,7 +34,9 @@ const ensureEthereumBrowserFiles = () => {
     path.join(accountbased, 'ethereumInfos.js'),
     `'use strict'
 const { ethereum } = require('./info/ethereumInfo')
-exports.ethereumPlugins = { ethereum }
+const { polygon } = require('./info/polygonInfo')
+const { optimism } = require('./info/optimismInfo')
+exports.ethereumPlugins = { ethereum, polygon, optimism }
 `,
   )
 
