@@ -421,12 +421,77 @@ iframe {
   max-width: 520px;
 }
 
-.exchange__amount .input-group {
-  margin-bottom: 8px;
+.flip-input {
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
 }
 
-.exchange__amount .input-group:last-child {
-  margin-bottom: 0;
+.flip-input:focus-within {
+  border-color: #9ee0b8;
+  box-shadow: 0 0 0 3px rgba(0, 179, 71, 0.12);
+}
+
+.flip-input .input-group {
+  flex-wrap: nowrap;
+}
+
+.flip-input .input-group:not(:last-child) {
+  border-bottom: 1px solid var(--app-border);
+}
+
+.panel .flip-input .form-control,
+.flip-input .form-control,
+.flip-input .input-group-text {
+  height: auto;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.flip-input .input-group-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  padding: 10px 12px;
+  color: var(--app-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.flip-input .input-group-append .input-group-text {
+  min-width: 3.5rem;
+  justify-content: flex-end;
+  color: #1b2838;
+}
+
+.flip-input .form-control {
+  min-width: 0;
+  padding: 10px 4px;
+  font-size: 20px;
+  font-weight: 650;
+  line-height: 1.2;
+  text-align: right;
+}
+
+.flip-input__secondary .form-control {
+  padding: 8px 4px;
+  color: var(--app-muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.flip-input__secondary .input-group-text {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.flip-input .form-control:focus {
+  box-shadow: none;
 }
 
 .exchange__swap {

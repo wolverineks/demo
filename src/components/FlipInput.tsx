@@ -44,12 +44,12 @@ export const FlipInput = React.forwardRef<FlipInputRef, FlipInputProps>(function
   }))
 
   return (
-    <div>
+    <div className="flip-input">
       <Boundary>
-        <AmountInput {...top} />
+        <AmountInput className="flip-input__primary" {...top} />
       </Boundary>
       <Boundary>
-        <AmountInput {...bottom} />
+        <AmountInput className="flip-input__secondary" {...bottom} />
       </Boundary>
     </div>
   )
@@ -95,7 +95,7 @@ const useFlipInput = ({
     })
 
     setTopDisplayAmount(topDisplayAmount)
-    setBottomDisplayAmount(String(bottomDisplayAmount))
+    setBottomDisplayAmount(formatFiatAmount(bottomDisplayAmount))
     onChange(topNativeAmount)
   }
 
@@ -123,7 +123,7 @@ const useFlipInput = ({
     })
 
     setBottomDisplayAmount(bottomDisplayAmount)
-    setTopDisplayAmount(String(topDisplayAmount))
+    setTopDisplayAmount(formatCryptoAmount(topDisplayAmount))
     onChange(topNativeAmount)
   }
 
@@ -139,4 +139,17 @@ const useFlipInput = ({
       onChange: onBottomChange,
     },
   }
+}
+
+const formatFiatAmount = (amount: string) => {
+  const value = Number(amount)
+
+  return Number.isFinite(value) ? value.toFixed(2) : '0.00'
+}
+
+const formatCryptoAmount = (amount: string) => {
+  const value = Number(amount)
+  if (!Number.isFinite(value)) return '0'
+
+  return String(Number(value.toFixed(8)))
 }
