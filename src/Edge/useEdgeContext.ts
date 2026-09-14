@@ -18,7 +18,7 @@ export const makeFakeEdgeContext = async (plugins: EdgeContextOptions['plugins']
   })
 }
 
-const queryKey = ['context', 'fake-user-dump', 'utxo-plugins-1']
+const queryKey = ['context', 'fake-user-dump', 'utxo-eth-plugins-1']
 const queryFn = () =>
   isTesting || isDevelopment
     ? makeFakeEdgeContext(currencyPlugins)
