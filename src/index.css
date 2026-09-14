@@ -414,19 +414,127 @@ iframe {
   font-weight: 600;
 }
 
+.exchange {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 520px;
+}
+
+.exchange__amount .input-group {
+  margin-bottom: 8px;
+}
+
+.exchange__amount .input-group:last-child {
+  margin-bottom: 0;
+}
+
+.exchange__swap {
+  display: flex;
+  justify-content: center;
+  margin: -4px 0;
+}
+
+.exchange__swap .btn {
+  min-width: 36px;
+  padding: 2px 10px;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.exchange-asset {
+  padding: 12px 14px;
+  background: #f7f8fa;
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+}
+
+.exchange-asset__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.exchange-asset__label {
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--app-muted);
+  text-transform: uppercase;
+}
+
+.panel .exchange-asset__select.form-control {
+  width: auto;
+  max-width: 220px;
+  min-width: 140px;
+  margin-bottom: 0;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+.exchange-asset__selected {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  margin-bottom: 12px;
+}
+
+.exchange-asset__selected:last-child {
+  margin-bottom: 0;
+}
+
+.exchange-asset__text {
+  min-width: 0;
+}
+
+.exchange-asset__name {
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.exchange-asset__balance {
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--app-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .swap-quote {
   padding: 12px 14px;
   background: #fff;
   border: 1px solid var(--app-border);
-  border-radius: 8px;
-  box-shadow: var(--app-shadow);
+  border-radius: 10px;
   font-size: 14px;
   line-height: 1.5;
 }
 
+.swap-quote .alert {
+  margin: 8px 0 0;
+}
+
 .swap-quote__provider {
-  margin-bottom: 4px;
+  margin: 4px 0 8px;
   font-weight: 650;
+}
+
+.swap-quote__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+  font-size: 13px;
+}
+
+.swap-quote__row span:first-child {
+  color: var(--app-muted);
 }
 
 .swap-quote__hint {
