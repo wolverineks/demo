@@ -8,7 +8,7 @@ import {
   EdgeTransaction,
 } from 'edge-core-js'
 import React from 'react'
-import { UseQueryOptions, useMutation, useQuery } from 'react-query'
+import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
 import { getTokenId } from '../utils'
 import { useInvalidateQueries } from './useInvalidateQueries'
@@ -212,6 +212,57 @@ export const useNewTransaction = (
   })
 }
 
+export const walletTransactionQueryKeys = (wallet: EdgeCurrencyWallet) => [
+  [wallet.id, 'transactions'],
+  [wallet.id, 'transactionCount'],
+  [wallet.id, 'maxSpendable'],
+  [wallet.id, 'maxSpendableTransaction'],
+  [wallet.id, 'transaction'],
+]
+
+export const useSignTx = (
+  wallet: EdgeCurrencyWallet,
+  mutationOptions?: UseMutationOptions<EdgeTransaction, Error, EdgeTransaction>,
+) => {
+  return useMutation((transaction: EdgeTransaction) => wallet.signTx(transaction), mutationOptions)
+}
+
+export const useBroadcastTx = (
+  wallet: EdgeCurrencyWallet,
+  mutationOptions?: UseMutationOptions<EdgeTransaction, Error, EdgeTransaction>,
+) => {
+  return useMutation((transaction: EdgeTransaction) => wallet.broadcastTx(transaction), mutationOptions)
+}
+
+export const useSaveTx = (
+  wallet: EdgeCurrencyWallet,
+  mutationOptions?: UseMutationOptions<void, Error, EdgeTransaction>,
+) => {
+  return useMutation((transaction: EdgeTransaction) => wallet.saveTx(transaction), {
+    ...useInvalidateQueries(walletTransactionQueryKeys(wallet)),
+    ...mutationOptions,
+  })
+}
+
+export const useSignBroadcastAndSaveTx = (
+  wallet: EdgeCurrencyWallet,
+  mutationOptions?: UseMutationOptions<EdgeTransaction, Error, EdgeTransaction>,
+) => {
+  return useMutation(
+    async (transaction: EdgeTransaction) => {
+      const signed = await wallet.signTx(transaction)
+      const broadcasted = await wallet.broadcastTx(signed)
+      await wallet.saveTx(broadcasted)
+
+      return broadcasted
+    },
+    {
+      ...useInvalidateQueries(walletTransactionQueryKeys(wallet)),
+      ...mutationOptions,
+    },
+  )
+}
+
 export const useExportTransactions = (
   wallet: EdgeCurrencyWallet,
   options: EdgeGetTransactionsOptions,
@@ -227,10 +278,7 @@ export const useExportTransactions = (
       }
 
       const header = 'txid,date,currencyCode,nativeAmount'
-      const rows = transactions.map(
-        (tx) =>
-          `${tx.txid},${tx.date},${tx.currencyCode},${tx.nativeAmount}`,
-      )
+      const rows = transactions.map((tx) => `${tx.txid},${tx.date},${tx.currencyCode},${tx.nativeAmount}`)
 
       return [header, ...rows].join('\n')
     },

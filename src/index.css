@@ -607,6 +607,10 @@ iframe {
   font-size: 13px;
 }
 
+.swap-quote__approve {
+  margin-top: 10px;
+}
+
 .react-query-devtools-btn,
 .ReactQueryDevtools {
   z-index: 20;

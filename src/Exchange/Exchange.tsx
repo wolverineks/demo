@@ -3,18 +3,9 @@ import React from 'react'
 import JSONPretty from 'react-json-pretty'
 
 import { useEdgeAccount } from '../auth'
+import { Alert, Balance, Boundary, Button, Debug, DisplayAmount, FlipInput, FormControl, Logo } from '../components'
 import {
-  Alert,
-  Balance,
-  Boundary,
-  Button,
-  Debug,
-  DisplayAmount,
-  FlipInput,
-  FormControl,
-  Logo,
-} from '../components'
-import {
+  useApproveSwapQuote,
   useCurrencyWallets,
   useDisplayDenomination,
   useEdgeCurrencyWallet,
@@ -261,6 +252,7 @@ const SwapQuote = ({
     toWallet,
     toCurrencyCode,
   })
+  const { mutate: approveQuote, isLoading, error: approveError, data: swapResult } = useApproveSwapQuote(fromWallet)
 
   return (
     <div className="swap-quote">
@@ -291,8 +283,13 @@ const SwapQuote = ({
               />
             </div>
           ) : null}
+          <Button className="swap-quote__approve" disabled={isLoading} onClick={() => approveQuote(swapQuote)}>
+            {isLoading ? 'Swapping…' : 'Approve'}
+          </Button>
         </>
       ) : null}
+      {approveError ? <Alert variant="danger">{approveError.message}</Alert> : null}
+      {swapResult?.transaction.txid ? <div className="swap-quote__hint">Sent {swapResult.transaction.txid}</div> : null}
       <Debug>
         <JSONPretty json={{ swapQuote, error: error?.message }} />
       </Debug>

@@ -4,16 +4,18 @@ import {
   EdgeCurrencyWallet,
   EdgeSwapQuote,
   EdgeSwapRequest,
+  EdgeSwapResult,
 } from 'edge-core-js'
 import React from 'react'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
+import { getTokenId } from '../utils'
+import { walletTransactionQueryKeys } from './edgeCurrencyWallet'
+import { convertCurrency, useOnRateChange } from './rates'
 import { readCustomTokenInfo } from './tokens'
 import { getFiatInfo, getInfo } from './useInfo'
 import { useInvalidateQueries } from './useInvalidateQueries'
-import { convertCurrency, useOnRateChange } from './rates'
 import { useWatch } from './watch'
-import { getTokenId } from '../utils'
 import { getExchangeDenomination, nativeToDenominated, useDisplayDenomination } from '.'
 
 export const useUsername = (account: EdgeAccount) => {
@@ -243,16 +245,26 @@ export const useSwapQuote = ({
   }
 }
 
+export const useApproveSwapQuote = (
+  wallet: EdgeCurrencyWallet,
+  mutationOptions?: UseMutationOptions<EdgeSwapResult, Error, EdgeSwapQuote>,
+) => {
+  return useMutation((quote: EdgeSwapQuote) => quote.approve(), {
+    ...useInvalidateQueries(walletTransactionQueryKeys(wallet)),
+    ...mutationOptions,
+  })
+}
+
 export const useSplitWallet = (account: EdgeAccount, walletId: string) => {
-  const enabledTypes = new Set(
-    Object.values(account.currencyConfig).map(({ currencyInfo }) => currencyInfo.walletType),
-  )
+  const enabledTypes = new Set(Object.values(account.currencyConfig).map(({ currencyInfo }) => currencyInfo.walletType))
 
   return {
-    walletTypes: (useQuery({
-      queryKey: [walletId, 'splittableWalletTypes'],
-      queryFn: () => account.listSplittableWalletTypes(walletId),
-    }).data ?? []).filter((walletType) => enabledTypes.has(walletType)),
+    walletTypes: (
+      useQuery({
+        queryKey: [walletId, 'splittableWalletTypes'],
+        queryFn: () => account.listSplittableWalletTypes(walletId),
+      }).data ?? []
+    ).filter((walletType) => enabledTypes.has(walletType)),
     splitWallet: useMutation((walletType: string) => account.splitWalletInfo(walletId, walletType), {
       ...useInvalidateQueries([[walletId, 'splittableWalletTypes']]),
     }).mutateAsync,

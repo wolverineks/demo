@@ -17,7 +17,14 @@ import {
   Matcher,
   Select,
 } from '../../components'
-import { useClipboardUri, useDenominations, useFiatCurrencyCode, useMaxSpendable, useNewTransaction } from '../../hooks'
+import {
+  useClipboardUri,
+  useDenominations,
+  useFiatCurrencyCode,
+  useMaxSpendable,
+  useNewTransaction,
+  useSignBroadcastAndSaveTx,
+} from '../../hooks'
 import { useSelectedWallet } from '../../SelectedWallet'
 import { categories } from '../../utils'
 import { SpendTarget } from './SpendTarget'
@@ -48,11 +55,11 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
   const { data: transaction, error } = useNewTransaction(wallet, spendInfo, {
     enabled: !!spendInfo.spendTargets[0].publicAddress && !!Number(spendInfo.spendTargets[0].nativeAmount),
   })
+  const { mutate: sendTransaction, isLoading, error: sendError } = useSignBroadcastAndSaveTx(wallet)
 
   const onConfirm = () => {
     if (!transaction) return
-
-    Promise.resolve(transaction).then(wallet.signTx).then(wallet.broadcastTx).then(wallet.saveTx)
+    sendTransaction(transaction)
   }
 
   return (
@@ -143,9 +150,10 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
       />
 
       {error && <Alert>{(error as Error).message}</Alert>}
+      {sendError && <Alert variant="danger">{sendError.message}</Alert>}
 
-      <Button disabled={!transaction} onClick={() => onConfirm()}>
-        Confirm
+      <Button disabled={!transaction || isLoading} onClick={() => onConfirm()}>
+        {isLoading ? 'Sending…' : 'Confirm'}
       </Button>
 
       <Button onClick={() => setScan((scan) => !scan)}>Scan</Button>

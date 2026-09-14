@@ -2,9 +2,13 @@ import { act } from '@testing-library/react-hooks'
 import { EdgeCurrencyWallet, closeEdge } from 'edge-core-js'
 
 import {
+  useBroadcastTx,
   useFiatCurrencyCode,
   useMaxSpendable,
   useReceiveAddressAndEncodeUri,
+  useSaveTx,
+  useSignBroadcastAndSaveTx,
+  useSignTx,
   useTransactions,
 } from '../edgeCurrencyWallet'
 import { fakeUser } from './fake-user'
@@ -96,5 +100,19 @@ describe('EdgeCurrencyWallet', () => {
 
     const maxSpendable = result.current
     expect(maxSpendable).toBe('0')
+  })
+
+  it('useSignTx, useBroadcastTx, and useSaveTx', () => {
+    const { result } = render(() => ({
+      signTx: useSignTx(wallet),
+      broadcastTx: useBroadcastTx(wallet),
+      saveTx: useSaveTx(wallet),
+      sendTx: useSignBroadcastAndSaveTx(wallet),
+    }))
+
+    expect(result.current.signTx.mutateAsync).toEqual(expect.any(Function))
+    expect(result.current.broadcastTx.mutateAsync).toEqual(expect.any(Function))
+    expect(result.current.saveTx.mutateAsync).toEqual(expect.any(Function))
+    expect(result.current.sendTx.mutateAsync).toEqual(expect.any(Function))
   })
 })
