@@ -3,7 +3,7 @@ import React from 'react'
 import { UseQueryOptions, useMutation, useQuery } from 'react-query'
 
 import { FiatInfo } from '../utils'
-import { useOnRateChange } from './edgeAccount'
+import { convertCurrency, useOnRateChange } from './rates'
 import { useInfo } from './useInfo'
 import { useInvalidateQueries } from './useInvalidateQueries'
 
@@ -242,7 +242,7 @@ export const useFiatAmount = (
 
   const { data: fiatExchangeAmount, refetch } = useQuery({
     queryKey: [{ fromCurrencyCode, fiatCurrencyCode, exchangeAmount }],
-    queryFn: () => account.rateCache.convertCurrency(fromCurrencyCode, fiatCurrencyCode, Number(exchangeAmount)),
+    queryFn: () => convertCurrency(fromCurrencyCode, fiatCurrencyCode, Number(exchangeAmount)),
     suspense: false,
     placeholderData: 0,
     refetchInterval: 5000,

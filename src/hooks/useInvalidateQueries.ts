@@ -1,6 +1,6 @@
 import { useQueryClient } from 'react-query'
 
-export const useInvalidateQueries = (queryKeys: string[][]) => {
+export const useInvalidateQueries = (queryKeys: unknown[][]) => {
   const queryClient = useQueryClient()
 
   return {

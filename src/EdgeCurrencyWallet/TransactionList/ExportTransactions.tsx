@@ -6,6 +6,7 @@ import JSONPretty from 'react-json-pretty'
 import { useEdgeAccount } from '../../auth'
 import { Accordion, Button, Col, Debug, Form, FormControl, Row } from '../../components'
 import { useDenominations, useExportTransactions } from '../../hooks'
+import { getTokenId } from '../../utils'
 
 enum ExportFormat {
   'QBO' = 'QBO',
@@ -24,12 +25,30 @@ export const ExportTransactions = ({
   const account = useEdgeAccount()
   const { display, all } = useDenominations(account, currencyCode)
 
-  const [options, setOptions] = React.useState<EdgeGetTransactionsOptions>({
-    currencyCode,
+  const [options, setOptions] = React.useState<
+    EdgeGetTransactionsOptions & {
+      denomination?: string
+      startIndex?: number
+      returnIndex?: number
+      startEntries?: number
+      returnEntries?: number
+    }
+  >({
+    tokenId: getTokenId(wallet, currencyCode),
     denomination: display.multiplier,
   })
   const [format, setFormat] = React.useState<ExportFormat>(ExportFormat.CSV)
-  const { data, isLoading } = useExportTransactions(wallet, options, format)
+  const { data, isLoading } = useExportTransactions(
+    wallet,
+    {
+      tokenId: options.tokenId,
+      startDate: options.startDate,
+      endDate: options.endDate,
+      searchString: options.searchString,
+      spamThreshold: options.spamThreshold,
+    },
+    format,
+  )
   const href = React.useMemo(
     () => window.URL.createObjectURL(new Blob([data || ''], { type: `text/${format.toLowerCase()}` })),
     [data, format],

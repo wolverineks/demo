@@ -1,15 +1,16 @@
 import {
-  EdgeCurrencyCodeOptions,
   EdgeCurrencyWallet,
   EdgeGetTransactionsOptions,
   EdgeParsedUri,
   EdgeReceiveAddress,
   EdgeSpendInfo,
+  EdgeTokenId,
   EdgeTransaction,
 } from 'edge-core-js'
 import React from 'react'
 import { UseQueryOptions, useMutation, useQuery } from 'react-query'
 
+import { getTokenId } from '../utils'
 import { useInvalidateQueries } from './useInvalidateQueries'
 import { useWatch } from './watch'
 
@@ -59,13 +60,15 @@ export const useReceiveAddressAndEncodeUri = ({
 }: {
   wallet: EdgeCurrencyWallet
   nativeAmount: string
-  options?: EdgeCurrencyCodeOptions
+  options?: { currencyCode?: string; tokenId?: EdgeTokenId }
   queryOptions?: UseQueryOptions<{ receiveAddress: EdgeReceiveAddress; uri: string }>
 }) => {
   return useQuery({
     queryKey: [wallet.id, 'receiveAddressAndEncodeUri', nativeAmount, options],
     queryFn: () => {
-      const receiveAddress = wallet.getReceiveAddress({ currencyCode: options?.currencyCode })
+      const receiveAddress = wallet.getReceiveAddress({
+        tokenId: options?.tokenId ?? getTokenId(wallet, options?.currencyCode),
+      })
       const uri = receiveAddress.then(({ publicAddress }) =>
         wallet.encodeUri({
           publicAddress,
@@ -100,12 +103,13 @@ const dedupe = (transactions: EdgeTransaction[]) =>
 
 export const useTransactions = (
   wallet: EdgeCurrencyWallet,
-  options?: EdgeGetTransactionsOptions,
+  options?: Partial<EdgeGetTransactionsOptions> & { currencyCode?: string },
   queryOptions?: UseQueryOptions<EdgeTransaction[]>,
 ) => {
+  const txOptions = toTransactionOptions(wallet, options)
   const { data, refetch } = useQuery({
-    queryKey: [wallet.id, 'transactions', options],
-    queryFn: () => wallet.getTransactions(options),
+    queryKey: [wallet.id, 'transactions', txOptions],
+    queryFn: () => wallet.getTransactions(txOptions),
     suspense: true,
     ...queryOptions,
   })
@@ -145,12 +149,13 @@ export const useClipboardUri = (wallet: EdgeCurrencyWallet, queryOptions?: UseQu
 
 export const useTransactionCount = (
   wallet: EdgeCurrencyWallet,
-  options?: EdgeGetTransactionsOptions,
+  options?: Partial<EdgeGetTransactionsOptions> & { currencyCode?: string },
   queryOptions?: UseQueryOptions<number>,
 ) => {
+  const txOptions = toTransactionOptions(wallet, options)
   const { data, refetch } = useQuery({
-    queryKey: [wallet.id, 'transactionCount', options],
-    queryFn: () => wallet.getNumTransactions(options),
+    queryKey: [wallet.id, 'transactionCount', txOptions],
+    queryFn: () => wallet.getNumTransactions(txOptions),
     suspense: false,
     ...queryOptions,
   })
@@ -230,4 +235,16 @@ export const useExportTransactions = (
       return [header, ...rows].join('\n')
     },
   })
+}
+
+const toTransactionOptions = (
+  wallet: EdgeCurrencyWallet,
+  options?: Partial<EdgeGetTransactionsOptions> & { currencyCode?: string },
+): EdgeGetTransactionsOptions => {
+  const { currencyCode, tokenId, ...rest } = options ?? {}
+
+  return {
+    ...rest,
+    tokenId: tokenId !== undefined ? tokenId : getTokenId(wallet, currencyCode ?? wallet.currencyInfo.currencyCode),
+  }
 }

@@ -113,6 +113,6 @@ const matches =
       normalize(transaction.metadata?.name || '').includes(normalizedQuery) ||
       normalize(transaction.metadata?.category || '').includes(normalizedQuery) ||
       normalize(transaction.metadata?.notes || '').includes(normalizedQuery) ||
-      normalize(String(transaction.metadata?.amountFiat) || '').includes(normalizedQuery)
+      normalize(String(transaction.metadata?.exchangeAmount) || '').includes(normalizedQuery)
     )
   }

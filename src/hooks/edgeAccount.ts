@@ -11,13 +11,15 @@ import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'reac
 import { readCustomTokenInfo } from './tokens'
 import { getFiatInfo, getInfo } from './useInfo'
 import { useInvalidateQueries } from './useInvalidateQueries'
+import { convertCurrency, useOnRateChange } from './rates'
 import { useWatch } from './watch'
+import { getTokenId } from '../utils'
 import { getExchangeDenomination, nativeToDenominated, useDisplayDenomination } from '.'
 
 export const useUsername = (account: EdgeAccount) => {
   useWatch(account, 'username')
 
-  return account.username
+  return account.username ?? ''
 }
 
 export const useActiveWalletIds = (account: EdgeAccount) => {
@@ -61,7 +63,7 @@ export const useEdgeAccountTotal = (account: EdgeAccount) => {
           denomination: exchangeDenomination,
         })
 
-        total += await account.rateCache.convertCurrency(currencyCode, fiatCurrencyCode, Number(exchangeAmount))
+        total += await convertCurrency(currencyCode, fiatCurrencyCode, Number(exchangeAmount))
       }
     }
 
@@ -192,16 +194,6 @@ export const useEdgeCurrencyWallet = (
   return wallet
 }
 
-export const useOnRateChange = (account: EdgeAccount, callback: () => any) => {
-  React.useEffect(() => {
-    const unsub = account.rateCache.on('update', () => callback())
-
-    return () => {
-      unsub()
-    }
-  }, [account.rateCache, callback])
-}
-
 export const useSwapQuote = ({
   account,
   nativeAmount,
@@ -217,16 +209,17 @@ export const useSwapQuote = ({
   toWallet: EdgeCurrencyWallet | undefined
   toCurrencyCode: string | undefined
 }) => {
-  const swapRequest = {
-    fromWallet,
-    fromCurrencyCode,
-    nativeAmount,
-
-    quoteFor: 'to',
-
-    toWallet,
-    toCurrencyCode,
-  } as EdgeSwapRequest
+  const swapRequest: EdgeSwapRequest | undefined =
+    toWallet && toCurrencyCode
+      ? {
+          fromWallet,
+          toWallet,
+          fromTokenId: getTokenId(fromWallet, fromCurrencyCode),
+          toTokenId: getTokenId(toWallet, toCurrencyCode),
+          nativeAmount,
+          quoteFor: 'to',
+        }
+      : undefined
 
   const { data: swapQuote, ...rest } = useQuery<EdgeSwapQuote, Error>(
     [
@@ -239,7 +232,7 @@ export const useSwapQuote = ({
       },
     ],
     () => account.fetchSwapQuote(swapRequest as EdgeSwapRequest),
-    { enabled: !!toWallet && !!toCurrencyCode, useErrorBoundary: false, suspense: false, cacheTime: 0 },
+    { enabled: !!swapRequest, useErrorBoundary: false, suspense: false, cacheTime: 0 },
   )
 
   return {
@@ -249,11 +242,15 @@ export const useSwapQuote = ({
 }
 
 export const useSplitWallet = (account: EdgeAccount, walletId: string) => {
+  const enabledTypes = new Set(
+    Object.values(account.currencyConfig).map(({ currencyInfo }) => currencyInfo.walletType),
+  )
+
   return {
-    walletTypes: useQuery({
+    walletTypes: (useQuery({
       queryKey: [walletId, 'splittableWalletTypes'],
       queryFn: () => account.listSplittableWalletTypes(walletId),
-    }).data!,
+    }).data ?? []).filter((walletType) => enabledTypes.has(walletType)),
     splitWallet: useMutation((walletType: string) => account.splitWalletInfo(walletId, walletType), {
       ...useInvalidateQueries([[walletId, 'splittableWalletTypes']]),
     }).mutateAsync,

@@ -28,7 +28,7 @@ export const PinLogin: React.FC<{ context: EdgeContext; onLogin: (account: EdgeA
       {accountsWithPinLogin.length <= 0 ? (
         <Card.Text>------</Card.Text>
       ) : (
-        <LocalUserRow loginWithPin={loginWithPin} username={username} context={context} />
+        <LocalUserRow loginWithPin={loginWithPin} username={username ?? ''} context={context} />
       )}
     </ListGroup>
   )

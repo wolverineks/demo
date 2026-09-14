@@ -191,7 +191,7 @@ const CustomFeeForm = ({
   return (
     <div>
       <div>{JSON.stringify(customFee, null, 2)}</div>
-      {wallet.currencyInfo.defaultSettings.customFeeSettings.map((setting: string) => {
+      {(wallet.currencyInfo.defaultSettings?.customFeeSettings as string[] | undefined)?.map((setting: string) => {
         return (
           <div key={setting}>
             {setting}

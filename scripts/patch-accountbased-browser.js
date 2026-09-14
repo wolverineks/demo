@@ -72,8 +72,8 @@ const plugins = {
 `
 
 if (!source.includes(needle)) {
-  console.error('skip accountbased patch: plugin map source changed')
-  process.exit(1)
+  console.warn('skip accountbased patch: plugin map source changed')
+  process.exit(0)
 }
 
 fs.writeFileSync(target, source.replace(needle, replacement))

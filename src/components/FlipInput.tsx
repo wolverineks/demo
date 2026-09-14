@@ -1,9 +1,9 @@
-import { EdgeDenomination, EdgeRateCache } from 'edge-core-js'
+import { EdgeDenomination } from 'edge-core-js'
 import React from 'react'
 
 import { useEdgeAccount } from '../auth'
 import { AmountInput, Boundary } from '../components'
-import { denominatedToNative, nativeToDenominated, useDenominations } from '../hooks'
+import { convertCurrency, denominatedToNative, nativeToDenominated, useDenominations } from '../hooks'
 
 type FlipInputProps = {
   onChange: (nativeAmount: string) => any
@@ -25,7 +25,6 @@ export const FlipInput = React.forwardRef<FlipInputRef, FlipInputProps>(function
   const bottomDenominations = useDenominations(account, fiatCurrencyCode)
 
   const { top, bottom } = useFlipInput({
-    rateCache: account.rateCache,
     onChange,
     currencyCode,
     fiatCurrencyCode,
@@ -57,14 +56,12 @@ export const FlipInput = React.forwardRef<FlipInputRef, FlipInputProps>(function
 })
 
 const useFlipInput = ({
-  rateCache,
   onChange,
   currencyCode,
   fiatCurrencyCode,
   topDenominations,
   bottomDenominations,
 }: {
-  rateCache: EdgeRateCache
   onChange: (nativeAmount: string) => any
   currencyCode: string
   fiatCurrencyCode: string
@@ -83,7 +80,7 @@ const useFlipInput = ({
       nativeAmount: topNativeAmount,
       denomination: topDenominations.exchange,
     })
-    const bottomExchangeAmount = await rateCache.convertCurrency(
+    const bottomExchangeAmount = await convertCurrency(
       currencyCode,
       fiatCurrencyCode,
       Number(topExchangeAmount),
@@ -111,7 +108,7 @@ const useFlipInput = ({
       nativeAmount: bottomNativeAmount,
       denomination: bottomDenominations.exchange,
     })
-    const topExchangeAmount = await rateCache.convertCurrency(
+    const topExchangeAmount = await convertCurrency(
       fiatCurrencyCode,
       currencyCode,
       Number(bottomExchangeAmount),

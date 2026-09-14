@@ -83,8 +83,7 @@ function patchFile(relPath, apply) {
   const next = apply(source)
   if (next == null) return
   if (next === source) {
-    console.error('skip patch, source changed', relPath)
-    process.exitCode = 1
+    console.warn('skip patch, source changed', relPath)
     return
   }
   fs.writeFileSync(target, next)

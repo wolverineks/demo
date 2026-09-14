@@ -1,4 +1,4 @@
-import { EdgeAccount, EdgeCurrencyInfo, EdgeMetaToken } from 'edge-core-js'
+import { EdgeAccount, EdgeCurrencyInfo, EdgeCurrencyWallet, EdgeMetaToken, EdgeTokenId } from 'edge-core-js'
 
 import { FiatInfo } from './fiatInfos'
 
@@ -28,4 +28,12 @@ export const getSortedCurrencyWallets = (account: EdgeAccount) => {
 
 export const getCurrencyInfos = (account: EdgeAccount) => {
   return Object.values(account.currencyConfig).map(({ currencyInfo }) => currencyInfo)
+}
+
+export const getTokenId = (wallet: EdgeCurrencyWallet, currencyCode?: string): EdgeTokenId => {
+  if (!currencyCode || currencyCode === wallet.currencyInfo.currencyCode) return null
+
+  const match = Object.entries(wallet.currencyConfig.allTokens).find(([, token]) => token.currencyCode === currencyCode)
+
+  return match?.[0] ?? null
 }

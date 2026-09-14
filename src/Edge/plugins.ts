@@ -1,12 +1,14 @@
-import { EdgeCorePlugins } from 'edge-core-js'
-import AccountBased from 'edge-currency-accountbased'
-import Bitcoin from 'edge-currency-bitcoin'
-// import Monero from 'edge-currency-monero'
-import exchangePlugins from 'edge-exchange-plugins'
+import { addEdgeCorePlugins, lockEdgeCorePlugins } from 'edge-core-js'
+import utxoPlugins from 'edge-currency-plugins'
 
-export const plugins: EdgeCorePlugins[] = [
-  Bitcoin,
-  // Monero,
-  AccountBased,
-  exchangePlugins,
-]
+let locked = false
+
+export const ensureEdgePlugins = () => {
+  if (locked) return
+
+  addEdgeCorePlugins(utxoPlugins)
+  lockEdgeCorePlugins()
+  locked = true
+}
+
+ensureEdgePlugins()

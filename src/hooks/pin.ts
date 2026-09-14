@@ -24,7 +24,11 @@ export const usePinLoginEnabled = (
   queryOptions?: UseQueryOptions<boolean>,
 ) => {
   const queryKey = [account.username, 'pinLoginEnabled']
-  const queryFn = () => context.pinLoginEnabled(account.username)
+  const queryFn = () => {
+    const user = context.localUsers.find(({ username }) => username === account.username)
+
+    return user?.pinLoginEnabled ?? false
+  }
 
   return useQuery({
     queryKey,

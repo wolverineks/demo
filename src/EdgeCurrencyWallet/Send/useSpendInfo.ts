@@ -2,10 +2,12 @@ import { EdgeCurrencyWallet, EdgeMetadata, EdgeSpendInfo, EdgeSpendTarget } from
 import * as React from 'react'
 
 import { useParsedUri } from '../../hooks'
+import { getTokenId } from '../../utils'
 import { SpendTargetRef } from './SpendTarget'
 import { useSpendTargets } from './useSpendTargets'
 
-export const canAdjustFees = (wallet: EdgeCurrencyWallet) => wallet.currencyInfo.defaultSettings.customFeeSettings
+export const canAdjustFees = (wallet: EdgeCurrencyWallet) =>
+  Array.isArray(wallet.currencyInfo.defaultSettings?.customFeeSettings)
 
 export type CustomFee = { [key: string]: string }
 
@@ -14,25 +16,21 @@ export const useSpendInfo = (wallet: EdgeCurrencyWallet, currencyCode: string) =
   const spendTargets = useSpendTargets()
   const [metadata, setMetadata] = React.useState<EdgeSpendInfo['metadata']>({})
 
-  //FEES
   const feeOptions = canAdjustFees(wallet)
     ? ([...standardFeeOptions, { value: 'custom', display: 'custom' }] as const)
     : standardFeeOptions
   const [networkFeeOption, setNetworkFeeOption] =
     React.useState<NonNullable<EdgeSpendInfo['networkFeeOption']>>('standard')
+  const customFeeSettings = (wallet.currencyInfo.defaultSettings?.customFeeSettings as string[] | undefined) ?? []
   const [customNetworkFee, _setCustomNetworkFee] = React.useState<NonNullable<EdgeSpendInfo['customNetworkFee']>>(
     canAdjustFees(wallet)
-      ? (wallet.currencyInfo.defaultSettings.customFeeSettings as string[]).reduce(
-          (result, current) => ({ ...result, [current]: '0' }),
-          {} as CustomFee,
-        )
+      ? customFeeSettings.reduce((result, current) => ({ ...result, [current]: '0' }), {} as CustomFee)
       : {},
   )
   const setCustomNetworkFee = (networkFee: Partial<CustomFee>) =>
     _setCustomNetworkFee((current) => ({ ...current, ...networkFee }))
   const updateMetadata = (metadata: EdgeMetadata) => setMetadata((current) => ({ ...current, ...metadata }))
 
-  // URI
   const [uri, setUri] = React.useState<string>()
   useParsedUri(wallet, uri, {
     enabled: !!uri,
@@ -42,8 +40,8 @@ export const useSpendInfo = (wallet: EdgeCurrencyWallet, currencyCode: string) =
     },
   })
 
-  const spendInfo = {
-    currencyCode,
+  const spendInfo: EdgeSpendInfo = {
+    tokenId: getTokenId(wallet, currencyCode),
     spendTargets: spendTargets.all.map(({ id: _id, ...spendTarget }) => spendTarget as EdgeSpendTarget),
     metadata,
     networkFeeOption,

@@ -27,11 +27,13 @@ export const ExchangeRates = () => {
         <Boundary
           key={currencyCode}
           error={{
-            fallbackRender: () => (
+            fallbackRender: function RateFallback() {
+              return (
               <div className="rate-row">
                 <span>{currencyCode}</span>
               </div>
-            ),
+              )
+            },
           }}
         >
           <ExchangeRate currencyCode={currencyCode} />

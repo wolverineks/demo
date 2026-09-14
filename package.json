@@ -7,15 +7,15 @@
   "main": "src/index.tsx",
   "scripts": {
     "analyze": "source-map-explorer 'build/static/js/*.js'",
-    "build": "react-scripts build",
+    "build": "react-app-rewired build",
     "eject": "react-scripts eject",
     "format": "prettier --write",
     "lint": "yarn eslint --fix --ext .js,.jsx,.ts,.tsx",
     "precommit": "yarn lint-staged && tsc",
     "serve": "serve -s build",
     "postinstall": "node scripts/patch-edge-core-fake-world.js && node scripts/patch-accountbased-browser.js",
-    "start": "react-scripts start",
-    "test": "react-scripts test --env=jsdom"
+    "start": "react-app-rewired start",
+    "test": "react-app-rewired test --env=jsdom"
   },
   "husky": {
     "hooks": {
@@ -46,11 +46,10 @@
   "dependencies": {
     "bootstrap": "4.6.2",
     "disklet": "^0.5.0",
-    "edge-core-js": "0.19.50",
-    "edge-currency-accountbased": "0.11.4",
-    "edge-currency-bitcoin": "4.9.23",
-    "edge-currency-monero": "^0.2.10",
-    "edge-exchange-plugins": "0.16.17",
+    "edge-core-js": "2.48.1",
+    "edge-currency-accountbased": "4.92.0",
+    "edge-currency-plugins": "3.12.0",
+    "edge-exchange-plugins": "2.55.0",
     "react": "^17.0.2",
     "react-bootstrap": "^1.6.0",
     "react-date-picker": "^8.3.5",
@@ -82,6 +81,7 @@
     "prettier": "^2.4.1",
     "prettier-plugin-import-sort": "^0.0.7",
     "prettier-plugin-packagejson": "^2.2.15",
+    "react-app-rewired": "2.2.1",
     "react-scripts": "^4.0.3",
     "typescript": "^4.5.2",
     "typescript-coverage-report": "^0.6.1"

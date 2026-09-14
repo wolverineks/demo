@@ -23,7 +23,8 @@ export const useWriteWalletSnapshot = (account: EdgeAccount, wallet: EdgeCurrenc
   })
 
   React.useEffect(() => {
-    const unsubs = (Object.keys(wallet) as (keyof EdgeCurrencyWallet)[]).map((key) => wallet.watch(key, () => update()))
+    const keys = ['name', 'balances', 'fiatCurrencyCode', 'blockHeight', 'syncRatio'] as const
+    const unsubs = keys.map((key) => wallet.watch(key, () => update()))
 
     update()
 
@@ -37,14 +38,11 @@ export type InactiveWallet = Pick<
   EdgeCurrencyWallet,
   | 'id'
   | 'type'
-  | 'keys'
   | 'name'
   | 'fiatCurrencyCode'
   | 'currencyInfo'
   | 'balances'
   | 'blockHeight'
-  | 'displayPrivateSeed'
-  | 'displayPublicSeed'
   | 'publicWalletInfo'
   | 'syncRatio'
   | 'otherMethods'
