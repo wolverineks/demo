@@ -31,12 +31,9 @@ export const SelectedWalletInfoProvider: React.FC = ({ children }) => {
         }
       : undefined,
   )
+  const value = React.useMemo(() => [selectedWalletInfo, setSelectedWalletInfo] as const, [selectedWalletInfo])
 
-  return (
-    <SelectedWalletInfoContext.Provider value={[selectedWalletInfo, setSelectedWalletInfo] as const}>
-      {children}
-    </SelectedWalletInfoContext.Provider>
-  )
+  return <SelectedWalletInfoContext.Provider value={value}>{children}</SelectedWalletInfoContext.Provider>
 }
 
 const missingProvider = () => {

@@ -104,3 +104,36 @@ patchFile('node_modules/edge-core-js/lib/core/plugins/plugins-selectors.js', sou
     '\nexport const __edgeDemoKeepEsm = makeLog\n'
   )
 })
+
+// Webpack 5 prefers package exports over the browser field. Add a browser
+// condition so CRA does not bundle the Node io (makeNodeDisklet).
+const pkgPath = path.join(__dirname, '../node_modules/edge-core-js/package.json')
+if (fs.existsSync(pkgPath)) {
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
+  const entry = pkg.exports && pkg.exports['.']
+  if (entry && entry.browser !== './lib/browser.js') {
+    pkg.exports['.'] = {
+      'react-native': entry['react-native'],
+      browser: './lib/browser.js',
+      import: entry.import,
+      require: entry.require,
+      types: entry.types,
+    }
+    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
+    console.log('patched', 'node_modules/edge-core-js/package.json')
+  }
+}
+
+const mixFetchSrc = path.join(__dirname, '../src/shims/mix-fetch.js')
+const mixFetchDest = path.join(__dirname, '../node_modules/@nymproject/mix-fetch/index.js')
+if (fs.existsSync(mixFetchSrc) && fs.existsSync(path.dirname(mixFetchDest))) {
+  fs.copyFileSync(mixFetchSrc, mixFetchDest)
+  console.log('patched', 'node_modules/@nymproject/mix-fetch/index.js')
+}
+
+const scryptSrc = path.join(__dirname, '../src/shims/scrypt.js')
+const scryptDest = path.join(__dirname, '../node_modules/edge-core-js/lib/util/crypto/scrypt.js')
+if (fs.existsSync(scryptSrc) && fs.existsSync(scryptDest)) {
+  fs.copyFileSync(scryptSrc, scryptDest)
+  console.log('patched', 'node_modules/edge-core-js/lib/util/crypto/scrypt.js')
+}

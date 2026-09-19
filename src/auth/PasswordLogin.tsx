@@ -3,7 +3,7 @@ import React from 'react'
 
 import { Alert, Button, Form, FormGroup } from '../components'
 import { fakeUser } from '../Edge'
-import { useLoginWithPassword } from '../hooks'
+import { useLoginWithKey, useLoginWithPassword } from '../hooks'
 
 export const PasswordLogin: React.FC<{ context: EdgeContext; onLogin: (account: EdgeAccount) => any }> = ({
   onLogin,
@@ -11,7 +11,24 @@ export const PasswordLogin: React.FC<{ context: EdgeContext; onLogin: (account: 
 }) => {
   const [username, setUsername] = React.useState('')
   const [password, setPassword] = React.useState('')
-  const { mutate: loginWithPassword, error, status, reset } = useLoginWithPassword(context, { onSuccess: onLogin })
+  const {
+    mutate: loginWithPassword,
+    error: passwordError,
+    status: passwordStatus,
+    reset: resetPassword,
+  } = useLoginWithPassword(context, { onSuccess: onLogin })
+  const {
+    mutate: loginWithKey,
+    error: keyError,
+    status: keyStatus,
+    reset: resetKey,
+  } = useLoginWithKey(context, { onSuccess: onLogin })
+  const error = passwordError || keyError
+  const status = passwordStatus === 'loading' || keyStatus === 'loading' ? 'loading' : passwordStatus
+  const reset = () => {
+    resetPassword()
+    resetKey()
+  }
 
   const onUsernameChange = (username: string) => {
     reset()
@@ -64,7 +81,7 @@ export const PasswordLogin: React.FC<{ context: EdgeContext; onLogin: (account: 
             disabled={status === 'loading'}
             onClick={(event: React.MouseEvent) => {
               event.preventDefault()
-              loginWithPassword({ username: fakeUser.username, password: fakeUser.password })
+              loginWithKey({ username: fakeUser.username, loginKey: fakeUser.loginKeyBase58 })
             }}
           >
             {status === 'loading' ? '...' : 'Login with fake user'}

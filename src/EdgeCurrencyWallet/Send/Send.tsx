@@ -1,7 +1,6 @@
 import { EdgeCurrencyWallet, EdgeTransaction } from 'edge-core-js'
 import * as React from 'react'
 import JSONPretty from 'react-json-pretty'
-import QrReader from 'react-qr-scanner'
 
 import { useEdgeAccount } from '../../auth'
 import {
@@ -18,12 +17,12 @@ import {
   Select,
 } from '../../components'
 import {
-  useClipboardUri,
   useDenominations,
   useFiatCurrencyCode,
-  useMaxSpendable,
   useNewTransaction,
+  usePasteUri,
   useSignBroadcastAndSaveTx,
+  useSpendMax,
 } from '../../hooks'
 import { useSelectedWallet } from '../../SelectedWallet'
 import { categories, getCurrencyCodeFromTokenId } from '../../utils'
@@ -31,11 +30,13 @@ import { SpendTarget } from './SpendTarget'
 import { CustomFee, canAdjustFees, useSpendInfo } from './useSpendInfo'
 
 const MULTIPLE_TARGETS_CURRENCIES = ['BCH', 'BTC', 'BSV']
+const QrReader = React.lazy(() => import('react-qr-scanner'))
 
 export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
   const [scan, setScan] = React.useState(false)
-  const clipboardUri = useClipboardUri(wallet)
+  const spendMax = useSpendMax(wallet)
+  const pasteUri = usePasteUri(wallet)
 
   const {
     customNetworkFee,
@@ -49,8 +50,6 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
     spendTargets,
     spendInfo,
   } = useSpendInfo(wallet, currencyCode)
-
-  const maxSpendable = useMaxSpendable(wallet, spendInfo)
 
   const { data: transaction, error } = useNewTransaction(wallet, spendInfo, {
     enabled: !!spendInfo.spendTargets[0].publicAddress && !!Number(spendInfo.spendTargets[0].nativeAmount),
@@ -92,9 +91,16 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
         </FormGroup>
       </Matcher>
 
-      {spendInfo.spendTargets.length === 1 && Number(maxSpendable) > 0 ? (
-        <Button onClick={() => spendTargetRef.current?.setSpendTarget({ nativeAmount: maxSpendable })}>
-          Spend Max
+      {spendInfo.spendTargets.length === 1 ? (
+        <Button
+          disabled={spendMax.isLoading}
+          onClick={() =>
+            spendMax.mutate(spendInfo, {
+              onSuccess: (nativeAmount) => spendTargetRef.current?.setSpendTarget({ nativeAmount }),
+            })
+          }
+        >
+          {spendMax.isLoading ? 'Loading max…' : 'Spend Max'}
         </Button>
       ) : null}
 
@@ -118,7 +124,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
 
       {transaction?.networkFees?.length ? <Fee wallet={wallet} transaction={transaction} /> : null}
 
-      {clipboardUri ? <Button onClick={() => setUri(clipboardUri)}>Paste From Clipboard</Button> : null}
+      <Button onClick={() => pasteUri.mutate(undefined, { onSuccess: setUri })}>Paste From Clipboard</Button>
 
       <FormGroup>
         <FormLabel>Name</FormLabel>
@@ -151,6 +157,8 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
 
       {error && <Alert>{(error as Error).message}</Alert>}
       {sendError && <Alert variant="danger">{sendError.message}</Alert>}
+      {spendMax.error ? <Alert variant="danger">{(spendMax.error as Error).message}</Alert> : null}
+      {pasteUri.error ? <Alert variant="danger">{(pasteUri.error as Error).message}</Alert> : null}
 
       <Button disabled={!transaction || isLoading} onClick={() => onConfirm()}>
         {isLoading ? 'Sending…' : 'Confirm'}
@@ -175,9 +183,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
             fiatCurrencyCode,
             currencyCode,
             spendInfo,
-            maxSpendable,
             transaction,
-            clipboardUri,
           }}
         />
       </Debug>
@@ -246,7 +252,9 @@ const Scanner: React.FC<{ onScan: (data: string) => any; show: boolean }> = ({ o
     <div>
       {error && <Alert variant={'danger'}>{error.message}</Alert>}
 
-      <QrReader delay={300} onError={setError} onScan={(data: string) => onScan(data || '')} style={{ width: '50%' }} />
+      <React.Suspense fallback={<div className="empty-state">Starting camera…</div>}>
+        <QrReader delay={300} onError={setError} onScan={(data: string) => onScan(data || '')} style={{ width: '50%' }} />
+      </React.Suspense>
     </div>
   ) : null
 }

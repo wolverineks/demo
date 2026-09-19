@@ -6,18 +6,17 @@ import { useEdgeAccount } from '../auth'
 import { Alert, Balance, Boundary, Button, Debug, DisplayAmount, FlipInput, FormControl, Logo } from '../components'
 import {
   useApproveSwapQuote,
-  useCurrencyWallets,
   useDisplayDenomination,
   useEdgeCurrencyWallet,
   useFiatCurrencyCode,
   useName,
   useSwapQuote,
 } from '../hooks'
-import { getCurrencyCodeFromTokenId, getSortedCurrencyWallets } from '../utils'
+import { getCurrencyCodeFromTokenId, getWalletListMeta } from '../utils'
 
 type AssetChoice = {
   key: string
-  wallet: EdgeCurrencyWallet
+  walletId: string
   currencyCode: string
   label: string
 }
@@ -31,19 +30,28 @@ const parseAssetKey = (value: string) => {
   return { walletId: value.slice(0, separator), currencyCode: value.slice(separator + 2) }
 }
 
-const getAssetChoices = (wallets: EdgeCurrencyWallet[]): AssetChoice[] =>
-  wallets.flatMap((wallet) => {
-    const walletLabel = wallet.name || wallet.currencyInfo.displayName || wallet.currencyInfo.currencyCode
-    const nativeCode = wallet.currencyInfo.currencyCode
+const getAssetChoices = (account: ReturnType<typeof useEdgeAccount>): AssetChoice[] =>
+  account.activeWalletIds.flatMap((walletId) => {
+    const meta = getWalletListMeta(account, walletId)
+    const wallet = account.currencyWallets[walletId]
+    const walletLabel = wallet?.name || meta.name
+    const native = {
+      key: assetKey(walletId, meta.currencyCode),
+      walletId,
+      currencyCode: meta.currencyCode,
+      label: walletLabel,
+    }
+    if (!wallet) return [native]
+
     const tokens = wallet.enabledTokenIds
       .map((tokenId) => wallet.currencyConfig.allTokens[tokenId]?.currencyCode)
-      .filter((currencyCode): currencyCode is string => !!currencyCode && currencyCode !== nativeCode)
+      .filter((currencyCode): currencyCode is string => !!currencyCode && currencyCode !== meta.currencyCode)
 
     return [
-      { key: assetKey(wallet.id, nativeCode), wallet, currencyCode: nativeCode, label: walletLabel },
+      native,
       ...tokens.map((currencyCode) => ({
-        key: assetKey(wallet.id, currencyCode),
-        wallet,
+        key: assetKey(walletId, currencyCode),
+        walletId,
         currencyCode,
         label: `${walletLabel} · ${currencyCode}`,
       })),
@@ -52,9 +60,7 @@ const getAssetChoices = (wallets: EdgeCurrencyWallet[]): AssetChoice[] =>
 
 export const Exchange = ({ wallet, currencyCode }: { wallet: EdgeCurrencyWallet; currencyCode: string }) => {
   const account = useEdgeAccount()
-  useCurrencyWallets(account)
-  const wallets = getSortedCurrencyWallets(account)
-  const choices = getAssetChoices(wallets)
+  const choices = getAssetChoices(account)
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
   const [displayDenomination] = useDisplayDenomination(account, currencyCode)
 
@@ -66,17 +72,16 @@ export const Exchange = ({ wallet, currencyCode }: { wallet: EdgeCurrencyWallet;
 
   const onSelectAsset = (value: string, direction: 'from' | 'to') => {
     const parsed = parseAssetKey(value)
-    const nextWallet = parsed && wallets.find(({ id }) => id === parsed.walletId)
-    if (!parsed || !nextWallet) return
+    if (!parsed) return
 
     if (direction === 'from') {
-      setFromWalletId(nextWallet.id)
+      setFromWalletId(parsed.walletId)
       setFromCurrencyCode(parsed.currencyCode)
 
       return
     }
 
-    setToWalletId(nextWallet.id)
+    setToWalletId(parsed.walletId)
     setToCurrencyCode(parsed.currencyCode)
   }
 

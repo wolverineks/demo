@@ -185,4 +185,9 @@ const fakeUserDump: EdgeFakeUser = {
   },
 }
 
-export const fakeUser = { ...info, ...fakeUserDump }
+// dump.loginKey is base64 (makeFakeEdgeWorld). loginWithKey wants base58.
+export const fakeUser = {
+  ...info,
+  ...fakeUserDump,
+  loginKeyBase58: 'CzU4ReHcJr5DJ6MssAcMHQLCZys2bxpsBcKAP7EG567',
+}

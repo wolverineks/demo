@@ -33,6 +33,21 @@ export const getSortedCurrencyWallets = (account: EdgeAccount) => {
   return account.activeWalletIds.map((id) => account.currencyWallets[id]).filter(Boolean)
 }
 
+export const getWalletListMeta = (account: EdgeAccount, walletId: string) => {
+  const walletInfo = account.allKeys.find((info) => info.id === walletId)
+  const config = Object.values(account.currencyConfig).find(
+    ({ currencyInfo }) => currencyInfo.walletType === walletInfo?.type,
+  )
+  const loaded = account.currencyWallets[walletId]
+  const currencyCode = loaded?.currencyInfo.currencyCode ?? config?.currencyInfo.currencyCode ?? 'UNKNOWN'
+
+  return {
+    currencyCode,
+    name: loaded?.name || config?.currencyInfo.displayName || currencyCode,
+    pluginId: loaded?.currencyInfo.pluginId ?? config?.currencyInfo.pluginId,
+  }
+}
+
 export const getCurrencyInfos = (account: EdgeAccount) => {
   return Object.values(account.currencyConfig).map(({ currencyInfo }) => currencyInfo)
 }

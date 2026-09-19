@@ -65,10 +65,26 @@ export const useLoginWithPassword = (
   context: EdgeContext,
   mutationOptions?: UseMutationOptions<EdgeAccount, unknown, { username: string; password: string }>,
 ) => {
-  return useMutation(({ username, password }) => context.loginWithPassword(username, password), {
-    onSuccess: bootstrap,
-    ...mutationOptions,
-  })
+  return useMutation(
+    ({ username, password }) => context.loginWithPassword(username, password),
+    {
+      onSuccess: bootstrap,
+      ...mutationOptions,
+    },
+  )
+}
+
+export const useLoginWithKey = (
+  context: EdgeContext,
+  mutationOptions?: UseMutationOptions<EdgeAccount, unknown, { username: string; loginKey: string }>,
+) => {
+  return useMutation(
+    ({ username, loginKey }) => context.loginWithKey(username, loginKey),
+    {
+      onSuccess: bootstrap,
+      ...mutationOptions,
+    },
+  )
 }
 
 const bootstrap = async (account: EdgeAccount) => {

@@ -1,12 +1,7 @@
-const mixFetch = (...args) => fetch(...args)
+export const mixFetch = (...args) => fetch(...args)
 
-const createMixFetch = async () => mixFetch
+export const createMixFetch = async () => ({ mixFetch })
 
-const disconnectMixFetch = async () => undefined
+export const disconnectMixFetch = async () => undefined
 
-module.exports = {
-  mixFetch,
-  createMixFetch,
-  disconnectMixFetch,
-  default: mixFetch,
-}
+export default mixFetch
