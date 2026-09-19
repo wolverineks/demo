@@ -1,47 +1,61 @@
-import { EdgeCurrencyWallet } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
 import React from 'react'
 
+import { useSelectWallet } from '../../App'
 import { Balance, Boundary, ListGroup, Logo } from '../../components'
 import { useTokens } from '../../hooks'
-import { useSelectedWalletInfo } from '../../SelectedWallet'
 
-export const EnabledTokens: React.FC<{ wallet: EdgeCurrencyWallet; onSelect: () => void }> = ({ wallet, onSelect }) => {
+export const EnabledTokens: React.FC<{
+  wallet: EdgeCurrencyWallet
+}> = ({ wallet }) => {
   const tokens = useTokens(wallet)
 
-  return tokens.enabled.length > 0 ? (
-    <ListGroup.Item>
-      <ListGroup variant={'flush'}>
-        {tokens.enabled.map((currencyCode) => (
-          <Boundary key={currencyCode} error={{ fallbackRender: () => null }}>
-            <EnabledToken wallet={wallet} currencyCode={currencyCode} onSelect={onSelect} />
-          </Boundary>
-        ))}
-      </ListGroup>
-    </ListGroup.Item>
-  ) : null
+  if (tokens.enabled.length === 0) return null
+
+  return (
+    <>
+      {tokens.enabled.map((currencyCode) => (
+        <EnabledToken
+          key={currencyCode}
+          wallet={wallet}
+          currencyCode={currencyCode}
+          tokenInfo={tokens.includedInfos[currencyCode] || tokens.customTokenInfos[currencyCode]}
+        />
+      ))}
+    </>
+  )
 }
 
-const EnabledToken: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string; onSelect: () => void }> = ({
-  wallet,
-  currencyCode,
-  onSelect,
-}) => {
-  const [selected, select] = useSelectedWalletInfo()
+const EnabledToken: React.FC<{
+  wallet: EdgeCurrencyWallet
+  currencyCode: string
+  tokenInfo?: EdgeMetaToken
+}> = ({ wallet, currencyCode, tokenInfo }) => {
+  const [selected, select] = useSelectWallet()
+  const extra = tokenInfo as (EdgeMetaToken & { pluginId?: string; tokenId?: string }) | undefined
 
   return (
     <ListGroup.Item
+      className="token-row"
       variant={wallet.id === selected?.id && currencyCode === selected?.currencyCode ? 'primary' : undefined}
-      onClick={() => {
-        onSelect()
-        select({ id: wallet.id, currencyCode })
-      }}
+      onClick={() => select({ id: wallet.id, currencyCode })}
     >
-      <span className={'float-left'}>
-        <Logo currencyCode={currencyCode} />
-        <Boundary suspense={{ fallback: <span>Loading...</span> }}>
-          <Balance wallet={wallet} currencyCode={currencyCode} />
-        </Boundary>
-      </span>
+      <Boundary error={{ fallback: null }} suspense={{ fallback: null }}>
+        <Logo
+          currencyCode={currencyCode}
+          pluginId={extra?.pluginId || wallet.currencyInfo.pluginId}
+          tokenId={extra?.tokenId}
+          contractAddress={extra?.contractAddress}
+        />
+      </Boundary>
+      <div className="token-row__text">
+        <div className="token-row__name">{currencyCode}</div>
+        <div className="token-row__balance">
+          <Boundary suspense={{ fallback: <span>Loading...</span> }}>
+            <Balance wallet={wallet} currencyCode={currencyCode} />
+          </Boundary>
+        </div>
+      </div>
     </ListGroup.Item>
   )
 }

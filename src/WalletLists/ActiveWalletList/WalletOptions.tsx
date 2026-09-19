@@ -1,9 +1,8 @@
-import { EdgeAccount } from 'edge-core-js'
 import React from 'react'
 
 import { useEdgeAccount } from '../../auth'
 import { Button } from '../../components'
-import { useActiveWalletIds, useChangeWalletState, useSortWallets, useSplitWallet } from '../../hooks'
+import { useActiveWalletIds, useSortWallets } from '../../hooks'
 
 export const WalletOptions = ({ walletId }: { walletId: string }) => {
   const account = useEdgeAccount()
@@ -13,35 +12,10 @@ export const WalletOptions = ({ walletId }: { walletId: string }) => {
   const isBottom = activeWalletIds[activeWalletIds.length - 1] === walletId
 
   return (
-    <span className={'float-right'}>
+    <span className="wallet-actions">
       {!isTop ? <MoveUpButton walletId={walletId} /> : null}
       {!isBottom ? <MoveDownButton walletId={walletId} /> : null}
-      <ArchiveWalletButton walletId={walletId} />
-      <DeleteWalletButton walletId={walletId} />
-      <SplitWalletButtons walletId={walletId} />
     </span>
-  )
-}
-
-const ArchiveWalletButton = ({ walletId }: { walletId: string }) => {
-  const account = useEdgeAccount()
-  const { archiveWallet, isLoading } = useChangeWalletState(account, walletId)
-
-  return (
-    <Button variant={'warning'} disabled={isLoading} onClick={archiveWallet}>
-      A
-    </Button>
-  )
-}
-
-const DeleteWalletButton = ({ walletId }: { walletId: string }) => {
-  const account = useEdgeAccount()
-  const { deleteWallet, isLoading } = useChangeWalletState(account, walletId)
-
-  return (
-    <Button variant={'danger'} disabled={isLoading} onClick={deleteWallet}>
-      X
-    </Button>
   )
 }
 
@@ -59,7 +33,11 @@ const MoveUpButton = ({ walletId }: { walletId: string }) => {
     sortWallets(newOrder)
   }
 
-  return <Button onClick={moveUp}>↑</Button>
+  return (
+    <Button size="sm" onClick={moveUp}>
+      ↑
+    </Button>
+  )
 }
 
 const MoveDownButton = ({ walletId }: { walletId: string }) => {
@@ -76,32 +54,9 @@ const MoveDownButton = ({ walletId }: { walletId: string }) => {
     sortWallets(newOrder)
   }
 
-  return <Button onClick={moveDown}>↓</Button>
-}
-
-const SplitWalletButtons = ({ walletId }: { walletId: string }) => {
-  const account = useEdgeAccount()
-  const { walletTypes, splitWallet } = useSplitWallet(account, walletId)
-
   return (
-    <>
-      {walletTypes.map((walletType: string) => (
-        <Button key={walletType} variant={'warning'} onClick={() => splitWallet(walletType)}>
-          S - {getCurrencyInfoFromWalletType(account, walletType).displayName}
-        </Button>
-      ))}
-    </>
+    <Button size="sm" onClick={moveDown}>
+      ↓
+    </Button>
   )
-}
-
-export const getCurrencyInfoFromWalletType = (account: EdgeAccount, walletType: string) => {
-  const currencyConfig = Object.values(account.currencyConfig).find(
-    ({ currencyInfo }) => currencyInfo.walletType === walletType,
-  )
-
-  if (!currencyConfig) {
-    throw new Error('Invalid Wallet Type')
-  }
-
-  return currencyConfig.currencyInfo
 }
