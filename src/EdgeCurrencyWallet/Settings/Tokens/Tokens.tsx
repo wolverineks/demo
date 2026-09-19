@@ -1,6 +1,7 @@
 import { EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
 import React from 'react'
 
+import { useSelectWallet } from '../../../App'
 import {
   Accordion,
   Boundary,
@@ -32,8 +33,16 @@ const NoAvailableTokens = () => (
 
 const AvailableTokens = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
   const tokens = useTokens(wallet)
-  const toggleToken = (currencyCode: string) =>
-    tokens.enabled.includes(currencyCode) ? tokens.disable(currencyCode) : tokens.enable(currencyCode)
+  const [, select] = useSelectWallet()
+  const toggleToken = (currencyCode: string) => {
+    if (tokens.enabled.includes(currencyCode)) {
+      tokens.disable(currencyCode)
+
+      return
+    }
+
+    void tokens.enable(currencyCode).then(() => select({ id: wallet.id, currencyCode }))
+  }
   const [addToken, setAddToken] = React.useState<'addToken' | undefined>()
   const [editTokenInfo, setEditTokenInfo] = React.useState<EdgeMetaToken | undefined>()
   const editToken = (tokenInfo: EdgeMetaToken) => {
@@ -118,29 +127,27 @@ const MatchingTokens = ({
     <TokenList
       tokenInfos={customTokenInfos}
       renderRow={(tokenInfo: EdgeMetaToken) => (
-        <Boundary key={tokenInfo.currencyCode} error={{ fallback: null }}>
-          <TokenRow
-            isEnabled={enabledTokenCurrencyCodes.includes(tokenInfo.currencyCode)}
-            tokenInfo={tokenInfo}
-            onEdit={editToken}
-            onClick={toggleToken}
-            canEdit
-          />
-        </Boundary>
+        <TokenRow
+          key={tokenInfo.currencyCode}
+          isEnabled={enabledTokenCurrencyCodes.includes(tokenInfo.currencyCode)}
+          tokenInfo={tokenInfo}
+          onEdit={editToken}
+          onClick={toggleToken}
+          canEdit
+        />
       )}
     />
 
     <TokenList
       tokenInfos={includedTokenInfos}
       renderRow={(tokenInfo: EdgeMetaToken) => (
-        <Boundary key={tokenInfo.currencyCode} error={{ fallback: null }}>
-          <TokenRow
-            isEnabled={enabledTokenCurrencyCodes.includes(tokenInfo.currencyCode)}
-            tokenInfo={tokenInfo}
-            onEdit={editToken}
-            onClick={toggleToken}
-          />
-        </Boundary>
+        <TokenRow
+          key={tokenInfo.currencyCode}
+          isEnabled={enabledTokenCurrencyCodes.includes(tokenInfo.currencyCode)}
+          tokenInfo={tokenInfo}
+          onEdit={editToken}
+          onClick={toggleToken}
+        />
       )}
     />
   </>
@@ -172,10 +179,19 @@ const TokenRow: React.FC<{
   return (
     <ListGroup.Item
       key={tokenInfo.currencyCode}
+      className="token-picker-row"
       variant={isEnabled ? 'primary' : undefined}
       onClick={() => onClick(tokenInfo.currencyCode)}
     >
-      <Logo currencyCode={tokenInfo.currencyCode} /> {tokenInfo.currencyCode} - {currencyName || displayName}
+      <Boundary error={{ fallback: null }} suspense={{ fallback: null }}>
+        <Logo
+          currencyCode={tokenInfo.currencyCode}
+          pluginId={(tokenInfo as any).pluginId}
+          tokenId={(tokenInfo as any).tokenId}
+          contractAddress={tokenInfo.contractAddress}
+        />
+      </Boundary>{' '}
+      {tokenInfo.currencyCode} - {currencyName || displayName}
       {canEdit ? (
         <Button
           onClick={(event) => {

@@ -1,8 +1,9 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
+import { useQueryClient } from 'react-query'
 
 import { Boundary, Tab, Tabs } from '../components'
-import { useOnNewTransactions } from '../hooks'
+import { fetchReceiveAddressAndUri, receiveAddressQueryKey, useOnNewTransactions } from '../hooks'
 import { Disklet } from '../Storage'
 import { Request } from './Request'
 import { Send } from './Send'
@@ -13,10 +14,22 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: st
   wallet,
   currencyCode,
 }) => {
+  const queryClient = useQueryClient()
+
   useOnNewTransactions(
     wallet,
     (transactions) => transactions && alert(transactions.length > 1 ? 'New Transactions' : 'New Transaction'),
   )
+
+  React.useEffect(() => {
+    const nativeAmount = '0'
+    const options = { currencyCode }
+    queryClient.prefetchQuery({
+      queryKey: receiveAddressQueryKey(wallet.id, nativeAmount, options),
+      queryFn: () => fetchReceiveAddressAndUri({ wallet, nativeAmount, options }),
+      staleTime: Infinity,
+    })
+  }, [currencyCode, queryClient, wallet])
 
   return (
     <Tabs id={'walletTabs'} defaultActiveKey={'history'} mountOnEnter unmountOnExit>

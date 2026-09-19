@@ -2,7 +2,7 @@ import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 
 import { Boundary, FormControl, Matcher } from '../../components'
-import { FiatCurrencyCode, PrivateSeed, PublicSeed, RawKey, RenameWallet, Tokens } from '.'
+import { FiatCurrencyCode, PrivateSeed, PublicSeed, RawKey, RenameWallet, SplitWallet, Tokens, WalletState } from '.'
 
 export const Settings: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const [query, setQuery] = React.useState('')
@@ -29,6 +29,16 @@ export const Settings: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) =
 
       <Matcher query={query} matchers={['raw key']}>
         <RawKey wallet={wallet} />
+      </Matcher>
+
+      <Matcher query={query} matchers={['split wallet']}>
+        <Boundary>
+          <SplitWallet wallet={wallet} />
+        </Boundary>
+      </Matcher>
+
+      <Matcher query={query} matchers={['archive wallet', 'delete wallet', 'wallet state']}>
+        <WalletState wallet={wallet} />
       </Matcher>
 
       <Matcher query={query} matchers={['tokens']}>

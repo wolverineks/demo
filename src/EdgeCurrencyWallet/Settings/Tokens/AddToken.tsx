@@ -66,10 +66,15 @@ export const AddToken = ({
       <Form.Group>
         <Button
           onClick={() =>
-            addCustomInfo({ currencyName, currencyCode, contractAddress, multiplier }).then(() => {
-              onSuccess()
-              setTimeout(reset, 1000)
-            })
+            addCustomInfo(
+              { currencyName, currencyCode, contractAddress, multiplier },
+              {
+                onSuccess: () => {
+                  onSuccess()
+                  setTimeout(reset, 1000)
+                },
+              },
+            )
           }
         >
           Save

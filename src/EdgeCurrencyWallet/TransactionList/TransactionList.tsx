@@ -10,7 +10,7 @@ import {
   useTransactionExplorerUrl,
   useTransactions,
 } from '../../hooks'
-import { normalize } from '../../utils'
+import { getCurrencyCodeFromTokenId, normalize } from '../../utils'
 import { useFilter } from '../useFilter'
 import { ExportTransactions } from './ExportTransactions'
 import { Metadata } from './Metadata'
@@ -20,7 +20,7 @@ export const TransactionList: React.FC<{ wallet: EdgeCurrencyWallet; currencyCod
   currencyCode,
 }) => {
   const transactionCount = useTransactionCount(wallet, { currencyCode })
-  const [transactions, setFilterQuery] = useFilter(matches, useTransactions(wallet, { currencyCode }))
+  const [transactions, setFilterQuery] = useFilter(matches(wallet), useTransactions(wallet, { currencyCode }))
   const [isActive, setIsActive] = React.useState(false)
 
   return (
@@ -44,18 +44,24 @@ export const TransactionList: React.FC<{ wallet: EdgeCurrencyWallet; currencyCod
         {transactions.length <= 0 ? (
           <div>No Transactions</div>
         ) : (
-          transactions.map((transaction) => <TransactionListRow transaction={transaction} key={transaction.txid} />)
+          transactions.map((transaction) => (
+            <TransactionListRow transaction={transaction} wallet={wallet} key={transaction.txid} />
+          ))
         )}
       </Row>
     </ListGroup>
   )
 }
 
-const TransactionListRow: React.FC<{ transaction: EdgeTransaction }> = ({ transaction }) => {
+const TransactionListRow: React.FC<{ wallet: EdgeCurrencyWallet; transaction: EdgeTransaction }> = ({
+  wallet,
+  transaction,
+}) => {
   const account = useEdgeAccount()
   const transactionExplorerUrl = useTransactionExplorerUrl(account, transaction)
   const addressExplorerUrl = useAddressExplorerUrl(account, transaction)
   const blockExplorerUrl = useBlockExplorerUrl(account, transaction)
+  const currencyCode = getCurrencyCodeFromTokenId(wallet, transaction.tokenId)
 
   return (
     <ListGroup.Item
@@ -65,8 +71,7 @@ const TransactionListRow: React.FC<{ transaction: EdgeTransaction }> = ({ transa
     >
       <span>
         <DisplayDate transaction={transaction} />:{' '}
-        <DisplayAmount nativeAmount={transaction.nativeAmount} currencyCode={transaction.currencyCode} />{' '}
-        {transaction.txid}
+        <DisplayAmount nativeAmount={transaction.nativeAmount} currencyCode={currencyCode} /> {transaction.txid}
       </span>
 
       {transaction.metadata && <Metadata metadata={transaction.metadata} />}
@@ -101,18 +106,20 @@ const DisplayDate: React.FC<{ transaction: EdgeTransaction }> = ({ transaction }
 }
 
 const matches =
+  (wallet: EdgeCurrencyWallet) =>
   (query: string) =>
   (transaction: EdgeTransaction): boolean => {
     const normalizedQuery = normalize(query)
+    const currencyCode = getCurrencyCodeFromTokenId(wallet, transaction.tokenId)
 
     return (
       transaction.txid.includes(query) ||
       normalize(new Date(transaction.date * 1000).toLocaleString()).includes(normalizedQuery) ||
-      normalize(transaction.currencyCode).includes(normalizedQuery) ||
+      normalize(currencyCode).includes(normalizedQuery) ||
       normalize(transaction.nativeAmount).includes(normalizedQuery) ||
       normalize(transaction.metadata?.name || '').includes(normalizedQuery) ||
       normalize(transaction.metadata?.category || '').includes(normalizedQuery) ||
       normalize(transaction.metadata?.notes || '').includes(normalizedQuery) ||
-      normalize(String(transaction.metadata?.amountFiat) || '').includes(normalizedQuery)
+      normalize(String(transaction.metadata?.exchangeAmount) || '').includes(normalizedQuery)
     )
   }

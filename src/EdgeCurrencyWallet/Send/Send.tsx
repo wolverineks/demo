@@ -1,7 +1,6 @@
 import { EdgeCurrencyWallet, EdgeTransaction } from 'edge-core-js'
 import * as React from 'react'
 import JSONPretty from 'react-json-pretty'
-import QrReader from 'react-qr-scanner'
 
 import { useEdgeAccount } from '../../auth'
 import {
@@ -17,18 +16,27 @@ import {
   Matcher,
   Select,
 } from '../../components'
-import { useClipboardUri, useDenominations, useFiatCurrencyCode, useMaxSpendable, useNewTransaction } from '../../hooks'
+import {
+  useDenominations,
+  useFiatCurrencyCode,
+  useNewTransaction,
+  usePasteUri,
+  useSignBroadcastAndSaveTx,
+  useSpendMax,
+} from '../../hooks'
 import { useSelectedWallet } from '../../SelectedWallet'
-import { categories } from '../../utils'
+import { categories, getCurrencyCodeFromTokenId } from '../../utils'
 import { SpendTarget } from './SpendTarget'
 import { CustomFee, canAdjustFees, useSpendInfo } from './useSpendInfo'
 
 const MULTIPLE_TARGETS_CURRENCIES = ['BCH', 'BTC', 'BSV']
+const QrReader = React.lazy(() => import('react-qr-scanner'))
 
 export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
   const [scan, setScan] = React.useState(false)
-  const clipboardUri = useClipboardUri(wallet)
+  const spendMax = useSpendMax(wallet)
+  const pasteUri = usePasteUri(wallet)
 
   const {
     customNetworkFee,
@@ -43,27 +51,25 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
     spendInfo,
   } = useSpendInfo(wallet, currencyCode)
 
-  const maxSpendable = useMaxSpendable(wallet, spendInfo)
-
   const { data: transaction, error } = useNewTransaction(wallet, spendInfo, {
     enabled: !!spendInfo.spendTargets[0].publicAddress && !!Number(spendInfo.spendTargets[0].nativeAmount),
   })
+  const { mutate: sendTransaction, isLoading, error: sendError } = useSignBroadcastAndSaveTx(wallet)
 
   const onConfirm = () => {
     if (!transaction) return
-
-    Promise.resolve(transaction).then(wallet.signTx).then(wallet.broadcastTx).then(wallet.saveTx)
+    sendTransaction(transaction)
   }
 
   return (
     <Form>
-      {spendTargets.all.map((spendTarget, index) => (
-        <div key={spendTarget.id}>
+      {spendTargets.all.map(({ id }, index) => (
+        <div key={id}>
           {index === 0 ? (
             <SpendTarget
               currencyCode={currencyCode}
               fiatCurrencyCode={fiatCurrencyCode}
-              onChange={(spendTarget) => spendTargets.update(index, spendTarget)}
+              onChange={(newSpendTarget) => spendTargets.update(id, newSpendTarget)}
               ref={spendTargetRef}
             />
           ) : (
@@ -85,13 +91,40 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
         </FormGroup>
       </Matcher>
 
-      {spendInfo.spendTargets.length === 1 && Number(maxSpendable) > 0 ? (
-        <Button onClick={() => spendTargetRef.current?.setSpendTarget({ nativeAmount: maxSpendable })}>
-          Spend Max
+      {spendInfo.spendTargets.length === 1 ? (
+        <Button
+          disabled={spendMax.isLoading}
+          onClick={() =>
+            spendMax.mutate(spendInfo, {
+              onSuccess: (nativeAmount) => spendTargetRef.current?.setSpendTarget({ nativeAmount }),
+            })
+          }
+        >
+          {spendMax.isLoading ? 'Loading max…' : 'Spend Max'}
         </Button>
       ) : null}
 
-      {clipboardUri ? <Button onClick={() => setUri(clipboardUri)}>Paste From Clipboard</Button> : null}
+      {canAdjustFees(wallet) ? (
+        <Select
+          title={'Fee Option'}
+          onSelect={(event) => setNetworkFeeOption(event.currentTarget.value)}
+          options={feeOptions}
+          defaultValue={'standard'}
+          renderOption={(category) => (
+            <option value={category.value} key={category.value}>
+              {category.display}
+            </option>
+          )}
+        />
+      ) : null}
+
+      {networkFeeOption === 'custom' ? (
+        <CustomFeeForm customFee={customNetworkFee} setCustomFee={setCustomNetworkFee} />
+      ) : null}
+
+      {transaction?.networkFees?.length ? <Fee wallet={wallet} transaction={transaction} /> : null}
+
+      <Button onClick={() => pasteUri.mutate(undefined, { onSuccess: setUri })}>Paste From Clipboard</Button>
 
       <FormGroup>
         <FormLabel>Name</FormLabel>
@@ -122,30 +155,13 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
         )}
       />
 
-      {canAdjustFees(wallet) ? (
-        <Select
-          title={'Fee Option'}
-          onSelect={(event) => setNetworkFeeOption(event.currentTarget.value)}
-          options={feeOptions}
-          defaultValue={'standard'}
-          renderOption={(category) => (
-            <option value={category.value} key={category.value}>
-              {category.display}
-            </option>
-          )}
-        />
-      ) : null}
-
-      {networkFeeOption === 'custom' ? (
-        <CustomFeeForm customFee={customNetworkFee} setCustomFee={setCustomNetworkFee} />
-      ) : null}
-
-      {transaction?.networkFee ? <Fee transaction={transaction} /> : null}
-
       {error && <Alert>{(error as Error).message}</Alert>}
+      {sendError && <Alert variant="danger">{sendError.message}</Alert>}
+      {spendMax.error ? <Alert variant="danger">{(spendMax.error as Error).message}</Alert> : null}
+      {pasteUri.error ? <Alert variant="danger">{(pasteUri.error as Error).message}</Alert> : null}
 
-      <Button disabled={!transaction} onClick={() => onConfirm()}>
-        Confirm
+      <Button disabled={!transaction || isLoading} onClick={() => onConfirm()}>
+        {isLoading ? 'Sending…' : 'Confirm'}
       </Button>
 
       <Button onClick={() => setScan((scan) => !scan)}>Scan</Button>
@@ -167,9 +183,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
             fiatCurrencyCode,
             currencyCode,
             spendInfo,
-            maxSpendable,
             transaction,
-            clipboardUri,
           }}
         />
       </Debug>
@@ -191,7 +205,7 @@ const CustomFeeForm = ({
   return (
     <div>
       <div>{JSON.stringify(customFee, null, 2)}</div>
-      {wallet.currencyInfo.defaultSettings.customFeeSettings.map((setting: string) => {
+      {(wallet.currencyInfo.defaultSettings?.customFeeSettings as string[] | undefined)?.map((setting: string) => {
         return (
           <div key={setting}>
             {setting}
@@ -211,11 +225,23 @@ const CustomFeeForm = ({
   // return null
 }
 
-const Fee = ({ transaction }: { transaction: EdgeTransaction }) => {
+const Fee = ({ wallet, transaction }: { wallet: EdgeCurrencyWallet; transaction: EdgeTransaction }) => {
+  if (transaction.networkFees.length === 0) return null
+
   return (
-    <div>
-      fee: <DisplayAmount nativeAmount={transaction.networkFee} currencyCode={transaction.currencyCode} />
-    </div>
+    <FormGroup>
+      <FormLabel>Fees</FormLabel>
+      <ul>
+        {transaction.networkFees.map((fee, index) => (
+          <li key={`${fee.tokenId ?? 'native'}-${index}`}>
+            <DisplayAmount
+              nativeAmount={fee.nativeAmount}
+              currencyCode={getCurrencyCodeFromTokenId(wallet, fee.tokenId)}
+            />
+          </li>
+        ))}
+      </ul>
+    </FormGroup>
   )
 }
 
@@ -226,7 +252,9 @@ const Scanner: React.FC<{ onScan: (data: string) => any; show: boolean }> = ({ o
     <div>
       {error && <Alert variant={'danger'}>{error.message}</Alert>}
 
-      <QrReader delay={300} onError={setError} onScan={(data: string) => onScan(data || '')} style={{ width: '50%' }} />
+      <React.Suspense fallback={<div className="empty-state">Starting camera…</div>}>
+        <QrReader delay={300} onError={setError} onScan={(data: string) => onScan(data || '')} style={{ width: '50%' }} />
+      </React.Suspense>
     </div>
   ) : null
 }

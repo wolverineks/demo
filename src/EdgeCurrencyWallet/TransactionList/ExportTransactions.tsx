@@ -6,6 +6,12 @@ import JSONPretty from 'react-json-pretty'
 import { useEdgeAccount } from '../../auth'
 import { Accordion, Button, Col, Debug, Form, FormControl, Row } from '../../components'
 import { useDenominations, useExportTransactions } from '../../hooks'
+import { getTokenId } from '../../utils'
+
+enum ExportFormat {
+  'QBO' = 'QBO',
+  'CSV' = 'CSV',
+}
 
 export const ExportTransactions = ({
   wallet,
@@ -19,12 +25,30 @@ export const ExportTransactions = ({
   const account = useEdgeAccount()
   const { display, all } = useDenominations(account, currencyCode)
 
-  const [options, setOptions] = React.useState<EdgeGetTransactionsOptions>({
-    currencyCode,
+  const [options, setOptions] = React.useState<
+    EdgeGetTransactionsOptions & {
+      denomination?: string
+      startIndex?: number
+      returnIndex?: number
+      startEntries?: number
+      returnEntries?: number
+    }
+  >({
+    tokenId: getTokenId(wallet, currencyCode),
     denomination: display.multiplier,
   })
-  const [format, setFormat] = React.useState<'CSV' | 'QBO'>('CSV')
-  const { data, isLoading } = useExportTransactions(wallet, options, format)
+  const [format, setFormat] = React.useState<ExportFormat>(ExportFormat.CSV)
+  const { data, isLoading } = useExportTransactions(
+    wallet,
+    {
+      tokenId: options.tokenId,
+      startDate: options.startDate,
+      endDate: options.endDate,
+      searchString: options.searchString,
+      spamThreshold: options.spamThreshold,
+    },
+    format,
+  )
   const href = React.useMemo(
     () => window.URL.createObjectURL(new Blob([data || ''], { type: `text/${format.toLowerCase()}` })),
     [data, format],
@@ -45,7 +69,7 @@ export const ExportTransactions = ({
 
               <Col>
                 <Form.Label>Format</Form.Label>
-                <Form.Control as="select" onChange={(event: any) => setFormat(event.currentTarget.value)}>
+                <Form.Control as="select" onChange={(event) => setFormat(event.currentTarget.value as ExportFormat)}>
                   <option key={'CSV'}>CSV</option>
                   <option key={'QBO'}>QBO</option>
                 </Form.Control>
@@ -55,7 +79,7 @@ export const ExportTransactions = ({
                 <Form.Label>Denomination</Form.Label>
                 <Form.Control
                   as="select"
-                  onChange={(event: any) => setOptions({ ...options, denomination: event.currentTarget.value })}
+                  onChange={(event) => setOptions({ ...options, denomination: event.currentTarget.value })}
                 >
                   {all.map((denomination) => (
                     <option key={denomination.multiplier} value={denomination.multiplier}>
