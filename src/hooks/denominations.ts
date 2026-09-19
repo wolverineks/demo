@@ -1,9 +1,8 @@
 import { EdgeAccount, EdgeCurrencyInfo, EdgeDenomination, EdgeMetaToken } from 'edge-core-js'
-import React from 'react'
 import { UseQueryOptions, useMutation, useQuery } from 'react-query'
 
 import { FiatInfo } from '../utils'
-import { convertCurrency, useOnRateChange } from './rates'
+import { convertCurrency } from './rates'
 import { useInfo } from './useInfo'
 import { useInvalidateQueries } from './useInvalidateQueries'
 
@@ -240,19 +239,14 @@ export const useFiatAmount = (
     nativeAmount,
   })
 
-  const { data: fiatExchangeAmount, refetch } = useQuery({
+  const { data: fiatExchangeAmount } = useQuery({
     queryKey: [{ fromCurrencyCode, fiatCurrencyCode, exchangeAmount }],
     queryFn: () => convertCurrency(fromCurrencyCode, fiatCurrencyCode, Number(exchangeAmount)),
     suspense: false,
     placeholderData: 0,
-    refetchInterval: 5000,
+    refetchInterval: 30_000,
     ...queryOptions,
   })
-
-  useOnRateChange(
-    account,
-    React.useCallback(() => refetch(), [refetch]),
-  )
 
   const fiatNativeAmount = denominatedToNative({
     amount: String(fiatExchangeAmount)!,

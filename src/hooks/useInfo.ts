@@ -26,7 +26,7 @@ export const getFiatInfo = (currencyCode: string) => {
 }
 
 export const getInfo = (account: EdgeAccount, currencyCode: string) => {
-  return getCurrencyInfo(account, currencyCode) || getTokenInfo(account, currencyCode) || getFiatInfo(currencyCode)
+  return getFiatInfo(currencyCode) || getCurrencyInfo(account, currencyCode) || getTokenInfo(account, currencyCode)
 }
 
 export const useInfo = (account: EdgeAccount, currencyCode: string) => {

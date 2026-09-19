@@ -15,9 +15,29 @@ import { useInvalidateQueries } from './useInvalidateQueries'
 import { useWatch } from './watch'
 
 export const useSyncRatio = (wallet: EdgeCurrencyWallet) => {
-  useWatch(wallet, 'syncStatus')
+  const [ratio, setRatio] = React.useState(() => wallet.syncStatus.totalRatio)
 
-  return wallet.syncStatus.totalRatio
+  React.useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let pending = wallet.syncStatus.totalRatio
+
+    const flush = () => {
+      timer = undefined
+      setRatio((current) => (current === pending ? current : pending))
+    }
+
+    const unwatch = wallet.watch('syncStatus', (status) => {
+      pending = status.totalRatio
+      if (timer == null) timer = setTimeout(flush, 400)
+    })
+
+    return () => {
+      if (timer != null) clearTimeout(timer)
+      unwatch()
+    }
+  }, [wallet])
+
+  return ratio
 }
 
 export const useBalance = (wallet: EdgeCurrencyWallet, currencyCode: string) => {
@@ -52,6 +72,33 @@ export const useName = (wallet: EdgeCurrencyWallet) => {
   return [wallet.name, useRenameWallet(wallet).mutate] as const
 }
 
+export const receiveAddressQueryKey = (
+  walletId: string,
+  nativeAmount: string,
+  options?: { currencyCode?: string; tokenId?: EdgeTokenId },
+) => [walletId, 'receiveAddressAndEncodeUri', nativeAmount, options] as const
+
+export const fetchReceiveAddressAndUri = async ({
+  wallet,
+  nativeAmount,
+  options,
+}: {
+  wallet: EdgeCurrencyWallet
+  nativeAmount: string
+  options?: { currencyCode?: string; tokenId?: EdgeTokenId }
+}) => {
+  const tokenId = options?.tokenId ?? getTokenId(wallet, options?.currencyCode)
+  const addresses = await wallet.getAddresses({ tokenId })
+  const publicAddress = getPublicAddress(addresses)
+  if (!publicAddress) throw new Error('No receive address')
+  const uri = await wallet.encodeUri({
+    publicAddress,
+    nativeAmount: nativeAmount || '0',
+  })
+
+  return { publicAddress, addresses, uri }
+}
+
 export const useReceiveAddressAndEncodeUri = ({
   wallet,
   nativeAmount,
@@ -64,20 +111,10 @@ export const useReceiveAddressAndEncodeUri = ({
   queryOptions?: UseQueryOptions<{ publicAddress: string; addresses: EdgeAddress[]; uri: string }>
 }) => {
   return useQuery({
-    queryKey: [wallet.id, 'receiveAddressAndEncodeUri', nativeAmount, options],
-    queryFn: async () => {
-      const tokenId = options?.tokenId ?? getTokenId(wallet, options?.currencyCode)
-      const addresses = await wallet.getAddresses({ tokenId })
-      const publicAddress = getPublicAddress(addresses)
-      if (!publicAddress) throw new Error('No receive address')
-      const uri = await wallet.encodeUri({
-        publicAddress,
-        nativeAmount: nativeAmount || '0',
-      })
-
-      return { publicAddress, addresses, uri }
-    },
+    queryKey: receiveAddressQueryKey(wallet.id, nativeAmount, options),
+    queryFn: () => fetchReceiveAddressAndUri({ wallet, nativeAmount, options }),
     suspense: false,
+    staleTime: Infinity,
     ...queryOptions,
   })
 }
@@ -86,13 +123,16 @@ export const useOnNewTransactions = (
   wallet: EdgeCurrencyWallet,
   callback: (transactions: Array<EdgeTransaction>) => any,
 ) => {
+  const callbackRef = React.useRef(callback)
+  callbackRef.current = callback
+
   React.useEffect(() => {
-    const unsubscribe = wallet.on('newTransactions', callback)
+    const unsubscribe = wallet.on('newTransactions', (transactions) => callbackRef.current(transactions))
 
     return () => {
       unsubscribe()
     }
-  }, [wallet, callback])
+  }, [wallet])
 }
 
 const dedupe = (transactions: EdgeTransaction[]) =>

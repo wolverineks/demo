@@ -1,17 +1,18 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 import JSONPretty from 'react-json-pretty'
-import QRCode from 'react-qr-code'
 
 import { useEdgeAccount } from '../auth'
 import { Alert, Button, Debug, FlipInput, Form, FormControl, FormGroup, FormLabel, InputGroup } from '../components'
-import { useDisplayDenomination } from '../hooks'
-import { useFiatCurrencyCode, useReceiveAddressAndEncodeUri } from '../hooks'
+import { useDisplayDenomination, useFiatCurrencyCode, useReceiveAddressAndEncodeUri } from '../hooks'
+
+const QRCode = React.lazy(() => import('react-qr-code'))
 
 export const Request: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
   const account = useEdgeAccount()
   const [nativeAmount, setNativeAmount] = React.useState('0')
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
+  const [displayDenomination] = useDisplayDenomination(account, currencyCode)
   const { data, error } = useReceiveAddressAndEncodeUri({ wallet, nativeAmount, options: { currencyCode } })
 
   return (
@@ -36,7 +37,9 @@ export const Request: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: strin
       </FormGroup>
 
       <FormGroup>
-        <QRCode value={data?.uri || ''} />
+        <React.Suspense fallback={<div className="empty-state">Preparing QR…</div>}>
+          {data?.uri ? <QRCode value={data.uri} /> : null}
+        </React.Suspense>
       </FormGroup>
 
       <FormGroup>
@@ -57,7 +60,7 @@ export const Request: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: strin
           data={{
             nativeAmount,
             fiatCurrencyCode,
-            displayDenomination: useDisplayDenomination(account, currencyCode)[0],
+            displayDenomination,
             currencyCodeOptions: { currencyCode },
             uri: data?.uri,
             publicAddress: data?.publicAddress,
