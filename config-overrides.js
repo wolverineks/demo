@@ -1,6 +1,6 @@
 const fs = require('fs')
 const path = require('path')
-const webpack = require('react-scripts/node_modules/webpack')
+const webpack = require('webpack')
 
 const ensureEthereumBrowserFiles = () => {
   const accountbased = path.resolve('node_modules/edge-currency-accountbased/lib/ethereum')
