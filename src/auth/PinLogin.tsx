@@ -10,7 +10,7 @@ export const PinLogin: React.FC<{ context: EdgeContext; onLogin: (account: EdgeA
 }) => {
   const accountsWithPinLogin = useAccountsWithPinLogin(context)
   const [username, setUsername] = React.useState(accountsWithPinLogin[0]?.username)
-  const loginWithPin = useLoginWithPin(context, { onSuccess: onLogin })
+  const loginWithPin = useLoginWithPin(context, { onSuccess: onLogin, onError: alert })
 
   return (
     <ListGroup>
@@ -28,7 +28,7 @@ export const PinLogin: React.FC<{ context: EdgeContext; onLogin: (account: EdgeA
       {accountsWithPinLogin.length <= 0 ? (
         <Card.Text>------</Card.Text>
       ) : (
-        <LocalUserRow loginWithPin={loginWithPin} username={username} context={context} />
+        <LocalUserRow loginWithPin={loginWithPin} username={username ?? ''} context={context} />
       )}
     </ListGroup>
   )
