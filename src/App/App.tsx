@@ -1,11 +1,12 @@
-import React from 'react'
+import * as React from 'react'
 
 import { AccountConsumer, AccountProvider, Login } from '../auth'
-import { AutologoutProvider } from '../AutoLogout'
-import { Boundary, Container } from '../components'
+import { AutoLogoutProvider } from '../AutoLogout'
+import { Boundary } from '../components'
 import { Edge } from '../Edge'
 import { RouteProvider } from '../route'
 import { SelectedWalletInfoProvider } from '../SelectedWallet'
+import { Debug } from './Debug'
 import { Header } from './Header'
 import { Layout } from './Layout'
 
@@ -17,25 +18,31 @@ export const App = () => {
           <AccountConsumer>
             {(account) =>
               account ? (
-                <AutologoutProvider>
+                <AutoLogoutProvider>
                   <SelectedWalletInfoProvider>
                     <RouteProvider>
-                      <Header />
+                      <div className="app-shell">
+                        <Header />
 
-                      <Boundary>
-                        <Layout />
-                      </Boundary>
+                        <Boundary>
+                          <Layout />
+                        </Boundary>
+                      </div>
                     </RouteProvider>
                   </SelectedWalletInfoProvider>
-                </AutologoutProvider>
+                </AutoLogoutProvider>
               ) : (
-                <Container style={{ top: '100px' }}>
-                  <Login />
-                </Container>
+                <div className="login-shell">
+                  <div className="login-card">
+                    <img className="login-brand" src="/logo.jpg" alt="Edge" />
+                    <Login />
+                  </div>
+                </div>
               )
             }
           </AccountConsumer>
         </AccountProvider>
+        <Debug />
       </Edge>
     </Boundary>
   )

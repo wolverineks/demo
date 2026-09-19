@@ -4,6 +4,7 @@ import { useEdgeAccount } from '../auth'
 import { Boundary, FormControl, ListGroup } from '../components'
 import { useEdgeAccountTotal } from '../hooks'
 import { Route, useRoute, useSetRoute } from '../route'
+import { SelectedWalletInfo, useSelectedWalletInfo } from '../SelectedWallet'
 import { ActiveWalletList, ArchivedWalletList, DeletedWalletList } from '../WalletLists'
 
 const AccountTotal = () => {
@@ -26,7 +27,7 @@ export const SideMenu = () => {
   const [searchQuery, setSearchQuery] = React.useState('')
 
   return (
-    <div>
+    <div className="side-menu">
       <FormControl placeholder={'Search'} onChange={(event) => setSearchQuery(event.currentTarget.value)} />
 
       <Boundary>
@@ -34,7 +35,7 @@ export const SideMenu = () => {
       </Boundary>
 
       <Boundary>
-        <ActiveWalletList onSelect={() => setRoute(Route.account)} searchQuery={searchQuery} />
+        <ActiveWalletList searchQuery={searchQuery} />
       </Boundary>
 
       <Boundary>
@@ -67,4 +68,20 @@ export const SideMenu = () => {
       </ListGroup.Item>
     </div>
   )
+}
+
+export const useSelectWallet = () => {
+  const [selected, setSelectWalletInfo] = useSelectedWalletInfo()
+  const setRoute = useSetRoute()
+
+  return [
+    selected,
+    React.useCallback(
+      (walletInfo: SelectedWalletInfo) => {
+        setSelectWalletInfo(walletInfo)
+        setRoute(Route.account)
+      },
+      [setRoute, setSelectWalletInfo],
+    ),
+  ] as const
 }

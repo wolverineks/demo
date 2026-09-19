@@ -15,7 +15,7 @@ export const ExchangeRates = () => {
 
   return (
     <div>
-      <div>Exchange Rates</div>
+      <div className="panel-title">Exchange Rates</div>
 
       <FormControl
         placeholder={'Search'}
@@ -27,11 +27,16 @@ export const ExchangeRates = () => {
         <Boundary
           key={currencyCode}
           error={{
-            fallbackRender: () =>
-              null /* HACK: wallets.getEnabledTokens includes tokens that arent enabled and dont have a token info */,
+            fallbackRender: function RateFallback() {
+              return (
+              <div className="rate-row">
+                <span>{currencyCode}</span>
+              </div>
+              )
+            },
           }}
         >
-          <ExchangeRate key={currencyCode} currencyCode={currencyCode} />
+          <ExchangeRate currencyCode={currencyCode} />
         </Boundary>
       ))}
     </div>
@@ -44,14 +49,18 @@ const ExchangeRate: React.FC<{ currencyCode: string }> = ({ currencyCode }) => {
   const nativeAmount = useDisplayToNative({ account, displayAmount: '1', currencyCode })
 
   return (
-    <div style={{ paddingTop: 8, paddingBottom: 8 }}>
-      <Logo currencyCode={currencyCode} />{' '}
-      <Boundary error={{ fallback: null }}>
-        <DisplayAmount nativeAmount={nativeAmount} currencyCode={currencyCode} /> ={' '}
+    <div className="rate-row">
+      <Boundary error={{ fallback: null }} suspense={{ fallback: null }}>
+        <Logo currencyCode={currencyCode} />
       </Boundary>
-      <Boundary error={{ fallback: null }}>
-        <FiatAmount nativeAmount={nativeAmount} fromCurrencyCode={currencyCode} fiatCurrencyCode={fiatCurrencyCode} />
-      </Boundary>
+      <span>
+        <Boundary error={{ fallback: <span>{currencyCode}</span> }}>
+          <DisplayAmount nativeAmount={nativeAmount} currencyCode={currencyCode} /> ={' '}
+        </Boundary>
+        <Boundary error={{ fallback: <span>—</span> }}>
+          <FiatAmount nativeAmount={nativeAmount} fromCurrencyCode={currencyCode} fiatCurrencyCode={fiatCurrencyCode} />
+        </Boundary>
+      </span>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { EdgeCurrencyWallet, EdgeMetaToken, EdgeTokenInfo } from 'edge-core-js'
+import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 
 import { useEdgeAccount } from '../auth'
@@ -9,6 +9,7 @@ import { Exchange } from '../Exchange'
 import { readCustomTokenInfos, readEnabledTokenCurrencyCodes, useActiveWalletIds } from '../hooks'
 import { Route, useRoute } from '../route'
 import { SelectedWalletBoundary, useSelectedWallet } from '../SelectedWallet'
+import { getTokenId } from '../utils'
 
 export const Main = () => {
   const route = useRoute()
@@ -19,7 +20,7 @@ export const Main = () => {
   return (
     <>
       {route === Route.account ? (
-        <SelectedWalletBoundary fallback={<div>No Selected Wallet</div>}>
+        <SelectedWalletBoundary fallback={<div className="empty-state">No selected wallet</div>}>
           <SelectedWalletInfo />
         </SelectedWalletBoundary>
       ) : route === Route.settings ? (
@@ -55,22 +56,25 @@ const useBootstapWallets = () => {
 }
 
 const enableTokens = async (wallet: EdgeCurrencyWallet) => {
-  await wallet.disableTokens(await wallet.getEnabledTokens()) // HACK: all wallets should start with an empty list of enabled tokens
-
   const customTokenInfos = await readCustomTokenInfos(wallet)
   const enabledTokenCurrencyCodes = await readEnabledTokenCurrencyCodes(wallet)
-  const enabledCustomTokens = Object.values(customTokenInfos).filter(isEnabled(enabledTokenCurrencyCodes)).map(toToken)
-
-  await Promise.all(enabledCustomTokens.map(wallet.addCustomToken))
-  wallet.enableTokens(enabledTokenCurrencyCodes)
+  await Promise.all(
+    Object.values(customTokenInfos)
+      .filter(({ currencyCode }) => enabledTokenCurrencyCodes.includes(currencyCode))
+      .map(async (token) => {
+        const tokenId = await wallet.currencyConfig.addCustomToken({
+          currencyCode: token.currencyCode,
+          displayName: token.currencyName,
+          denominations: token.denominations,
+          networkLocation: token.contractAddress ? { contractAddress: token.contractAddress } : undefined,
+        })
+        await wallet.changeEnabledTokenIds([...wallet.enabledTokenIds, tokenId])
+      }),
+  )
+  const tokenIds = enabledTokenCurrencyCodes
+    .map((currencyCode) => getTokenId(wallet, currencyCode))
+    .filter((tokenId): tokenId is string => tokenId != null)
+  if (tokenIds.length > 0) {
+    await wallet.changeEnabledTokenIds(Array.from(new Set([...wallet.enabledTokenIds, ...tokenIds])))
+  }
 }
-
-const isEnabled = (enabledTokenCurrencyCodes: string[]) => ({ currencyCode }: EdgeMetaToken) =>
-  !enabledTokenCurrencyCodes.includes(currencyCode)
-
-const toToken = (token: EdgeMetaToken): EdgeTokenInfo => ({
-  currencyCode: token.currencyCode,
-  currencyName: token.currencyName,
-  multiplier: token.denominations[0].multiplier,
-  contractAddress: token.contractAddress!,
-})

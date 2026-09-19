@@ -1,9 +1,9 @@
-import { EdgeDenomination, EdgeRateCache } from 'edge-core-js'
+import { EdgeDenomination } from 'edge-core-js'
 import React from 'react'
 
 import { useEdgeAccount } from '../auth'
 import { AmountInput, Boundary } from '../components'
-import { denominatedToNative, nativeToDenominated, useDenominations } from '../hooks'
+import { convertCurrency, denominatedToNative, nativeToDenominated, useDenominations } from '../hooks'
 
 type FlipInputProps = {
   onChange: (nativeAmount: string) => any
@@ -25,7 +25,6 @@ export const FlipInput = React.forwardRef<FlipInputRef, FlipInputProps>(function
   const bottomDenominations = useDenominations(account, fiatCurrencyCode)
 
   const { top, bottom } = useFlipInput({
-    rateCache: account.rateCache,
     onChange,
     currencyCode,
     fiatCurrencyCode,
@@ -45,26 +44,24 @@ export const FlipInput = React.forwardRef<FlipInputRef, FlipInputProps>(function
   }))
 
   return (
-    <div>
+    <div className="flip-input">
       <Boundary>
-        <AmountInput {...top} />
+        <AmountInput className="flip-input__primary" {...top} />
       </Boundary>
       <Boundary>
-        <AmountInput {...bottom} />
+        <AmountInput className="flip-input__secondary" {...bottom} />
       </Boundary>
     </div>
   )
 })
 
 const useFlipInput = ({
-  rateCache,
   onChange,
   currencyCode,
   fiatCurrencyCode,
   topDenominations,
   bottomDenominations,
 }: {
-  rateCache: EdgeRateCache
   onChange: (nativeAmount: string) => any
   currencyCode: string
   fiatCurrencyCode: string
@@ -83,7 +80,7 @@ const useFlipInput = ({
       nativeAmount: topNativeAmount,
       denomination: topDenominations.exchange,
     })
-    const bottomExchangeAmount = await rateCache.convertCurrency(
+    const bottomExchangeAmount = await convertCurrency(
       currencyCode,
       fiatCurrencyCode,
       Number(topExchangeAmount),
@@ -98,7 +95,7 @@ const useFlipInput = ({
     })
 
     setTopDisplayAmount(topDisplayAmount)
-    setBottomDisplayAmount(String(bottomDisplayAmount))
+    setBottomDisplayAmount(formatFiatAmount(bottomDisplayAmount))
     onChange(topNativeAmount)
   }
 
@@ -111,7 +108,7 @@ const useFlipInput = ({
       nativeAmount: bottomNativeAmount,
       denomination: bottomDenominations.exchange,
     })
-    const topExchangeAmount = await rateCache.convertCurrency(
+    const topExchangeAmount = await convertCurrency(
       fiatCurrencyCode,
       currencyCode,
       Number(bottomExchangeAmount),
@@ -126,7 +123,7 @@ const useFlipInput = ({
     })
 
     setBottomDisplayAmount(bottomDisplayAmount)
-    setTopDisplayAmount(String(topDisplayAmount))
+    setTopDisplayAmount(formatCryptoAmount(topDisplayAmount))
     onChange(topNativeAmount)
   }
 
@@ -142,4 +139,17 @@ const useFlipInput = ({
       onChange: onBottomChange,
     },
   }
+}
+
+const formatFiatAmount = (amount: string) => {
+  const value = Number(amount)
+
+  return Number.isFinite(value) ? value.toFixed(2) : '0.00'
+}
+
+const formatCryptoAmount = (amount: string) => {
+  const value = Number(amount)
+  if (!Number.isFinite(value)) return '0'
+
+  return String(Number(value.toFixed(8)))
 }
