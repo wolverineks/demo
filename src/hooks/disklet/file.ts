@@ -17,7 +17,9 @@ export const useFile = <FileType>(
 ) => {
   const queryFn = () => disklet.getText(path).then(parse)
 
-  return useQuery(queryKey, queryFn, {
+  return useQuery({
+    queryKey,
+    queryFn,
     suspense: true,
     staleTime: 0,
     ...queryOptions,

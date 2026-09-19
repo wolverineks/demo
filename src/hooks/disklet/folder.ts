@@ -15,7 +15,9 @@ export const useFolder = (
 ) => {
   const queryFn = () => disklet.list(path)
 
-  return useQuery(queryKey || path, queryFn, {
+  return useQuery({
+    queryKey: queryKey || path,
+    queryFn,
     suspense: true,
     staleTime: 0,
     ...queryOptions,

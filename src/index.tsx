@@ -4,14 +4,9 @@ import './index.css'
 
 import React from 'react'
 import * as ReactDOM from 'react-dom'
-import { hijackEffects } from 'stop-runaway-react-effects'
 
 import { App } from './App'
 import * as serviceWorker from './serviceWorker'
-
-if (process.env.NODE_ENV === 'development') {
-  hijackEffects({ timeLimit: 3000, callCount: 100 })
-}
 
 ReactDOM.render(
   <React.StrictMode>

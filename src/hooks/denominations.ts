@@ -2,7 +2,7 @@ import { EdgeAccount, EdgeCurrencyInfo, EdgeDenomination, EdgeMetaToken } from '
 import { UseQueryOptions, useMutation, useQuery } from 'react-query'
 
 import { FiatInfo } from '../utils'
-import { useOnRateChange } from './edgeAccount'
+import { convertCurrency } from './rates'
 import { useInfo } from './useInfo'
 import { useInvalidateQueries } from './useInvalidateQueries'
 
@@ -148,6 +148,8 @@ export const useReadDisplayDenominationMultiplier = (
         .getItem('displayDenominationMultiplier', currencyInfo.currencyCode)
         .then(JSON.parse)
         .catch(() => currencyInfo.denominations[0].multiplier),
+    suspense: false,
+    placeholderData: currencyInfo.denominations[0].multiplier,
     ...queryOptions,
   })
 }
@@ -173,7 +175,8 @@ export const useWriteDisplayDenominationMultiplier = (
 
 export const useDisplayDenomination = (account: EdgeAccount, currencyCode: string) => {
   const info = useInfo(account, currencyCode)
-  const multiplier = useReadDisplayDenominationMultiplier(account, info).data!
+  const multiplier =
+    useReadDisplayDenominationMultiplier(account, info).data ?? info.denominations[0].multiplier
   const displayDenomination =
     info.denominations.find((denomination) => denomination.multiplier === multiplier) || info.denominations[0]
 
@@ -236,14 +239,14 @@ export const useFiatAmount = (
     nativeAmount,
   })
 
-  const { data: fiatExchangeAmount, refetch } = useQuery({
+  const { data: fiatExchangeAmount } = useQuery({
     queryKey: [{ fromCurrencyCode, fiatCurrencyCode, exchangeAmount }],
-    queryFn: () => account.rateCache.convertCurrency(fromCurrencyCode, fiatCurrencyCode, Number(exchangeAmount)),
-    suspense: true,
+    queryFn: () => convertCurrency(fromCurrencyCode, fiatCurrencyCode, Number(exchangeAmount)),
+    suspense: false,
+    placeholderData: 0,
+    refetchInterval: 30_000,
     ...queryOptions,
   })
-
-  useOnRateChange(account, () => refetch())
 
   const fiatNativeAmount = denominatedToNative({
     amount: String(fiatExchangeAmount)!,

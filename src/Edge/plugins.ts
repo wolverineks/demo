@@ -1,12 +1,26 @@
-import { EdgeCorePlugins } from 'edge-core-js'
-import AccountBased from 'edge-currency-accountbased'
-import Bitcoin from 'edge-currency-bitcoin'
-// import Monero from 'edge-currency-monero'
-import exchangePlugins from 'edge-exchange-plugins'
+import { addEdgeCorePlugins, lockEdgeCorePlugins } from 'edge-core-js'
+import { ethereum } from 'edge-currency-accountbased/lib/ethereum/info/ethereumInfo'
+import { optimism } from 'edge-currency-accountbased/lib/ethereum/info/optimismInfo'
+import { polygon } from 'edge-currency-accountbased/lib/ethereum/info/polygonInfo'
+import utxoPlugins from 'edge-currency-plugins'
+import { makeGodexPlugin } from 'edge-exchange-plugins/lib/swap/central/godex'
+import { makeTransferPlugin } from 'edge-exchange-plugins/lib/swap/transfer'
 
-export const plugins: EdgeCorePlugins[] = [
-  Bitcoin,
-  // Monero,
-  AccountBased,
-  exchangePlugins,
-]
+let locked = false
+
+export const ensureEdgePlugins = () => {
+  if (locked) return
+
+  addEdgeCorePlugins(utxoPlugins)
+  addEdgeCorePlugins({
+    ethereum,
+    polygon,
+    optimism,
+    transfer: makeTransferPlugin,
+    godex: makeGodexPlugin,
+  })
+  lockEdgeCorePlugins()
+  locked = true
+}
+
+ensureEdgePlugins()

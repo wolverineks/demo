@@ -19,6 +19,7 @@ const fakeUserDump: EdgeFakeUser = {
 
   server: {
     appId: '',
+    created: '2018-02-01T00:00:00.000Z',
     loginAuthBox: {
       encryptionType: 0,
       iv_hex: '785bcaf5ccfffef9e063f2bdb487a641',
@@ -184,4 +185,9 @@ const fakeUserDump: EdgeFakeUser = {
   },
 }
 
-export const fakeUser = { ...info, ...fakeUserDump }
+// dump.loginKey is base64 (makeFakeEdgeWorld). loginWithKey wants base58.
+export const fakeUser = {
+  ...info,
+  ...fakeUserDump,
+  loginKeyBase58: 'CzU4ReHcJr5DJ6MssAcMHQLCZys2bxpsBcKAP7EG567',
+}

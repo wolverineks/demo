@@ -1,33 +1,38 @@
 import { EdgeContext, EdgeContextOptions, makeEdgeContext, makeFakeEdgeWorld } from 'edge-core-js'
 import { UseQueryOptions, useQuery } from 'react-query'
 
-import { contextOptions } from './contextOptions'
-import { fakeUser } from '.'
+import { contextOptions, currencyPlugins, swapPlugins } from './contextOptions'
+import { fakeUser } from './fake-user'
 
 export const isTesting = process.env.NODE_ENV === 'test'
-export const isDevelopment = false // process.env.NODE_ENV === 'development'
+export const isDevelopment = process.env.NODE_ENV === 'development'
 export const makeFakeEdgeContext = async (plugins: EdgeContextOptions['plugins'] = {}) => {
   const quiet = { onLog: () => null }
   const world = await makeFakeEdgeWorld([fakeUser], quiet)
-  const context = await world.makeEdgeContext({
+
+  return world.makeEdgeContext({
     apiKey: '',
     appId: '',
+    allowNetworkAccess: true,
     plugins,
   })
-
-  return context
 }
 
-const queryKey = 'context'
+const fakePlugins = { ...currencyPlugins, ...swapPlugins }
+const queryKey = ['context', 'fake-user-dump', 'utxo-eth-poly-op-swap-1']
 const queryFn = () =>
-  isTesting || isDevelopment ? makeFakeEdgeContext({ bitcoin: true, ethereum: true }) : makeEdgeContext(contextOptions)
+  isTesting || isDevelopment
+    ? makeFakeEdgeContext(fakePlugins)
+    : makeEdgeContext(contextOptions)
 
 export const useEdgeContext = ({
   queryOptions,
 }: {
   queryOptions?: UseQueryOptions<EdgeContext>
 } = {}) => {
-  const { data: context } = useQuery(queryKey, queryFn, {
+  const { data: context } = useQuery({
+    queryKey,
+    queryFn,
     suspense: true,
     cacheTime: Infinity,
     staleTime: Infinity,

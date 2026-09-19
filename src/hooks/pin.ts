@@ -5,9 +5,17 @@ import { useInvalidateQueries } from '.'
 
 export const usePinExists = (context: EdgeContext, account: EdgeAccount, queryOptions?: UseQueryOptions<boolean>) => {
   const queryKey = [account.username, 'pinExists']
-  const queryFn = () => context.pinExists(account.username)
+  const queryFn = async () => {
+    const user = context.localUsers.find(({ username }) => username === account.username)
 
-  return useQuery(queryKey, queryFn, { ...queryOptions })
+    return user?.pinLoginEnabled ?? false
+  }
+
+  return useQuery({
+    queryKey,
+    queryFn,
+    ...queryOptions,
+  })
 }
 
 export const usePinLoginEnabled = (
@@ -16,9 +24,15 @@ export const usePinLoginEnabled = (
   queryOptions?: UseQueryOptions<boolean>,
 ) => {
   const queryKey = [account.username, 'pinLoginEnabled']
-  const queryFn = () => context.pinLoginEnabled(account.username)
+  const queryFn = () => {
+    const user = context.localUsers.find(({ username }) => username === account.username)
 
-  return useQuery(queryKey, queryFn, {
+    return user?.pinLoginEnabled ?? false
+  }
+
+  return useQuery({
+    queryKey,
+    queryFn,
     ...queryOptions,
   })
 }

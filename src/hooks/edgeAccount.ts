@@ -4,10 +4,14 @@ import {
   EdgeCurrencyWallet,
   EdgeSwapQuote,
   EdgeSwapRequest,
+  EdgeSwapResult,
 } from 'edge-core-js'
 import React from 'react'
-import { UseQueryOptions, useMutation, useQuery } from 'react-query'
+import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
+import { getCurrencyCodeFromTokenId, getTokenId } from '../utils'
+import { walletTransactionQueryKeys } from './edgeCurrencyWallet'
+import { convertCurrency, useOnRateChange } from './rates'
 import { readCustomTokenInfo } from './tokens'
 import { getFiatInfo, getInfo } from './useInfo'
 import { useInvalidateQueries } from './useInvalidateQueries'
@@ -17,7 +21,7 @@ import { getExchangeDenomination, nativeToDenominated, useDisplayDenomination } 
 export const useUsername = (account: EdgeAccount) => {
   useWatch(account, 'username')
 
-  return account.username
+  return account.username ?? ''
 }
 
 export const useActiveWalletIds = (account: EdgeAccount) => {
@@ -49,23 +53,24 @@ export const useEdgeAccountTotal = (account: EdgeAccount) => {
   const [displayDenomination] = useDisplayDenomination(account, fiatCurrencyCode)
 
   const getTotal = async () => {
-    let total = 0
+    const parts = await Promise.all(
+      Object.values(account.currencyWallets).flatMap((wallet) =>
+        Array.from(wallet.balanceMap.entries()).map(async ([tokenId, nativeAmount]) => {
+          const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
+          const info = getInfo(account, currencyCode) || (await readCustomTokenInfo(wallet, currencyCode))
+          if (!info) return 0
 
-    for (const wallet of Object.values(account.currencyWallets)) {
-      for (const [currencyCode, nativeAmount] of Object.entries(wallet.balances)) {
-        const info = getInfo(account, currencyCode) || (await readCustomTokenInfo(wallet, currencyCode))
-        if (!info) continue
-        const exchangeDenomination = getExchangeDenomination(info)
-        const exchangeAmount = nativeToDenominated({
-          nativeAmount: nativeAmount || String(0),
-          denomination: exchangeDenomination,
-        })
+          const exchangeAmount = nativeToDenominated({
+            nativeAmount: nativeAmount || String(0),
+            denomination: getExchangeDenomination(info),
+          })
 
-        total += await account.rateCache.convertCurrency(currencyCode, fiatCurrencyCode, Number(exchangeAmount))
-      }
-    }
+          return convertCurrency(currencyCode, fiatCurrencyCode, Number(exchangeAmount))
+        }),
+      ),
+    )
 
-    return total
+    return parts.reduce((total, amount) => total + amount, 0)
   }
 
   const { data, refetch } = useQuery({
@@ -73,7 +78,10 @@ export const useEdgeAccountTotal = (account: EdgeAccount) => {
     queryFn: () => getTotal(),
   })
 
-  useOnRateChange(account, () => refetch())
+  useOnRateChange(
+    account,
+    React.useCallback(() => refetch(), [refetch]),
+  )
 
   return { total: data!, denomination: displayDenomination }
 }
@@ -118,11 +126,21 @@ export const useSortWallets = (account: EdgeAccount) => {
   )
 }
 
-export const useCreateCurrencyWallet = (account: EdgeAccount) => {
+export const useCreateCurrencyWallet = (
+  account: EdgeAccount,
+  mutationOptions?: UseMutationOptions<
+    EdgeCurrencyWallet,
+    Error,
+    { type: string; options: EdgeCreateCurrencyWalletOptions }
+  >,
+) => {
   const mutationFn = ({ type, options }: { type: string; options: EdgeCreateCurrencyWalletOptions }) =>
     account.createCurrencyWallet(type, options)
 
-  return useMutation(mutationFn)
+  return useMutation<EdgeCurrencyWallet, Error, { type: string; options: EdgeCreateCurrencyWalletOptions }>(
+    mutationFn,
+    mutationOptions,
+  )
 }
 
 export const getDefaultFiatCurrencyCode = (account: EdgeAccount) => {
@@ -170,23 +188,14 @@ export const useEdgeCurrencyWallet = (
   const { data: wallet } = useQuery({
     queryKey: [walletId, 'wallet'],
     queryFn: () => account.waitForCurrencyWallet(walletId),
-    cacheTime: 1, // HACK: remove from cache ASAP to prevent trying to interact with a deactivated wallet, cacheTime: 0 causes infinite loop
+    cacheTime: 5 * 60 * 1000,
+    staleTime: Infinity,
     ...queryOptions,
   })
 
   if (!wallet) throw new Error(`404: wallet:${walletId} not found`)
 
   return wallet
-}
-
-export const useOnRateChange = (account: EdgeAccount, callback: () => any) => {
-  React.useEffect(() => {
-    const unsub = account.rateCache.on('update', () => callback())
-
-    return () => {
-      unsub()
-    }
-  }, [account.rateCache, callback])
 }
 
 export const useSwapQuote = ({
@@ -204,16 +213,18 @@ export const useSwapQuote = ({
   toWallet: EdgeCurrencyWallet | undefined
   toCurrencyCode: string | undefined
 }) => {
-  const swapRequest = {
-    fromWallet,
-    fromCurrencyCode,
-    nativeAmount,
-
-    quoteFor: 'to',
-
-    toWallet,
-    toCurrencyCode,
-  } as EdgeSwapRequest
+  const hasAmount = Number(nativeAmount) > 0
+  const swapRequest: EdgeSwapRequest | undefined =
+    toWallet && toCurrencyCode && hasAmount
+      ? {
+          fromWallet,
+          toWallet,
+          fromTokenId: getTokenId(fromWallet, fromCurrencyCode),
+          toTokenId: getTokenId(toWallet, toCurrencyCode),
+          nativeAmount,
+          quoteFor: 'from',
+        }
+      : undefined
 
   const { data: swapQuote, ...rest } = useQuery<EdgeSwapQuote, Error>(
     [
@@ -223,10 +234,11 @@ export const useSwapQuote = ({
         fromCurrencyCode,
         toWalletId: toWallet?.id,
         toCurrencyCode,
+        quoteFor: 'from',
       },
     ],
     () => account.fetchSwapQuote(swapRequest as EdgeSwapRequest),
-    { enabled: !!toWallet && !!toCurrencyCode, useErrorBoundary: false, suspense: false, cacheTime: 0 },
+    { enabled: !!swapRequest, useErrorBoundary: false, suspense: false, cacheTime: 0 },
   )
 
   return {
@@ -235,11 +247,38 @@ export const useSwapQuote = ({
   }
 }
 
+export const useApproveSwapQuote = (
+  wallet: EdgeCurrencyWallet,
+  mutationOptions?: UseMutationOptions<EdgeSwapResult, Error, EdgeSwapQuote>,
+) => {
+  return useMutation((quote: EdgeSwapQuote) => quote.approve(), {
+    ...useInvalidateQueries(walletTransactionQueryKeys(wallet)),
+    ...mutationOptions,
+  })
+}
+
 export const useSplitWallet = (account: EdgeAccount, walletId: string) => {
+  const enabledTypes = new Set(Object.values(account.currencyConfig).map(({ currencyInfo }) => currencyInfo.walletType))
+
   return {
-    walletTypes: useQuery([walletId, 'splittableWalletTypes'], () => account.listSplittableWalletTypes(walletId)).data!,
-    splitWallet: useMutation((walletType: string) => account.splitWalletInfo(walletId, walletType), {
-      ...useInvalidateQueries([[walletId, 'splittableWalletTypes']]),
-    }).mutateAsync,
+    walletTypes: (
+      useQuery({
+        queryKey: [walletId, 'splittableWalletTypes'],
+        queryFn: () => account.listSplittableWalletTypes(walletId),
+      }).data ?? []
+    ).filter((walletType) => enabledTypes.has(walletType)),
+    splitWallet: useMutation(
+      async (walletType: string) => {
+        const wallet = await account.waitForCurrencyWallet(walletId)
+        const [result] = await wallet.split([{ walletType }])
+        if (result == null) throw new Error('Wallet split failed')
+        if (!result.ok) throw result.error instanceof Error ? result.error : new Error(String(result.error))
+
+        return result.result
+      },
+      {
+        ...useInvalidateQueries([[walletId, 'splittableWalletTypes']]),
+      },
+    ).mutateAsync,
   }
 }

@@ -1,4 +1,4 @@
-import { EdgeAccount, EdgeContext, EdgeLoginMessages } from 'edge-core-js'
+import { EdgeAccount, EdgeContext, EdgeLoginMessage } from 'edge-core-js'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
 import { useWatch } from './watch'
@@ -17,9 +17,21 @@ export const useAccountsWithPinLogin = (context: EdgeContext) => {
 export const useLoginMessages = (
   context: EdgeContext,
   username: string,
-  queryOptions?: UseQueryOptions<EdgeLoginMessages>,
+  queryOptions?: UseQueryOptions<EdgeLoginMessage[]>,
 ) => {
-  return useQuery(['loginMessages'], () => context.fetchLoginMessages(), queryOptions).data![username]
+  return (
+    useQuery({
+      queryKey: ['loginMessages'],
+      queryFn: () => context.fetchLoginMessages(),
+      ...queryOptions,
+    }).data?.find((message) => message.username === username) ?? {
+      loginId: '',
+      otpResetPending: false,
+      pendingVouchers: [],
+      recovery2Corrupt: false,
+      username,
+    }
+  )
 }
 
 export const useCreateAccount = (
@@ -30,10 +42,13 @@ export const useCreateAccount = (
     { username: string; password?: string; pin?: string; otp?: string }
   >,
 ) => {
-  return useMutation(({ username, password, pin, otp }) => context.createAccount(username, password, pin, { otp }), {
-    onSuccess: bootstrap,
-    ...mutationOptions,
-  })
+  return useMutation(
+    ({ username, password, pin, otp }) => context.createAccount({ username, password, pin, otp }),
+    {
+      onSuccess: bootstrap,
+      ...mutationOptions,
+    },
+  )
 }
 
 export const useLoginWithPin = (
@@ -50,10 +65,26 @@ export const useLoginWithPassword = (
   context: EdgeContext,
   mutationOptions?: UseMutationOptions<EdgeAccount, unknown, { username: string; password: string }>,
 ) => {
-  return useMutation(({ username, password }) => context.loginWithPassword(username, password), {
-    onSuccess: bootstrap,
-    ...mutationOptions,
-  })
+  return useMutation(
+    ({ username, password }) => context.loginWithPassword(username, password),
+    {
+      onSuccess: bootstrap,
+      ...mutationOptions,
+    },
+  )
+}
+
+export const useLoginWithKey = (
+  context: EdgeContext,
+  mutationOptions?: UseMutationOptions<EdgeAccount, unknown, { username: string; loginKey: string }>,
+) => {
+  return useMutation(
+    ({ username, loginKey }) => context.loginWithKey(username, loginKey),
+    {
+      onSuccess: bootstrap,
+      ...mutationOptions,
+    },
+  )
 }
 
 const bootstrap = async (account: EdgeAccount) => {
@@ -67,15 +98,5 @@ const createDefaultWallets = async (account: EdgeAccount) => {
   if (!account.allKeys.find(({ type }) => type === 'wallet:bitcoin')) {
     console.log('Creating default wallet: Bitcoin')
     await account.createCurrencyWallet('wallet:bitcoin', { name: 'My Bitcoin Wallet', ...options })
-  }
-
-  if (!account.allKeys.find(({ type }) => type === 'wallet:ethereum')) {
-    console.log('Creating default wallet: Ethereum')
-    await account.createCurrencyWallet('wallet:ethereum', { name: 'My Ethereum Wallet', ...options })
-  }
-
-  if (!account.allKeys.find(({ type }) => type === 'wallet:bitcoincash')) {
-    console.log('Creating default wallet: Bitcoincash')
-    await account.createCurrencyWallet('wallet:bitcoincash', { name: 'My Bitcoincash Wallet', ...options })
   }
 }
