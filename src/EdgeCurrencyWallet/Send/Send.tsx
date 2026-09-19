@@ -16,7 +16,14 @@ import {
   Matcher,
   Select,
 } from '../../components'
-import { useDenominations, useFiatCurrencyCode, useNewTransaction, useSignBroadcastAndSaveTx } from '../../hooks'
+import {
+  useDenominations,
+  useFiatCurrencyCode,
+  useNewTransaction,
+  usePasteUri,
+  useSignBroadcastAndSaveTx,
+  useSpendMax,
+} from '../../hooks'
 import { useSelectedWallet } from '../../SelectedWallet'
 import { categories, getCurrencyCodeFromTokenId } from '../../utils'
 import { SpendTarget } from './SpendTarget'
@@ -28,9 +35,8 @@ const QrReader = React.lazy(() => import('react-qr-scanner'))
 export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
   const [scan, setScan] = React.useState(false)
-  const [maxLoading, setMaxLoading] = React.useState(false)
-  const [maxError, setMaxError] = React.useState<string>()
-  const [pasteError, setPasteError] = React.useState<string>()
+  const spendMax = useSpendMax(wallet)
+  const pasteUri = usePasteUri(wallet)
 
   const {
     customNetworkFee,
@@ -49,30 +55,6 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
     enabled: !!spendInfo.spendTargets[0].publicAddress && !!Number(spendInfo.spendTargets[0].nativeAmount),
   })
   const { mutate: sendTransaction, isLoading, error: sendError } = useSignBroadcastAndSaveTx(wallet)
-
-  const onSpendMax = async () => {
-    setMaxLoading(true)
-    setMaxError(undefined)
-    try {
-      const maxSpendable = await wallet.getMaxSpendable(spendInfo)
-      spendTargetRef.current?.setSpendTarget({ nativeAmount: maxSpendable })
-    } catch (spendMaxError) {
-      setMaxError(spendMaxError instanceof Error ? spendMaxError.message : String(spendMaxError))
-    } finally {
-      setMaxLoading(false)
-    }
-  }
-
-  const onPasteFromClipboard = async () => {
-    setPasteError(undefined)
-    try {
-      const clipboard = await navigator.clipboard.readText()
-      await wallet.parseUri(clipboard)
-      setUri(clipboard)
-    } catch (clipboardError) {
-      setPasteError(clipboardError instanceof Error ? clipboardError.message : String(clipboardError))
-    }
-  }
 
   const onConfirm = () => {
     if (!transaction) return
@@ -110,8 +92,15 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
       </Matcher>
 
       {spendInfo.spendTargets.length === 1 ? (
-        <Button disabled={maxLoading} onClick={() => onSpendMax()}>
-          {maxLoading ? 'Loading max…' : 'Spend Max'}
+        <Button
+          disabled={spendMax.isLoading}
+          onClick={() =>
+            spendMax.mutate(spendInfo, {
+              onSuccess: (nativeAmount) => spendTargetRef.current?.setSpendTarget({ nativeAmount }),
+            })
+          }
+        >
+          {spendMax.isLoading ? 'Loading max…' : 'Spend Max'}
         </Button>
       ) : null}
 
@@ -135,7 +124,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
 
       {transaction?.networkFees?.length ? <Fee wallet={wallet} transaction={transaction} /> : null}
 
-      <Button onClick={() => onPasteFromClipboard()}>Paste From Clipboard</Button>
+      <Button onClick={() => pasteUri.mutate(undefined, { onSuccess: setUri })}>Paste From Clipboard</Button>
 
       <FormGroup>
         <FormLabel>Name</FormLabel>
@@ -168,8 +157,8 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
 
       {error && <Alert>{(error as Error).message}</Alert>}
       {sendError && <Alert variant="danger">{sendError.message}</Alert>}
-      {maxError ? <Alert variant="danger">{maxError}</Alert> : null}
-      {pasteError ? <Alert variant="danger">{pasteError}</Alert> : null}
+      {spendMax.error ? <Alert variant="danger">{(spendMax.error as Error).message}</Alert> : null}
+      {pasteUri.error ? <Alert variant="danger">{(pasteUri.error as Error).message}</Alert> : null}
 
       <Button disabled={!transaction || isLoading} onClick={() => onConfirm()}>
         {isLoading ? 'Sending…' : 'Confirm'}

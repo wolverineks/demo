@@ -170,20 +170,16 @@ export const useParsedUri = (wallet: EdgeCurrencyWallet, uri?: string, options?:
   }).data
 }
 
-export const useClipboardUri = (wallet: EdgeCurrencyWallet, queryOptions?: UseQueryOptions<string | undefined>) => {
-  const queryKey = [wallet.id, 'clipboardUri']
-  const queryFn = () =>
-    navigator.clipboard.readText().then((clipboard) => wallet.parseUri(clipboard).then(() => clipboard))
+export const useSpendMax = (wallet: EdgeCurrencyWallet) => {
+  return useMutation((spendInfo: EdgeSpendInfo) => wallet.getMaxSpendable(spendInfo))
+}
 
-  const { data: clipboardUri } = useQuery({
-    queryKey,
-    queryFn,
-    suspense: false,
-    useErrorBoundary: false,
-    ...queryOptions,
-  } as UseQueryOptions<string | undefined>)
-
-  return clipboardUri
+export const usePasteUri = (wallet: EdgeCurrencyWallet) => {
+  return useMutation(async () => {
+    const clipboard = await navigator.clipboard.readText()
+    await wallet.parseUri(clipboard)
+    return clipboard
+  })
 }
 
 export const useTransactionCount = (
