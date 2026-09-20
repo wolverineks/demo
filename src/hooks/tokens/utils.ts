@@ -62,6 +62,15 @@ export const readEnabledTokenCurrencyCodes = (wallet: EdgeCurrencyWallet) =>
     .then((tokens) => tokens.filter((tokenCode) => tokenCode !== wallet.currencyInfo.currencyCode))
     .catch(() => [] as string[])
 
+export const readEnabledCustomTokenInfos = async (wallet: EdgeCurrencyWallet): Promise<MetaTokenMap> => {
+  const customTokenInfos = await readCustomTokenInfos(wallet)
+  const enabledCodes = await readEnabledTokenCurrencyCodes(wallet)
+
+  return Object.fromEntries(
+    Object.entries(customTokenInfos).filter(([currencyCode]) => enabledCodes.includes(currencyCode)),
+  )
+}
+
 export const writeEnabledTokenCurrencyCodes = (wallet: EdgeCurrencyWallet, enabledTokens: string[]) =>
   wallet.disklet.setText(ENABLED_TOKEN_CURRENCY_CODES_FILE, JSON.stringify(enabledTokens))
 
