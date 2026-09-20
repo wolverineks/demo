@@ -507,14 +507,14 @@ iframe {
   line-height: 1.2;
 }
 
-.exchange-asset {
+.exchange-token-id {
   padding: 12px 14px;
   background: #f7f8fa;
   border: 1px solid var(--app-border);
   border-radius: 10px;
 }
 
-.exchange-asset__header {
+.exchange-token-id__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -522,7 +522,7 @@ iframe {
   margin-bottom: 10px;
 }
 
-.exchange-asset__label {
+.exchange-token-id__label {
   font-size: 12px;
   font-weight: 650;
   letter-spacing: 0.02em;
@@ -530,7 +530,7 @@ iframe {
   text-transform: uppercase;
 }
 
-.panel .exchange-asset__select.form-control {
+.panel .exchange-token-id__select.form-control {
   width: auto;
   max-width: 220px;
   min-width: 140px;
@@ -539,7 +539,7 @@ iframe {
   font-size: 13px;
 }
 
-.exchange-asset__selected {
+.exchange-token-id__selected {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -547,15 +547,15 @@ iframe {
   margin-bottom: 12px;
 }
 
-.exchange-asset__selected:last-child {
+.exchange-token-id__selected:last-child {
   margin-bottom: 0;
 }
 
-.exchange-asset__text {
+.exchange-token-id__text {
   min-width: 0;
 }
 
-.exchange-asset__name {
+.exchange-token-id__name {
   overflow: hidden;
   font-size: 15px;
   font-weight: 650;
@@ -563,7 +563,7 @@ iframe {
   white-space: nowrap;
 }
 
-.exchange-asset__balance {
+.exchange-token-id__balance {
   overflow: hidden;
   font-size: 12px;
   color: var(--app-muted);

@@ -3,7 +3,7 @@ import { UseQueryOptions, useMutation, useQuery } from 'react-query'
 
 import { FiatInfo, getCurrencyCodeFromTokenId } from '../utils'
 import { convertCurrency } from './rates'
-import { assetDenominationKey, getAssetInfo, useAssetInfo, useInfo } from './useInfo'
+import { tokenIdDenominationKey, getTokenIdInfo, useTokenIdInfo, useInfo } from './useInfo'
 import { useInvalidateQueries } from './useInvalidateQueries'
 
 export const nativeToDenominated = ({
@@ -274,7 +274,7 @@ export const useFiatAmount = (
 ) => {
   const fiatDenominations = useDenominations(account, fiatCurrencyCode)
   const fromCurrencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
-  const exchangeAmount = useAssetNativeToExchange({ wallet, tokenId, nativeAmount })
+  const exchangeAmount = useTokenIdNativeToExchange({ wallet, tokenId, nativeAmount })
 
   const { data: fiatExchangeAmount } = useQuery({
     queryKey: [{ fromCurrencyCode, fiatCurrencyCode, exchangeAmount }],
@@ -297,13 +297,13 @@ export const useFiatAmount = (
   return fiatDisplayAmount
 }
 
-export const useAssetDisplayDenomination = (
+export const useTokenIdDisplayDenomination = (
   account: EdgeAccount,
   wallet: EdgeCurrencyWallet,
   tokenId: EdgeTokenId,
 ) => {
-  const info = useAssetInfo(wallet, tokenId)
-  const storageKey = assetDenominationKey(wallet, tokenId)
+  const info = useTokenIdInfo(wallet, tokenId)
+  const storageKey = tokenIdDenominationKey(wallet, tokenId)
   const multiplier =
     useReadDisplayDenominationMultiplier(account, info, storageKey).data ?? info.denominations[0].multiplier
   const displayDenomination =
@@ -316,10 +316,10 @@ export const useAssetDisplayDenomination = (
   return [displayDenomination, useWriteDisplayDenominationMultiplier(account, info, storageKey).mutateAsync] as const
 }
 
-export const useAssetExchangeDenomination = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) =>
-  getExchangeDenomination(getAssetInfo(wallet, tokenId))
+export const useTokenIdExchangeDenomination = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) =>
+  getExchangeDenomination(getTokenIdInfo(wallet, tokenId))
 
-export const useAssetNativeToExchange = ({
+export const useTokenIdNativeToExchange = ({
   wallet,
   tokenId,
   nativeAmount,
@@ -329,23 +329,23 @@ export const useAssetNativeToExchange = ({
   nativeAmount: string
 }) =>
   nativeToDenominated({
-    denomination: useAssetExchangeDenomination(wallet, tokenId),
+    denomination: useTokenIdExchangeDenomination(wallet, tokenId),
     nativeAmount,
   })
 
-export const useAssetDenominations = (account: EdgeAccount, wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) => {
-  const [display, setDisplay] = useAssetDisplayDenomination(account, wallet, tokenId)
-  const info = useAssetInfo(wallet, tokenId)
+export const useTokenIdDenominations = (account: EdgeAccount, wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) => {
+  const [display, setDisplay] = useTokenIdDisplayDenomination(account, wallet, tokenId)
+  const info = useTokenIdInfo(wallet, tokenId)
 
   return {
     display,
     setDisplay,
-    exchange: useAssetExchangeDenomination(wallet, tokenId),
+    exchange: useTokenIdExchangeDenomination(wallet, tokenId),
     all: info.denominations,
   }
 }
 
-export const useAssetDisplayAmount = ({
+export const useTokenIdDisplayAmount = ({
   account,
   wallet,
   tokenId,
@@ -356,7 +356,7 @@ export const useAssetDisplayAmount = ({
   tokenId: EdgeTokenId
   nativeAmount: string
 }) => {
-  const [denomination] = useAssetDisplayDenomination(account, wallet, tokenId)
+  const [denomination] = useTokenIdDisplayDenomination(account, wallet, tokenId)
 
   return {
     amount: nativeToDenominated({ denomination, nativeAmount }),

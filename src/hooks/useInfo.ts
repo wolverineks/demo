@@ -15,7 +15,7 @@ export const getFiatInfo = (currencyCode: string) => {
   )
 }
 
-export const getAssetInfo = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) => {
+export const getTokenIdInfo = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) => {
   if (tokenId == null) return wallet.currencyInfo
 
   const token = wallet.currencyConfig.allTokens[tokenId]
@@ -31,10 +31,10 @@ export const getAssetInfo = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) =
   })
 }
 
-export const useAssetInfo = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) => {
+export const useTokenIdInfo = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) => {
   useWatch(wallet.currencyConfig, 'allTokens')
 
-  return getAssetInfo(wallet, tokenId)
+  return getTokenIdInfo(wallet, tokenId)
 }
 
 export const getInfo = (account: EdgeAccount, currencyCode: string) => {
@@ -67,5 +67,5 @@ export const useInfo = (account: EdgeAccount, currencyCode: string) => {
   return info
 }
 
-export const assetDenominationKey = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) =>
+export const tokenIdDenominationKey = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) =>
   `${wallet.currencyInfo.pluginId}:${tokenId ?? 'native'}`

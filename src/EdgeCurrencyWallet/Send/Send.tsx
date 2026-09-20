@@ -17,7 +17,7 @@ import {
   Select,
 } from '../../components'
 import {
-  useAssetDenominations,
+  useTokenIdDenominations,
   useFiatCurrencyCode,
   useNewTransaction,
   usePasteUri,
@@ -203,7 +203,7 @@ const CustomFeeForm = ({
 }) => {
   const account = useEdgeAccount()
   const [{ wallet, tokenId }] = useSelectedWallet()
-  const { display } = useAssetDenominations(account, wallet, tokenId)
+  const { display } = useTokenIdDenominations(account, wallet, tokenId)
 
   return (
     <div>

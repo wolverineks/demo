@@ -3,7 +3,7 @@ import React from 'react'
 
 import { useEdgeAccount } from '../auth'
 import { AmountInput, Boundary } from '../components'
-import { convertCurrency, denominatedToNative, nativeToDenominated, useAssetDenominations, useDenominations } from '../hooks'
+import { convertCurrency, denominatedToNative, nativeToDenominated, useTokenIdDenominations, useDenominations } from '../hooks'
 import { getCurrencyCodeFromTokenId } from '../utils'
 
 type FlipInputProps = {
@@ -24,7 +24,7 @@ export const FlipInput = React.forwardRef<FlipInputRef, FlipInputProps>(function
 ) {
   const account = useEdgeAccount()
   const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
-  const topDenominations = useAssetDenominations(account, wallet, tokenId)
+  const topDenominations = useTokenIdDenominations(account, wallet, tokenId)
   const bottomDenominations = useDenominations(account, fiatCurrencyCode)
 
   const { top, bottom } = useFlipInput({

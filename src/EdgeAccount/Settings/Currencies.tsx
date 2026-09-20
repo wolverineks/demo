@@ -6,8 +6,8 @@ import { useEdgeAccount } from '../../auth'
 import { Boundary, FormControl, ListGroup, ListGroupItem, Logo } from '../../components'
 import {
   useActiveTokenIds,
-  useAssetDenominations,
-  useAssetInfo,
+  useTokenIdDenominations,
+  useTokenIdInfo,
   useDefaultFiatCurrencyCode,
   useDenominations,
   useInfo,
@@ -75,7 +75,7 @@ const TokenIdMatcher: React.FC<{
   wallet: EdgeCurrencyWallet
   tokenId: EdgeTokenId
 }> = ({ query, wallet, tokenId, children }) => {
-  const info = useAssetInfo(wallet, tokenId)
+  const info = useTokenIdInfo(wallet, tokenId)
 
   return <>{matches(query)(info) ? children : null}</>
 }
@@ -99,7 +99,7 @@ const FiatSetting: React.FC<{ currencyCode: string }> = ({ currencyCode }) => {
 
 const TokenIdSetting: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId }> = ({ wallet, tokenId }) => {
   const account = useEdgeAccount()
-  const info = useAssetInfo(wallet, tokenId)
+  const info = useTokenIdInfo(wallet, tokenId)
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
@@ -134,7 +134,7 @@ const TokenIdDenominations = ({
   wallet: EdgeCurrencyWallet
   tokenId: EdgeTokenId
 }) => {
-  const denominations = useAssetDenominations(account, wallet, tokenId)
+  const denominations = useTokenIdDenominations(account, wallet, tokenId)
 
   return <DenominationList denominations={denominations} />
 }

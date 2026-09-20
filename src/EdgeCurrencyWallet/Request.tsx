@@ -4,7 +4,7 @@ import JSONPretty from 'react-json-pretty'
 
 import { useEdgeAccount } from '../auth'
 import { Alert, Button, Debug, FlipInput, Form, FormControl, FormGroup, FormLabel, InputGroup } from '../components'
-import { useAssetDisplayDenomination, useFiatCurrencyCode, useReceiveAddressAndEncodeUri } from '../hooks'
+import { useTokenIdDisplayDenomination, useFiatCurrencyCode, useReceiveAddressAndEncodeUri } from '../hooks'
 import { getCurrencyCodeFromTokenId } from '../utils'
 
 const QRCode = React.lazy(() => import('react-qr-code'))
@@ -13,7 +13,7 @@ export const Request: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenI
   const account = useEdgeAccount()
   const [nativeAmount, setNativeAmount] = React.useState('0')
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
-  const [displayDenomination] = useAssetDisplayDenomination(account, wallet, tokenId)
+  const [displayDenomination] = useTokenIdDisplayDenomination(account, wallet, tokenId)
   const { data, error } = useReceiveAddressAndEncodeUri({ wallet, nativeAmount, options: { tokenId } })
   const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
 

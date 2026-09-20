@@ -12,7 +12,7 @@ import { TransactionList } from './TransactionList'
 
 export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId }> = ({ wallet, tokenId }) => {
   const queryClient = useQueryClient()
-  const assetKey = `${wallet.id}:${tokenId ?? 'native'}`
+  const tokenIdKey = `${wallet.id}:${tokenId ?? 'native'}`
 
   useOnNewTransactions(
     wallet,
@@ -33,31 +33,31 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTok
     <Tabs id={'walletTabs'} defaultActiveKey={'history'} mountOnEnter unmountOnExit>
       <Tab eventKey={'history'} title={'History'}>
         <Boundary>
-          <TransactionList wallet={wallet} tokenId={tokenId} key={assetKey} />
+          <TransactionList wallet={wallet} tokenId={tokenId} key={tokenIdKey} />
         </Boundary>
       </Tab>
 
       <Tab eventKey={'send'} title={'Send'}>
         <Boundary>
-          <Send wallet={wallet} tokenId={tokenId} key={assetKey} />
+          <Send wallet={wallet} tokenId={tokenId} key={tokenIdKey} />
         </Boundary>
       </Tab>
 
       <Tab eventKey={'request'} title={'Request'}>
         <Boundary>
-          <Request wallet={wallet} tokenId={tokenId} key={assetKey} />
+          <Request wallet={wallet} tokenId={tokenId} key={tokenIdKey} />
         </Boundary>
       </Tab>
 
       <Tab eventKey={'settings'} title={'Settings'}>
         <Boundary>
-          <Settings wallet={wallet} key={assetKey} />
+          <Settings wallet={wallet} key={tokenIdKey} />
         </Boundary>
       </Tab>
 
       <Tab eventKey={'storage'} title={'Storage'}>
         <Boundary>
-          <Disklets wallet={wallet} key={assetKey} />
+          <Disklets wallet={wallet} key={tokenIdKey} />
         </Boundary>
       </Tab>
     </Tabs>

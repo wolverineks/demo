@@ -6,7 +6,7 @@ import { useEdgeAccount } from '../auth'
 import { Alert, Balance, Boundary, Button, Debug, DisplayAmount, FlipInput, FormControl, Logo } from '../components'
 import {
   useApproveSwapQuote,
-  useAssetDisplayDenomination,
+  useTokenIdDisplayDenomination,
   useEdgeCurrencyWallet,
   useFiatCurrencyCode,
   useName,
@@ -14,16 +14,16 @@ import {
 } from '../hooks'
 import { getCurrencyCodeFromTokenId, getWalletListMeta } from '../utils'
 
-type AssetChoice = {
+type TokenIdChoice = {
   key: string
   walletId: string
   tokenId: EdgeTokenId
   label: string
 }
 
-const assetKey = (walletId: string, tokenId: EdgeTokenId) => `${walletId}::${tokenId ?? 'native'}`
+const tokenIdKey = (walletId: string, tokenId: EdgeTokenId) => `${walletId}::${tokenId ?? 'native'}`
 
-const parseAssetKey = (value: string) => {
+const parseTokenIdKey = (value: string) => {
   const separator = value.lastIndexOf('::')
   if (separator < 0) return undefined
   const tokenPart = value.slice(separator + 2)
@@ -31,13 +31,13 @@ const parseAssetKey = (value: string) => {
   return { walletId: value.slice(0, separator), tokenId: tokenPart === 'native' ? null : tokenPart }
 }
 
-const getAssetChoices = (account: ReturnType<typeof useEdgeAccount>): AssetChoice[] =>
+const getTokenIdChoices = (account: ReturnType<typeof useEdgeAccount>): TokenIdChoice[] =>
   account.activeWalletIds.flatMap((walletId) => {
     const meta = getWalletListMeta(account, walletId)
     const wallet = account.currencyWallets[walletId]
     const walletLabel = wallet?.name || meta.name
     const native = {
-      key: assetKey(walletId, null),
+      key: tokenIdKey(walletId, null),
       walletId,
       tokenId: null as EdgeTokenId,
       label: walletLabel,
@@ -47,7 +47,7 @@ const getAssetChoices = (account: ReturnType<typeof useEdgeAccount>): AssetChoic
     return [
       native,
       ...wallet.enabledTokenIds.map((tokenId) => ({
-        key: assetKey(walletId, tokenId),
+        key: tokenIdKey(walletId, tokenId),
         walletId,
         tokenId,
         label: `${walletLabel} · ${getCurrencyCodeFromTokenId(wallet, tokenId)}`,
@@ -57,9 +57,9 @@ const getAssetChoices = (account: ReturnType<typeof useEdgeAccount>): AssetChoic
 
 export const Exchange = ({ wallet, tokenId }: { wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId }) => {
   const account = useEdgeAccount()
-  const choices = getAssetChoices(account)
+  const choices = getTokenIdChoices(account)
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
-  const [displayDenomination] = useAssetDisplayDenomination(account, wallet, tokenId)
+  const [displayDenomination] = useTokenIdDisplayDenomination(account, wallet, tokenId)
 
   const [nativeAmount, setNativeAmount] = React.useState('0')
   const [fromWalletId, setFromWalletId] = React.useState(wallet.id)
@@ -67,8 +67,8 @@ export const Exchange = ({ wallet, tokenId }: { wallet: EdgeCurrencyWallet; toke
   const [toWalletId, setToWalletId] = React.useState<string>()
   const [toTokenId, setToTokenId] = React.useState<EdgeTokenId>()
 
-  const onSelectAsset = (value: string, direction: 'from' | 'to') => {
-    const parsed = parseAssetKey(value)
+  const onSelectTokenId = (value: string, direction: 'from' | 'to') => {
+    const parsed = parseTokenIdKey(value)
     if (!parsed) return
 
     if (direction === 'from') {
@@ -94,13 +94,13 @@ export const Exchange = ({ wallet, tokenId }: { wallet: EdgeCurrencyWallet; toke
     <div className="exchange">
       <div className="panel-title">Exchange</div>
 
-      <AssetCard
+      <TokenIdCard
         label="From"
         walletId={fromWalletId}
         tokenId={fromTokenId}
         choices={choices}
-        value={assetKey(fromWalletId, fromTokenId)}
-        onSelect={(value) => onSelectAsset(value, 'from')}
+        value={tokenIdKey(fromWalletId, fromTokenId)}
+        onSelect={(value) => onSelectTokenId(value, 'from')}
       >
         <div className="exchange__amount">
           <FlipInput
@@ -111,7 +111,7 @@ export const Exchange = ({ wallet, tokenId }: { wallet: EdgeCurrencyWallet; toke
             fiatCurrencyCode={fiatCurrencyCode}
           />
         </div>
-      </AssetCard>
+      </TokenIdCard>
 
       <div className="exchange__swap">
         <Button size="sm" variant="outline-secondary" disabled={!toWalletId} onClick={swapDirection}>
@@ -119,14 +119,14 @@ export const Exchange = ({ wallet, tokenId }: { wallet: EdgeCurrencyWallet; toke
         </Button>
       </div>
 
-      <AssetCard
+      <TokenIdCard
         label="To"
         walletId={toWalletId}
         tokenId={toTokenId}
         choices={choices}
-        value={toWalletId && toTokenId !== undefined ? assetKey(toWalletId, toTokenId) : ''}
+        value={toWalletId && toTokenId !== undefined ? tokenIdKey(toWalletId, toTokenId) : ''}
         placeholder="Select destination"
-        onSelect={(value) => onSelectAsset(value, 'to')}
+        onSelect={(value) => onSelectTokenId(value, 'to')}
       />
 
       {toWalletId && toTokenId !== undefined ? (
@@ -158,7 +158,7 @@ export const Exchange = ({ wallet, tokenId }: { wallet: EdgeCurrencyWallet; toke
   )
 }
 
-const AssetCard = ({
+const TokenIdCard = ({
   label,
   walletId,
   tokenId,
@@ -171,19 +171,19 @@ const AssetCard = ({
   label: string
   walletId?: string
   tokenId?: EdgeTokenId
-  choices: AssetChoice[]
+  choices: TokenIdChoice[]
   value: string
   placeholder?: string
   onSelect: (value: string) => void
   children?: React.ReactNode
 }) => {
   return (
-    <div className="exchange-asset">
-      <div className="exchange-asset__header">
-        <div className="exchange-asset__label">{label}</div>
+    <div className="exchange-token-id">
+      <div className="exchange-token-id__header">
+        <div className="exchange-token-id__label">{label}</div>
         <FormControl
           as="select"
-          className="exchange-asset__select"
+          className="exchange-token-id__select"
           value={value}
           onChange={(event) => onSelect(event.currentTarget.value)}
         >
@@ -200,13 +200,13 @@ const AssetCard = ({
         </FormControl>
       </div>
 
-      {walletId && tokenId !== undefined ? <SelectedAsset walletId={walletId} tokenId={tokenId} /> : null}
+      {walletId && tokenId !== undefined ? <SelectedTokenId walletId={walletId} tokenId={tokenId} /> : null}
       {children}
     </div>
   )
 }
 
-const SelectedAsset = ({ walletId, tokenId }: { walletId: string; tokenId: EdgeTokenId }) => {
+const SelectedTokenId = ({ walletId, tokenId }: { walletId: string; tokenId: EdgeTokenId }) => {
   const account = useEdgeAccount()
   const wallet = useEdgeCurrencyWallet({ account, walletId })
   const [name] = useName(wallet)
@@ -214,15 +214,15 @@ const SelectedAsset = ({ walletId, tokenId }: { walletId: string; tokenId: EdgeT
   const label = name || wallet.currencyInfo.displayName || wallet.currencyInfo.currencyCode
 
   return (
-    <div className="exchange-asset__selected">
+    <div className="exchange-token-id__selected">
       <Boundary error={{ fallback: null }} suspense={{ fallback: null }}>
         <Logo currencyCode={currencyCode} pluginId={wallet.currencyInfo.pluginId} tokenId={tokenId ?? undefined} />
       </Boundary>
-      <div className="exchange-asset__text">
-        <div className="exchange-asset__name">
+      <div className="exchange-token-id__text">
+        <div className="exchange-token-id__name">
           {label} · {currencyCode}
         </div>
-        <div className="exchange-asset__balance">
+        <div className="exchange-token-id__balance">
           <Boundary>
             <Balance wallet={wallet} tokenId={tokenId} />
           </Boundary>
@@ -260,7 +260,7 @@ const SwapQuote = ({
 
   return (
     <div className="swap-quote">
-      <div className="exchange-asset__label">Quote</div>
+      <div className="exchange-token-id__label">Quote</div>
       {Number(nativeAmount) <= 0 ? <div className="swap-quote__hint">Enter an amount to fetch a quote.</div> : null}
       {isFetching ? <div className="swap-quote__hint">Fetching quote…</div> : null}
       {error ? <Alert variant="danger">{error.message}</Alert> : null}

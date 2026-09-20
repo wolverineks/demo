@@ -1,13 +1,13 @@
 import { EdgeAccount, EdgeTransaction } from 'edge-core-js'
 
 import { Explorers } from './tokens'
-import { getAssetInfo } from './useInfo'
+import { getTokenIdInfo } from './useInfo'
 
 const getTransactionExplorers = (account: EdgeAccount, transaction: EdgeTransaction) => {
   const wallet = account.currencyWallets[transaction.walletId]
   if (!wallet) throw new Error(`404: wallet:${transaction.walletId} not found`)
 
-  return getAssetInfo(wallet, transaction.tokenId) as ReturnType<typeof getAssetInfo> & Explorers
+  return getTokenIdInfo(wallet, transaction.tokenId) as ReturnType<typeof getTokenIdInfo> & Explorers
 }
 
 export const useTransactionExplorerUrl = (account: EdgeAccount, transaction: EdgeTransaction) => {
