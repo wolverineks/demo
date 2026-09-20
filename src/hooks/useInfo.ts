@@ -38,8 +38,7 @@ export const useInfo = (account: EdgeAccount, currencyCode: string) => {
     queryFn: async () => {
       const wallets = Object.values(account.currencyWallets)
       for (const wallet of wallets) {
-        const tokenInfos = await readCustomTokenInfos(wallet)
-        const match = tokenInfos[currencyCode]
+        const match = readCustomTokenInfos(wallet)[currencyCode]
 
         if (match) {
           return match

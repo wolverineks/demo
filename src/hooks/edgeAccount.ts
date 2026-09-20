@@ -12,7 +12,7 @@ import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'reac
 import { getCurrencyCodeFromTokenId, getTokenIdFromCurrencyCode } from '../utils'
 import { walletTransactionQueryKeys } from './edgeCurrencyWallet'
 import { convertCurrency, useOnRateChange } from './rates'
-import { readCustomTokenInfo } from './tokens'
+import { metaTokenFromEdgeToken, readCustomTokenInfo } from './tokens'
 import { getFiatInfo, getInfo } from './useInfo'
 import { useInvalidateQueries } from './useInvalidateQueries'
 import { useWatch } from './watch'
@@ -57,7 +57,10 @@ export const useEdgeAccountTotal = (account: EdgeAccount) => {
       Object.values(account.currencyWallets).flatMap((wallet) =>
         Array.from(wallet.balanceMap.entries()).map(async ([tokenId, nativeAmount]) => {
           const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
-          const info = getInfo(account, currencyCode) || (await readCustomTokenInfo(wallet, currencyCode))
+          const customToken = tokenId != null ? readCustomTokenInfo(wallet, tokenId) : undefined
+          const info =
+            getInfo(account, currencyCode) ||
+            (customToken != null && tokenId != null ? metaTokenFromEdgeToken(customToken, { tokenId }) : undefined)
           if (!info) return 0
 
           const exchangeAmount = nativeToDenominated({

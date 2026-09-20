@@ -2,8 +2,6 @@ import { EdgeCurrencyConfig, EdgeCurrencyWallet, EdgeMetaToken, EdgeToken, EdgeT
 
 import { contractToTokenId, unique } from '../../utils'
 
-export type MetaTokenMap = { [currencyCode: string]: EdgeMetaToken }
-
 export type Explorers = {
   addressExplorer?: string
   blockExplorer?: string
@@ -13,34 +11,22 @@ export type Explorers = {
   tokenId?: string
 }
 
+export type MetaTokenMap = { [currencyCode: string]: EdgeMetaToken & Explorers }
+
 // CUSTOM TOKEN INFOS
-export const addCustomToken = (wallet: EdgeCurrencyWallet, tokenInfo: EdgeTokenInfo) => {
-  return readCustomTokenInfos(wallet)
-    .then((currentMap) => ({ ...currentMap, [tokenInfo.currencyCode]: toMetaToken(wallet, tokenInfo) }))
-    .then((updated) => writeCustomTokenInfos(wallet, updated))
-}
+const customTokenExplorers = (wallet: EdgeCurrencyWallet): Explorers => ({
+  addressExplorer: wallet.currencyInfo.addressExplorer,
+  blockExplorer: wallet.currencyInfo.blockExplorer,
+  transactionExplorer: wallet.currencyInfo.transactionExplorer,
+  xpubExplorer: wallet.currencyInfo.xpubExplorer,
+  pluginId: wallet.currencyInfo.pluginId,
+})
 
-export const removeCustomToken = (wallet: EdgeCurrencyWallet, currencyCode: string) => {
-  return readCustomTokenInfos(wallet)
-    .then((currentMap) => removeKey(currencyCode, currentMap))
-    .then((updated) => writeCustomTokenInfos(wallet, updated))
-}
+export const readCustomTokenInfos = (wallet: EdgeCurrencyWallet): MetaTokenMap =>
+  toMetaTokenMapFromTokenMap(wallet.currencyConfig.customTokens, customTokenExplorers(wallet))
 
-const CUSTOM_TOKENS_INFOS_FILE = 'customTokenInfos.json'
-
-export const readCustomTokenInfos = (wallet: EdgeCurrencyWallet): Promise<MetaTokenMap> => {
-  return wallet.disklet
-    .getText(CUSTOM_TOKENS_INFOS_FILE)
-    .then((text: string) => JSON.parse(text) as MetaTokenMap)
-    .catch(() => ({}))
-}
-
-export const readCustomTokenInfo = async (wallet: EdgeCurrencyWallet, currencyCode: string) =>
-  (await readCustomTokenInfos(wallet))[currencyCode]
-
-export const writeCustomTokenInfos = (wallet: EdgeCurrencyWallet, customTokens: MetaTokenMap) => {
-  return wallet.disklet.setText(CUSTOM_TOKENS_INFOS_FILE, JSON.stringify(customTokens))
-}
+export const readCustomTokenInfo = (wallet: EdgeCurrencyWallet, tokenId: string) =>
+  wallet.currencyConfig.customTokens[tokenId]
 
 // ENABLED TOKEN CURRENCY CODES
 export const enableTokenCurrencyCode = async (wallet: EdgeCurrencyWallet, tokenCurrencyCode: string) =>
@@ -63,7 +49,7 @@ export const readEnabledTokenCurrencyCodes = (wallet: EdgeCurrencyWallet) =>
     .catch(() => [] as string[])
 
 export const readEnabledCustomTokenInfos = async (wallet: EdgeCurrencyWallet): Promise<MetaTokenMap> => {
-  const customTokenInfos = await readCustomTokenInfos(wallet)
+  const customTokenInfos = readCustomTokenInfos(wallet)
   const enabledCodes = await readEnabledTokenCurrencyCodes(wallet)
 
   return Object.fromEntries(
@@ -121,7 +107,7 @@ export const getIncludedInfos = (wallet: EdgeCurrencyWallet): MetaTokenMap => {
         tokenId: contractToTokenId(token.contractAddress),
       })),
     ),
-    ...toMetaTokenMapFromTokenMap(wallet.currencyConfig?.allTokens, extras),
+    ...toMetaTokenMapFromTokenMap(wallet.currencyConfig?.builtinTokens, extras),
   }
 }
 

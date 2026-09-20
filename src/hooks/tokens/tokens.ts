@@ -3,22 +3,18 @@ import { UseQueryOptions, useMutation, useQuery, useQueryClient } from 'react-qu
 
 import { getTokenIdFromCurrencyCode, unique } from '../../utils'
 import {
-  MetaTokenMap,
-  addCustomToken,
   disableTokenCurrencyCode,
   enableTokenCurrencyCode,
   getIncludedInfos,
   readCustomTokenInfos,
   readEnabledTokenCurrencyCodes,
-  removeCustomToken,
 } from './utils'
 import { useInvalidateQueries, useWatch } from '..'
 
 const useCustomInfos = (wallet: EdgeCurrencyWallet) => {
-  return useQuery<MetaTokenMap>({
-    queryKey: [wallet.id, 'customTokenInfos'],
-    queryFn: () => readCustomTokenInfos(wallet),
-  })
+  useWatch(wallet.currencyConfig, 'customTokens')
+
+  return readCustomTokenInfos(wallet)
 }
 
 const useAddCustomInfo = (wallet: EdgeCurrencyWallet) => {
@@ -36,17 +32,15 @@ const useAddCustomInfo = (wallet: EdgeCurrencyWallet) => {
         xpubExplorer: wallet.currencyInfo.xpubExplorer,
       }
 
-      return addCustomToken(wallet, metatoken)
-        .then(() => enableTokenCurrencyCode(wallet, metatoken.currencyCode))
-        .then(async () => {
-          const tokenId = await wallet.currencyConfig.addCustomToken({
-            currencyCode: tokenInfo.currencyCode,
-            displayName: tokenInfo.currencyName,
-            denominations: [{ name: tokenInfo.currencyName, multiplier: tokenInfo.multiplier }],
-            networkLocation: { contractAddress: tokenInfo.contractAddress },
-          })
-          await wallet.changeEnabledTokenIds([...wallet.enabledTokenIds, tokenId])
+      return enableTokenCurrencyCode(wallet, metatoken.currencyCode).then(async () => {
+        const tokenId = await wallet.currencyConfig.addCustomToken({
+          currencyCode: tokenInfo.currencyCode,
+          displayName: tokenInfo.currencyName,
+          denominations: [{ name: tokenInfo.currencyName, multiplier: tokenInfo.multiplier }],
+          networkLocation: { contractAddress: tokenInfo.contractAddress },
         })
+        await wallet.changeEnabledTokenIds([...wallet.enabledTokenIds, tokenId])
+      })
         .then(() =>
           queryClient.invalidateQueries([
             ['info', tokenInfo.currencyCode],
@@ -59,7 +53,6 @@ const useAddCustomInfo = (wallet: EdgeCurrencyWallet) => {
       ...useInvalidateQueries([
         ['activeCurrencyCodes'],
         [wallet.id, 'enabledTokenCurrencyCodes'],
-        [wallet.id, 'customTokenInfos'],
         ['info'],
       ]),
     },
@@ -69,19 +62,16 @@ const useAddCustomInfo = (wallet: EdgeCurrencyWallet) => {
 const useRemoveCustomInfo = (wallet: EdgeCurrencyWallet) => {
   return useMutation(
     (currencyCode: string) => {
-      return disableTokenCurrencyCode(wallet, currencyCode)
-        .then(() => removeCustomToken(wallet, currencyCode))
-        .then(async () => {
-          const tokenId = getTokenIdFromCurrencyCode(wallet, currencyCode)
-          await wallet.changeEnabledTokenIds(wallet.enabledTokenIds.filter((id) => id !== tokenId))
-          if (tokenId) await wallet.currencyConfig.removeCustomToken(tokenId)
-        })
+      return disableTokenCurrencyCode(wallet, currencyCode).then(async () => {
+        const tokenId = getTokenIdFromCurrencyCode(wallet, currencyCode)
+        await wallet.changeEnabledTokenIds(wallet.enabledTokenIds.filter((id) => id !== tokenId))
+        if (tokenId) await wallet.currencyConfig.removeCustomToken(tokenId)
+      })
     },
     {
       ...useInvalidateQueries([
         ['activeCurrencyCodes'],
         [wallet.id, 'enabledTokenCurrencyCodes'],
-        [wallet.id, 'customTokenInfos'],
       ]),
     },
   )
@@ -92,7 +82,7 @@ const enabledQueryKey = (wallet: EdgeCurrencyWallet) => [wallet.id, 'enabledToke
 const useEnableToken = (wallet: EdgeCurrencyWallet) => {
   const queryClient = useQueryClient()
   const tokenInfos = getIncludedInfos(wallet)
-  const customTokenInfos = useCustomInfos(wallet).data!
+  const customTokenInfos = useCustomInfos(wallet)
 
   const enableToken = async (tokenCurrencyCode: string) => {
     if (!tokenInfos[tokenCurrencyCode] && !customTokenInfos[tokenCurrencyCode])
@@ -180,7 +170,7 @@ export const useTokens = (wallet: EdgeCurrencyWallet) => {
 
   return {
     includedInfos: getIncludedInfos(wallet),
-    customTokenInfos: useCustomInfos(wallet).data!,
+    customTokenInfos: useCustomInfos(wallet),
     addCustomInfo: useAddCustomInfo(wallet).mutate,
     removeCustomInfo: useRemoveCustomInfo(wallet).mutate,
     enabled: unique([...useEnabledTokenCurrencyCodes(wallet).data!, ...enabledCodesFromEngine(wallet)]),
