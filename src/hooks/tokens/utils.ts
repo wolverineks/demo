@@ -1,6 +1,6 @@
 import { EdgeCurrencyConfig, EdgeCurrencyWallet, EdgeMetaToken, EdgeToken, EdgeTokenInfo, EdgeTokenMap } from 'edge-core-js'
 
-import { contractToTokenId, unique } from '../../utils'
+import { contractToTokenId } from '../../utils'
 
 export type Explorers = {
   addressExplorer?: string
@@ -28,37 +28,12 @@ export const readCustomTokenInfos = (wallet: EdgeCurrencyWallet): MetaTokenMap =
 export const readCustomTokenInfo = (wallet: EdgeCurrencyWallet, tokenId: string) =>
   wallet.currencyConfig.customTokens[tokenId]
 
-// ENABLED TOKEN CURRENCY CODES
-export const enableTokenCurrencyCode = async (wallet: EdgeCurrencyWallet, tokenCurrencyCode: string) =>
-  readEnabledTokenCurrencyCodes(wallet)
-    .then((current) => unique([...current, tokenCurrencyCode]))
-    .then((updated) => writeEnabledTokenCurrencyCodes(wallet, updated))
-
-export const disableTokenCurrencyCode = async (wallet: EdgeCurrencyWallet, tokenCurrencyCode: string) =>
-  readEnabledTokenCurrencyCodes(wallet)
-    .then((current) => current.filter((currencyCode) => currencyCode !== tokenCurrencyCode))
-    .then((updated) => writeEnabledTokenCurrencyCodes(wallet, updated))
-
-const ENABLED_TOKEN_CURRENCY_CODES_FILE = 'enabledTokenCurrencyCodes.json'
-
-export const readEnabledTokenCurrencyCodes = (wallet: EdgeCurrencyWallet) =>
-  wallet.disklet
-    .getText(ENABLED_TOKEN_CURRENCY_CODES_FILE)
-    .then((text) => JSON.parse(text) as string[])
-    .then((tokens) => tokens.filter((tokenCode) => tokenCode !== wallet.currencyInfo.currencyCode))
-    .catch(() => [] as string[])
-
-export const readEnabledCustomTokenInfos = async (wallet: EdgeCurrencyWallet): Promise<MetaTokenMap> => {
-  const customTokenInfos = readCustomTokenInfos(wallet)
-  const enabledCodes = await readEnabledTokenCurrencyCodes(wallet)
-
-  return Object.fromEntries(
-    Object.entries(customTokenInfos).filter(([currencyCode]) => enabledCodes.includes(currencyCode)),
-  )
-}
-
-export const writeEnabledTokenCurrencyCodes = (wallet: EdgeCurrencyWallet, enabledTokens: string[]) =>
-  wallet.disklet.setText(ENABLED_TOKEN_CURRENCY_CODES_FILE, JSON.stringify(enabledTokens))
+export const enabledTokenCurrencyCodes = (wallet: EdgeCurrencyWallet) =>
+  wallet.enabledTokenIds
+    .map((tokenId) => wallet.currencyConfig.allTokens[tokenId]?.currencyCode)
+    .filter((currencyCode): currencyCode is string => {
+      return !!currencyCode && currencyCode !== wallet.currencyInfo.currencyCode
+    })
 
 export const removeKey = <T extends { [key: string]: any }>(key: string, object: T) => {
   const dup = { ...object }
