@@ -1,6 +1,6 @@
 import { EdgeAccount, EdgeCurrencyWallet, EdgeTokenId } from 'edge-core-js'
 
-import { getCurrencyCodeFromTokenId, getWalletListMeta, unique } from '../utils'
+import { getCurrencyCodeFromTokenId, getWalletListMeta, unique, uniqueBy } from '../utils'
 import { useWatch } from './watch'
 
 export const getActiveCurrencyCodes = (account: EdgeAccount) => {
@@ -31,30 +31,19 @@ export type ActiveAsset = {
   currencyCode: string
 }
 
-export const getActiveAssets = (account: EdgeAccount): ActiveAsset[] => {
-  const seen = new Set<string>()
-  const assets: ActiveAsset[] = []
-
-  for (const wallet of Object.values(account.currencyWallets)) {
-    const add = (tokenId: EdgeTokenId) => {
-      const key = `${wallet.currencyInfo.pluginId}:${tokenId ?? 'native'}`
-      if (seen.has(key)) return
-      seen.add(key)
-      assets.push({
-        key,
+export const getActiveAssets = (account: EdgeAccount): ActiveAsset[] =>
+  uniqueBy(
+    (asset) => asset.key,
+    Object.values(account.currencyWallets).flatMap((wallet) =>
+      [null, ...wallet.enabledTokenIds].map((tokenId) => ({
+        key: `${wallet.currencyInfo.pluginId}:${tokenId ?? 'native'}`,
         pluginId: wallet.currencyInfo.pluginId,
         tokenId,
         wallet,
         currencyCode: getCurrencyCodeFromTokenId(wallet, tokenId),
-      })
-    }
-
-    add(null)
-    wallet.enabledTokenIds.forEach(add)
-  }
-
-  return assets
-}
+      })),
+    ),
+  )
 
 export const useActiveAssets = (account: EdgeAccount) => {
   useWatch(account, 'activeWalletIds')
