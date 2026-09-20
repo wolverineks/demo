@@ -1,19 +1,21 @@
-import { EdgeCurrencyWallet } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 import JSONPretty from 'react-json-pretty'
 
 import { useEdgeAccount } from '../auth'
 import { Alert, Button, Debug, FlipInput, Form, FormControl, FormGroup, FormLabel, InputGroup } from '../components'
-import { useDisplayDenomination, useFiatCurrencyCode, useReceiveAddressAndEncodeUri } from '../hooks'
+import { useAssetDisplayDenomination, useFiatCurrencyCode, useReceiveAddressAndEncodeUri } from '../hooks'
+import { getCurrencyCodeFromTokenId } from '../utils'
 
 const QRCode = React.lazy(() => import('react-qr-code'))
 
-export const Request: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
+export const Request: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId }> = ({ wallet, tokenId }) => {
   const account = useEdgeAccount()
   const [nativeAmount, setNativeAmount] = React.useState('0')
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
-  const [displayDenomination] = useDisplayDenomination(account, currencyCode)
-  const { data, error } = useReceiveAddressAndEncodeUri({ wallet, nativeAmount, options: { currencyCode } })
+  const [displayDenomination] = useAssetDisplayDenomination(account, wallet, tokenId)
+  const { data, error } = useReceiveAddressAndEncodeUri({ wallet, nativeAmount, options: { tokenId } })
+  const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
 
   return (
     <Form>
@@ -33,7 +35,7 @@ export const Request: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: strin
       </FormGroup>
 
       <FormGroup>
-        <FlipInput onChange={setNativeAmount} currencyCode={currencyCode} fiatCurrencyCode={fiatCurrencyCode} />
+        <FlipInput onChange={setNativeAmount} wallet={wallet} tokenId={tokenId} fiatCurrencyCode={fiatCurrencyCode} />
       </FormGroup>
 
       <FormGroup>
@@ -61,7 +63,8 @@ export const Request: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: strin
             nativeAmount,
             fiatCurrencyCode,
             displayDenomination,
-            currencyCodeOptions: { currencyCode },
+            tokenId,
+            currencyCode,
             uri: data?.uri,
             publicAddress: data?.publicAddress,
             addresses: data?.addresses,

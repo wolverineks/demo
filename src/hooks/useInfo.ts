@@ -1,22 +1,12 @@
-import { EdgeAccount } from 'edge-core-js'
+import { EdgeAccount, EdgeCurrencyWallet, EdgeTokenId } from 'edge-core-js'
 import { useQuery } from 'react-query'
 
-import { fiatInfos, getCurrencyInfos, uniqueBy } from '../utils'
-import { getConfigTokenInfos, readCustomTokenInfos } from './tokens/utils'
+import { fiatInfos, getCurrencyInfos } from '../utils'
+import { metaTokenFromEdgeToken, readCustomTokenInfos } from './tokens/utils'
+import { useWatch } from './watch'
 
 export const getCurrencyInfo = (account: EdgeAccount, currencyCode: string) => {
   return getCurrencyInfos(account).find((currencyInfo) => currencyInfo.currencyCode === currencyCode)
-}
-
-export const getTokenInfos = (account: EdgeAccount) => {
-  return uniqueBy(
-    (tokenInfo) => tokenInfo.currencyCode,
-    Object.values(account.currencyConfig).flatMap(getConfigTokenInfos),
-  )
-}
-
-export const getTokenInfo = (account: EdgeAccount, currencyCode: string) => {
-  return getTokenInfos(account).find((tokenInfo) => tokenInfo.currencyCode === currencyCode)
 }
 
 export const getFiatInfo = (currencyCode: string) => {
@@ -25,8 +15,30 @@ export const getFiatInfo = (currencyCode: string) => {
   )
 }
 
+export const getAssetInfo = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) => {
+  if (tokenId == null) return wallet.currencyInfo
+
+  const token = wallet.currencyConfig.allTokens[tokenId]
+  if (!token) throw new Error(`Invalid tokenId: ${tokenId}`)
+
+  return metaTokenFromEdgeToken(token, {
+    tokenId,
+    pluginId: wallet.currencyInfo.pluginId,
+    addressExplorer: wallet.currencyInfo.addressExplorer,
+    blockExplorer: wallet.currencyInfo.blockExplorer,
+    transactionExplorer: wallet.currencyInfo.transactionExplorer,
+    xpubExplorer: wallet.currencyInfo.xpubExplorer,
+  })
+}
+
+export const useAssetInfo = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) => {
+  useWatch(wallet.currencyConfig, 'allTokens')
+
+  return getAssetInfo(wallet, tokenId)
+}
+
 export const getInfo = (account: EdgeAccount, currencyCode: string) => {
-  return getCurrencyInfo(account, currencyCode) || getTokenInfo(account, currencyCode) || getFiatInfo(currencyCode)
+  return getCurrencyInfo(account, currencyCode) || getFiatInfo(currencyCode)
 }
 
 export const useInfo = (account: EdgeAccount, currencyCode: string) => {
@@ -38,7 +50,7 @@ export const useInfo = (account: EdgeAccount, currencyCode: string) => {
     queryFn: async () => {
       const wallets = Object.values(account.currencyWallets)
       for (const wallet of wallets) {
-        const match = readCustomTokenInfos(wallet)[currencyCode]
+        const match = Object.values(readCustomTokenInfos(wallet)).find((token) => token.currencyCode === currencyCode)
 
         if (match) {
           return match
@@ -54,3 +66,6 @@ export const useInfo = (account: EdgeAccount, currencyCode: string) => {
 
   return info
 }
+
+export const assetDenominationKey = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) =>
+  `${wallet.currencyInfo.pluginId}:${tokenId ?? 'native'}`

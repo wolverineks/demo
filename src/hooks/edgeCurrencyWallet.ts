@@ -10,7 +10,7 @@ import {
 import React from 'react'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
-import { getCurrencyCodeFromTokenId, getNativeBalance, getPublicAddress, getTokenIdFromCurrencyCode } from '../utils'
+import { getCurrencyCodeFromTokenId, getNativeBalance, getPublicAddress } from '../utils'
 import { useInvalidateQueries } from './useInvalidateQueries'
 import { useWatch } from './watch'
 
@@ -40,10 +40,10 @@ export const useSyncRatio = (wallet: EdgeCurrencyWallet) => {
   return ratio
 }
 
-export const useBalance = (wallet: EdgeCurrencyWallet, currencyCode: string) => {
+export const useBalance = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) => {
   useWatch(wallet, 'balanceMap')
 
-  return getNativeBalance(wallet, getTokenIdFromCurrencyCode(wallet, currencyCode))
+  return getNativeBalance(wallet, tokenId)
 }
 
 export const useWriteFiatCurrencyCode = (wallet: EdgeCurrencyWallet) => {
@@ -75,7 +75,7 @@ export const useName = (wallet: EdgeCurrencyWallet) => {
 export const receiveAddressQueryKey = (
   walletId: string,
   nativeAmount: string,
-  options?: { currencyCode?: string; tokenId?: EdgeTokenId },
+  options?: { tokenId?: EdgeTokenId },
 ) => [walletId, 'receiveAddressAndEncodeUri', nativeAmount, options] as const
 
 export const fetchReceiveAddressAndUri = async ({
@@ -85,9 +85,9 @@ export const fetchReceiveAddressAndUri = async ({
 }: {
   wallet: EdgeCurrencyWallet
   nativeAmount: string
-  options?: { currencyCode?: string; tokenId?: EdgeTokenId }
+  options?: { tokenId?: EdgeTokenId }
 }) => {
-  const tokenId = options?.tokenId ?? getTokenIdFromCurrencyCode(wallet, options?.currencyCode)
+  const tokenId = options?.tokenId ?? null
   const addresses = await wallet.getAddresses({ tokenId })
   const publicAddress = getPublicAddress(addresses)
   if (!publicAddress) throw new Error('No receive address')
@@ -107,7 +107,7 @@ export const useReceiveAddressAndEncodeUri = ({
 }: {
   wallet: EdgeCurrencyWallet
   nativeAmount: string
-  options?: { currencyCode?: string; tokenId?: EdgeTokenId }
+  options?: { tokenId?: EdgeTokenId }
   queryOptions?: UseQueryOptions<{ publicAddress: string; addresses: EdgeAddress[]; uri: string }>
 }) => {
   return useQuery({
@@ -142,7 +142,7 @@ const dedupe = (transactions: EdgeTransaction[]) =>
 
 export const useTransactions = (
   wallet: EdgeCurrencyWallet,
-  options?: Partial<EdgeGetTransactionsOptions> & { currencyCode?: string },
+  options?: Partial<EdgeGetTransactionsOptions>,
   queryOptions?: UseQueryOptions<EdgeTransaction[]>,
 ) => {
   const txOptions = toTransactionOptions(wallet, options)
@@ -184,7 +184,7 @@ export const usePasteUri = (wallet: EdgeCurrencyWallet) => {
 
 export const useTransactionCount = (
   wallet: EdgeCurrencyWallet,
-  options?: Partial<EdgeGetTransactionsOptions> & { currencyCode?: string },
+  options?: Partial<EdgeGetTransactionsOptions>,
   queryOptions?: UseQueryOptions<number>,
 ) => {
   const txOptions = toTransactionOptions(wallet, options)
@@ -326,12 +326,12 @@ export const useExportTransactions = (
 
 const toTransactionOptions = (
   wallet: EdgeCurrencyWallet,
-  options?: Partial<EdgeGetTransactionsOptions> & { currencyCode?: string },
+  options?: Partial<EdgeGetTransactionsOptions>,
 ): EdgeGetTransactionsOptions => {
-  const { currencyCode, tokenId, ...rest } = options ?? {}
+  const { tokenId, ...rest } = options ?? {}
 
   return {
     ...rest,
-    tokenId: tokenId !== undefined ? tokenId : getTokenIdFromCurrencyCode(wallet, currencyCode ?? wallet.currencyInfo.currencyCode),
+    tokenId: tokenId !== undefined ? tokenId : null,
   }
 }

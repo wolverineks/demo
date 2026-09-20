@@ -1,8 +1,7 @@
 import { EdgeCurrencyWallet, EdgeTokenInfo } from 'edge-core-js'
 import { useMutation, useQueryClient } from 'react-query'
 
-import { getTokenIdFromCurrencyCode } from '../../utils'
-import { enabledTokenCurrencyCodes, getIncludedInfos, readCustomTokenInfos } from './utils'
+import { getIncludedInfos, readCustomTokenInfos } from './utils'
 import { useInvalidateQueries, useWatch } from '..'
 
 const useCustomInfos = (wallet: EdgeCurrencyWallet) => {
@@ -23,11 +22,8 @@ const useAddCustomInfo = (wallet: EdgeCurrencyWallet) => {
         networkLocation: { contractAddress: tokenInfo.contractAddress },
       })
       await wallet.changeEnabledTokenIds([...wallet.enabledTokenIds, tokenId])
-      await queryClient.invalidateQueries([
-        ['info', tokenInfo.currencyCode],
-        [tokenInfo.currencyCode, 'displayDenomination'],
-        ['displayDenomination', tokenInfo.currencyCode],
-      ])
+      await queryClient.invalidateQueries([['info']])
+      return tokenId
     },
     {
       ...useInvalidateQueries([['info']]),
@@ -36,10 +32,9 @@ const useAddCustomInfo = (wallet: EdgeCurrencyWallet) => {
 }
 
 const useRemoveCustomInfo = (wallet: EdgeCurrencyWallet) => {
-  return useMutation((currencyCode: string) => {
-    const tokenId = getTokenIdFromCurrencyCode(wallet, currencyCode)
+  return useMutation((tokenId: string) => {
     return wallet.changeEnabledTokenIds(wallet.enabledTokenIds.filter((id) => id !== tokenId)).then(() => {
-      if (tokenId) return wallet.currencyConfig.removeCustomToken(tokenId)
+      return wallet.currencyConfig.removeCustomToken(tokenId)
     })
   })
 }
@@ -48,24 +43,18 @@ const useEnableToken = (wallet: EdgeCurrencyWallet) => {
   const tokenInfos = getIncludedInfos(wallet)
   const customTokenInfos = useCustomInfos(wallet)
 
-  const enableToken = async (tokenCurrencyCode: string) => {
-    if (!tokenInfos[tokenCurrencyCode] && !customTokenInfos[tokenCurrencyCode])
-      throw new Error(`Invalid Currency Code: ${tokenCurrencyCode}`)
+  return useMutation(
+    async (tokenId: string) => {
+      if (!tokenInfos[tokenId] && !customTokenInfos[tokenId]) throw new Error(`Invalid tokenId: ${tokenId}`)
 
-    const tokenId = getTokenIdFromCurrencyCode(wallet, tokenCurrencyCode)
-    if (!tokenId) return
-    await wallet.changeEnabledTokenIds([...wallet.enabledTokenIds, tokenId])
-  }
-
-  return useMutation(enableToken, {
-    useErrorBoundary: true,
-  })
+      await wallet.changeEnabledTokenIds([...wallet.enabledTokenIds, tokenId])
+    },
+    { useErrorBoundary: true },
+  )
 }
 
 const useDisableToken = (wallet: EdgeCurrencyWallet) => {
-  return useMutation((tokenCurrencyCode: string) => {
-    const tokenId = getTokenIdFromCurrencyCode(wallet, tokenCurrencyCode)
-
+  return useMutation((tokenId: string) => {
     return wallet.changeEnabledTokenIds(wallet.enabledTokenIds.filter((id) => id !== tokenId))
   })
 }
@@ -80,7 +69,7 @@ export const useTokens = (wallet: EdgeCurrencyWallet) => {
     customTokenInfos: useCustomInfos(wallet),
     addCustomInfo: useAddCustomInfo(wallet).mutate,
     removeCustomInfo: useRemoveCustomInfo(wallet).mutate,
-    enabled: enabledTokenCurrencyCodes(wallet),
+    enabled: wallet.enabledTokenIds,
     enable: useEnableToken(wallet).mutateAsync,
     disable: useDisableToken(wallet).mutate,
   }

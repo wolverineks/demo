@@ -1,10 +1,18 @@
-import { EdgeAccount, EdgeCurrencyInfo, EdgeDenomination, EdgeMetaToken } from 'edge-core-js'
+import { EdgeAccount, EdgeCurrencyInfo, EdgeCurrencyWallet, EdgeDenomination, EdgeMetaToken, EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 import { useQuery } from 'react-query'
 
 import { useEdgeAccount } from '../../auth'
 import { Boundary, FormControl, ListGroup, ListGroupItem, Logo } from '../../components'
-import { useActiveCurrencyCodes, useDefaultFiatCurrencyCode, useDenominations, useInfo, useWatch } from '../../hooks'
+import {
+  useActiveAssets,
+  useAssetDenominations,
+  useAssetInfo,
+  useDefaultFiatCurrencyCode,
+  useDenominations,
+  useInfo,
+  useWatch,
+} from '../../hooks'
 import { FiatInfo, getSortedCurrencyWallets, isFiat, isToken, normalize, unique } from '../../utils'
 
 const useWalletFiatCurrencyCodes = (account: EdgeAccount) => {
@@ -25,16 +33,23 @@ export const Currencies: React.FC = () => {
   const [searchQuery, setSearchQuery] = React.useState('')
   const [fiatCurrencyCode] = useDefaultFiatCurrencyCode(account)
   const walletFiatCurrencyCodes = useWalletFiatCurrencyCodes(account)
-  const settings = unique([fiatCurrencyCode, ...walletFiatCurrencyCodes, ...useActiveCurrencyCodes(account)])
+  const fiatCodes = unique([fiatCurrencyCode, ...walletFiatCurrencyCodes])
+  const assets = useActiveAssets(account)
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       <FormControl placeholder={'Search'} onChange={(event) => setSearchQuery(event.currentTarget.value)} />
 
-      {settings.map((currencyCode) => (
-        <Matcher key={currencyCode} currencyCode={currencyCode} query={searchQuery}>
-          <CurrencySetting currencyCode={currencyCode} />
-        </Matcher>
+      {fiatCodes.map((currencyCode) => (
+        <FiatMatcher key={currencyCode} currencyCode={currencyCode} query={searchQuery}>
+          <FiatSetting currencyCode={currencyCode} />
+        </FiatMatcher>
+      ))}
+
+      {assets.map((asset) => (
+        <AssetMatcher key={asset.key} asset={asset} query={searchQuery}>
+          <AssetSetting wallet={asset.wallet} tokenId={asset.tokenId} />
+        </AssetMatcher>
       ))}
     </ListGroup>
   )
@@ -48,14 +63,23 @@ const matches = (query: string) => (info: EdgeCurrencyInfo | EdgeMetaToken | Fia
     ? normalize(info.currencyCode).includes(normalize(query))
     : normalize(info.displayName).includes(normalize(query)))
 
-const Matcher: React.FC<{ query: string; currencyCode: string }> = ({ query, currencyCode, children }) => {
+const FiatMatcher: React.FC<{ query: string; currencyCode: string }> = ({ query, currencyCode, children }) => {
   const account = useEdgeAccount()
   const info = useInfo(account, currencyCode)
 
   return <>{matches(query)(info) ? children : null}</>
 }
 
-const CurrencySetting: React.FC<{ currencyCode: string }> = ({ currencyCode }) => {
+const AssetMatcher: React.FC<{
+  query: string
+  asset: { wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId }
+}> = ({ query, asset, children }) => {
+  const info = useAssetInfo(asset.wallet, asset.tokenId)
+
+  return <>{matches(query)(info) ? children : null}</>
+}
+
+const FiatSetting: React.FC<{ currencyCode: string }> = ({ currencyCode }) => {
   const account = useEdgeAccount()
   const info = useInfo(account, currencyCode)
 
@@ -63,37 +87,82 @@ const CurrencySetting: React.FC<{ currencyCode: string }> = ({ currencyCode }) =
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       <ListGroupItem>
         <Logo currencyCode={info.currencyCode} />
-        {isToken(info) ? info.currencyName : info.displayName} - {info.currencyCode}
+        {isFiat(info) ? info.currencyCode : isToken(info) ? info.currencyName : info.displayName} - {info.currencyCode}
       </ListGroupItem>
       <Boundary>
-        <Denominations currencyCode={info.currencyCode} />
+        <FiatDenominations currencyCode={info.currencyCode} />
       </Boundary>
     </ListGroup>
   )
 }
 
-const Denominations = ({ currencyCode }: { currencyCode: string }) => {
+const AssetSetting: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId }> = ({ wallet, tokenId }) => {
+  const account = useEdgeAccount()
+  const info = useAssetInfo(wallet, tokenId)
+
+  return (
+    <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
+      <ListGroupItem>
+        <Logo
+          currencyCode={info.currencyCode}
+          pluginId={wallet.currencyInfo.pluginId}
+          tokenId={tokenId ?? undefined}
+        />
+        {isToken(info) ? info.currencyName : info.displayName} - {info.currencyCode}
+      </ListGroupItem>
+      <Boundary>
+        <AssetDenominations wallet={wallet} tokenId={tokenId} account={account} />
+      </Boundary>
+    </ListGroup>
+  )
+}
+
+const FiatDenominations = ({ currencyCode }: { currencyCode: string }) => {
   const account = useEdgeAccount()
   const denominations = useDenominations(account, currencyCode)
 
-  return (
-    <>
-      <ListGroupItem>Denomination</ListGroupItem>
-      {denominations.all.length <= 0 ? (
-        <ListGroupItem>No Denominations</ListGroupItem>
-      ) : (
-        denominations.all.map((denomination) => (
-          <Denomination
-            key={`${denomination.name} - ${denomination.symbol}`}
-            denomination={denomination}
-            onSelect={() => denominations.setDisplay(denomination.multiplier)}
-            isSelected={denomination.multiplier === denominations.display.multiplier}
-          />
-        ))
-      )}
-    </>
-  )
+  return <DenominationList denominations={denominations} />
 }
+
+const AssetDenominations = ({
+  account,
+  wallet,
+  tokenId,
+}: {
+  account: EdgeAccount
+  wallet: EdgeCurrencyWallet
+  tokenId: EdgeTokenId
+}) => {
+  const denominations = useAssetDenominations(account, wallet, tokenId)
+
+  return <DenominationList denominations={denominations} />
+}
+
+const DenominationList = ({
+  denominations,
+}: {
+  denominations: {
+    all: EdgeDenomination[]
+    display: EdgeDenomination
+    setDisplay: (multiplier: string) => unknown
+  }
+}) => (
+  <>
+    <ListGroupItem>Denomination</ListGroupItem>
+    {denominations.all.length <= 0 ? (
+      <ListGroupItem>No Denominations</ListGroupItem>
+    ) : (
+      denominations.all.map((denomination) => (
+        <Denomination
+          key={`${denomination.name} - ${denomination.symbol}`}
+          denomination={denomination}
+          onSelect={() => denominations.setDisplay(denomination.multiplier)}
+          isSelected={denomination.multiplier === denominations.display.multiplier}
+        />
+      ))
+    )}
+  </>
+)
 
 const Denomination: React.FC<{
   denomination: EdgeDenomination

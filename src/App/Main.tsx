@@ -34,7 +34,7 @@ export const Main = () => {
 }
 
 const ExchangeWithSelectedWallet = () => {
-  const [{ wallet, currencyCode }] = useSelectedWallet()
+  const [{ wallet, tokenId }] = useSelectedWallet()
 
-  return <Exchange wallet={wallet} currencyCode={currencyCode} />
+  return <Exchange wallet={wallet} tokenId={tokenId} />
 }

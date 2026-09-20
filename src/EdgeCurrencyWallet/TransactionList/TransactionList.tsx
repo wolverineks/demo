@@ -1,4 +1,4 @@
-import { EdgeCurrencyWallet, EdgeTransaction } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeTokenId, EdgeTransaction } from 'edge-core-js'
 import React from 'react'
 
 import { useEdgeAccount } from '../../auth'
@@ -15,12 +15,12 @@ import { useFilter } from '../useFilter'
 import { ExportTransactions } from './ExportTransactions'
 import { Metadata } from './Metadata'
 
-export const TransactionList: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({
+export const TransactionList: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId }> = ({
   wallet,
-  currencyCode,
+  tokenId,
 }) => {
-  const transactionCount = useTransactionCount(wallet, { currencyCode })
-  const [transactions, setFilterQuery] = useFilter(matches(wallet), useTransactions(wallet, { currencyCode }))
+  const transactionCount = useTransactionCount(wallet, { tokenId })
+  const [transactions, setFilterQuery] = useFilter(matches(wallet), useTransactions(wallet, { tokenId }))
   const [isActive, setIsActive] = React.useState(false)
 
   return (
@@ -33,7 +33,7 @@ export const TransactionList: React.FC<{ wallet: EdgeCurrencyWallet; currencyCod
       </Row>
 
       <Row>
-        <ExportTransactions wallet={wallet} currencyCode={currencyCode} isActive={isActive} />
+        <ExportTransactions wallet={wallet} tokenId={tokenId} isActive={isActive} />
       </Row>
 
       <Row>
@@ -71,7 +71,8 @@ const TransactionListRow: React.FC<{ wallet: EdgeCurrencyWallet; transaction: Ed
     >
       <span>
         <DisplayDate transaction={transaction} />:{' '}
-        <DisplayAmount nativeAmount={transaction.nativeAmount} currencyCode={currencyCode} /> {transaction.txid}
+        <DisplayAmount nativeAmount={transaction.nativeAmount} wallet={wallet} tokenId={transaction.tokenId} />{' '}
+        {transaction.txid}
       </span>
 
       {transaction.metadata && <Metadata metadata={transaction.metadata} />}

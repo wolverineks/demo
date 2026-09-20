@@ -1,12 +1,11 @@
-import { EdgeCurrencyWallet, EdgeGetTransactionsOptions } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeGetTransactionsOptions, EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 import DatePicker from 'react-date-picker'
 import JSONPretty from 'react-json-pretty'
 
 import { useEdgeAccount } from '../../auth'
 import { Accordion, Button, Col, Debug, Form, FormControl, Row } from '../../components'
-import { useDenominations, useExportTransactions } from '../../hooks'
-import { getTokenIdFromCurrencyCode } from '../../utils'
+import { useAssetDenominations, useExportTransactions } from '../../hooks'
 
 enum ExportFormat {
   'QBO' = 'QBO',
@@ -15,15 +14,15 @@ enum ExportFormat {
 
 export const ExportTransactions = ({
   wallet,
-  currencyCode,
+  tokenId,
   isActive,
 }: {
   wallet: EdgeCurrencyWallet
-  currencyCode: string
+  tokenId: EdgeTokenId
   isActive: boolean
 }) => {
   const account = useEdgeAccount()
-  const { display, all } = useDenominations(account, currencyCode)
+  const { display, all } = useAssetDenominations(account, wallet, tokenId)
 
   const [options, setOptions] = React.useState<
     EdgeGetTransactionsOptions & {
@@ -34,7 +33,7 @@ export const ExportTransactions = ({
       returnEntries?: number
     }
   >({
-    tokenId: getTokenIdFromCurrencyCode(wallet, currencyCode),
+    tokenId,
     denomination: display.multiplier,
   })
   const [format, setFormat] = React.useState<ExportFormat>(ExportFormat.CSV)

@@ -13,7 +13,7 @@ import {
   useSyncRatio,
   useTokens,
 } from '../../hooks'
-import { normalize } from '../../utils'
+import { getCurrencyCodeFromTokenId, normalize } from '../../utils'
 import { EnabledTokens } from './EnabledTokens'
 import { WalletOptions } from './WalletOptions'
 
@@ -48,7 +48,8 @@ const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId
   const [name] = useName(wallet)
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
 
-  const display = [name || '', wallet.currencyInfo.currencyCode, fiatCurrencyCode, ...tokens.enabled].some((target) =>
+  const enabledCodes = tokens.enabled.map((tokenId) => getCurrencyCodeFromTokenId(wallet, tokenId))
+  const display = [name || '', wallet.currencyInfo.currencyCode, fiatCurrencyCode, ...enabledCodes].some((target) =>
     normalize(target).includes(normalize(searchQuery)),
   )
 
@@ -70,17 +71,17 @@ const ActiveWalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
     <>
       <ListGroup.Item
         className="wallet-row"
-        variant={wallet.id === selected?.id && currencyCode === selected?.currencyCode ? 'primary' : undefined}
+        variant={wallet.id === selected?.id && selected?.tokenId == null ? 'primary' : undefined}
       >
         <SyncRatio wallet={wallet} />
         <div className="wallet-row__body">
-          <div className="wallet-row__main" onClick={() => select({ id: walletId, currencyCode })}>
-            <Logo currencyCode={currencyCode} />
+          <div className="wallet-row__main" onClick={() => select({ id: walletId, tokenId: null })}>
+            <Logo currencyCode={currencyCode} pluginId={wallet.currencyInfo.pluginId} />
             <div className="wallet-row__text">
               <div className="wallet-row__name">{name || currencyCode}</div>
               <div className="wallet-row__balance">
                 <Boundary>
-                  <Balance wallet={wallet} currencyCode={currencyCode} />
+                  <Balance wallet={wallet} tokenId={null} />
                 </Boundary>
               </div>
             </div>

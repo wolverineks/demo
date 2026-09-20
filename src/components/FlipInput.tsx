@@ -1,13 +1,15 @@
-import { EdgeDenomination } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeDenomination, EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 
 import { useEdgeAccount } from '../auth'
 import { AmountInput, Boundary } from '../components'
-import { convertCurrency, denominatedToNative, nativeToDenominated, useDenominations } from '../hooks'
+import { convertCurrency, denominatedToNative, nativeToDenominated, useAssetDenominations, useDenominations } from '../hooks'
+import { getCurrencyCodeFromTokenId } from '../utils'
 
 type FlipInputProps = {
   onChange: (nativeAmount: string) => any
-  currencyCode: string
+  wallet: EdgeCurrencyWallet
+  tokenId: EdgeTokenId
   fiatCurrencyCode: string
   nativeAmount?: string
 }
@@ -16,12 +18,13 @@ export type FlipInputRef = {
   setNativeAmount: (nativeAmount: string) => void
 }
 
-export const FlipInput = React.forwardRef<FlipInputRef, FlipInputProps>(function FlipInput( // function syntax required for component display names
-  { currencyCode, fiatCurrencyCode, onChange },
+export const FlipInput = React.forwardRef<FlipInputRef, FlipInputProps>(function FlipInput(
+  { wallet, tokenId, fiatCurrencyCode, onChange },
   ref,
 ) {
   const account = useEdgeAccount()
-  const topDenominations = useDenominations(account, currencyCode)
+  const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
+  const topDenominations = useAssetDenominations(account, wallet, tokenId)
   const bottomDenominations = useDenominations(account, fiatCurrencyCode)
 
   const { top, bottom } = useFlipInput({
@@ -80,11 +83,7 @@ const useFlipInput = ({
       nativeAmount: topNativeAmount,
       denomination: topDenominations.exchange,
     })
-    const bottomExchangeAmount = await convertCurrency(
-      currencyCode,
-      fiatCurrencyCode,
-      Number(topExchangeAmount),
-    )
+    const bottomExchangeAmount = await convertCurrency(currencyCode, fiatCurrencyCode, Number(topExchangeAmount))
     const bottomNativeAmount = denominatedToNative({
       amount: String(bottomExchangeAmount),
       denomination: bottomDenominations.exchange,
@@ -108,11 +107,7 @@ const useFlipInput = ({
       nativeAmount: bottomNativeAmount,
       denomination: bottomDenominations.exchange,
     })
-    const topExchangeAmount = await convertCurrency(
-      fiatCurrencyCode,
-      currencyCode,
-      Number(bottomExchangeAmount),
-    )
+    const topExchangeAmount = await convertCurrency(fiatCurrencyCode, currencyCode, Number(bottomExchangeAmount))
     const topNativeAmount = denominatedToNative({
       amount: String(topExchangeAmount),
       denomination: topDenominations.exchange,

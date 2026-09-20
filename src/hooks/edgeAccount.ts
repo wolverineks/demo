@@ -5,15 +5,15 @@ import {
   EdgeSwapQuote,
   EdgeSwapRequest,
   EdgeSwapResult,
+  EdgeTokenId,
 } from 'edge-core-js'
 import React from 'react'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
-import { getCurrencyCodeFromTokenId, getTokenIdFromCurrencyCode } from '../utils'
+import { getCurrencyCodeFromTokenId } from '../utils'
 import { walletTransactionQueryKeys } from './edgeCurrencyWallet'
 import { convertCurrency, useOnRateChange } from './rates'
-import { metaTokenFromEdgeToken, readCustomTokenInfo } from './tokens'
-import { getFiatInfo, getInfo } from './useInfo'
+import { getAssetInfo, getFiatInfo } from './useInfo'
 import { useInvalidateQueries } from './useInvalidateQueries'
 import { useWatch } from './watch'
 import { getExchangeDenomination, nativeToDenominated, useDisplayDenomination } from '.'
@@ -57,10 +57,7 @@ export const useEdgeAccountTotal = (account: EdgeAccount) => {
       Object.values(account.currencyWallets).flatMap((wallet) =>
         Array.from(wallet.balanceMap.entries()).map(async ([tokenId, nativeAmount]) => {
           const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
-          const customToken = tokenId != null ? readCustomTokenInfo(wallet, tokenId) : undefined
-          const info =
-            getInfo(account, currencyCode) ||
-            (customToken != null && tokenId != null ? metaTokenFromEdgeToken(customToken, { tokenId }) : undefined)
+          const info = getAssetInfo(wallet, tokenId)
           if (!info) return 0
 
           const exchangeAmount = nativeToDenominated({
@@ -205,25 +202,25 @@ export const useSwapQuote = ({
   account,
   nativeAmount,
   fromWallet,
-  fromCurrencyCode,
+  fromTokenId,
   toWallet,
-  toCurrencyCode,
+  toTokenId,
 }: {
   account: EdgeAccount
   nativeAmount: string
   fromWallet: EdgeCurrencyWallet
-  fromCurrencyCode: string
+  fromTokenId: EdgeTokenId
   toWallet: EdgeCurrencyWallet | undefined
-  toCurrencyCode: string | undefined
+  toTokenId: EdgeTokenId | undefined
 }) => {
   const hasAmount = Number(nativeAmount) > 0
   const swapRequest: EdgeSwapRequest | undefined =
-    toWallet && toCurrencyCode && hasAmount
+    toWallet && toTokenId !== undefined && hasAmount
       ? {
           fromWallet,
           toWallet,
-          fromTokenId: getTokenIdFromCurrencyCode(fromWallet, fromCurrencyCode),
-          toTokenId: getTokenIdFromCurrencyCode(toWallet, toCurrencyCode),
+          fromTokenId,
+          toTokenId,
           nativeAmount,
           quoteFor: 'from',
         }
@@ -234,9 +231,9 @@ export const useSwapQuote = ({
       {
         nativeAmount,
         fromWalletId: fromWallet.id,
-        fromCurrencyCode,
+        fromTokenId,
         toWalletId: toWallet?.id,
-        toCurrencyCode,
+        toTokenId,
         quoteFor: 'from',
       },
     ],

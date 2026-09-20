@@ -1,20 +1,10 @@
-import { EdgeAccount } from 'edge-core-js'
+import { EdgeAccount, EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 
 import { useEdgeAccount } from '../auth'
 import { useActiveWalletIds, useEdgeCurrencyWallet, useTokens } from '../hooks'
 
-export const getCurrencyCodeFromWalletId = (account: EdgeAccount, id: string) => {
-  const { allKeys, currencyConfig } = account
-  const walletInfo = allKeys.find((walletInfo) => walletInfo.id === id)
-  const currencyCode = Object.values(currencyConfig).find(
-    ({ currencyInfo }) => currencyInfo.walletType === walletInfo?.type,
-  )!.currencyInfo.currencyCode
-
-  return currencyCode
-}
-
-export type SelectedWalletInfo = { id: string; currencyCode: string }
+export type SelectedWalletInfo = { id: string; tokenId: EdgeTokenId }
 type SetSelectedWalletInfo = (selectedWalletInfo?: SelectedWalletInfo) => void
 
 const SelectedWalletInfoContext = React.createContext<
@@ -24,12 +14,7 @@ const SelectedWalletInfoContext = React.createContext<
 export const SelectedWalletInfoProvider: React.FC = ({ children }) => {
   const account = useEdgeAccount()
   const [selectedWalletInfo, setSelectedWalletInfo] = React.useState<SelectedWalletInfo | undefined>(
-    account.activeWalletIds[0]
-      ? {
-          id: account.activeWalletIds[0],
-          currencyCode: getCurrencyCodeFromWalletId(account, account.activeWalletIds[0]),
-        }
-      : undefined,
+    account.activeWalletIds[0] ? { id: account.activeWalletIds[0], tokenId: null } : undefined,
   )
   const value = React.useMemo(() => [selectedWalletInfo, setSelectedWalletInfo] as const, [selectedWalletInfo])
 
@@ -48,10 +33,8 @@ export const WalletInfoBoundary: React.FC<{ fallback?: React.ReactNode }> = ({ c
   const account = useEdgeAccount()
   const activeWalletIds = useActiveWalletIds(account)
 
-  // no wallet selected
   if (!walletInfo) return <>{fallback}</>
 
-  // selected wallet deactivated remotely
   if (!activeWalletIds.includes(walletInfo.id)) {
     selectWallet(undefined)
 
@@ -61,20 +44,17 @@ export const WalletInfoBoundary: React.FC<{ fallback?: React.ReactNode }> = ({ c
   return <>{children}</>
 }
 
-export const CurrencyCodeBoundary: React.FC<{ fallback?: React.ReactNode }> = ({ children, fallback = null }) => {
+export const TokenIdBoundary: React.FC<{ fallback?: React.ReactNode }> = ({ children, fallback = null }) => {
   const [walletInfo, selectWallet] = useSelectedWalletInfo()
   if (!walletInfo) throw new Error('Missing <WalletInfoBoundary>')
 
   const account = useEdgeAccount()
-  const wallet = useEdgeCurrencyWallet({ account, walletId: walletInfo.id }) // never settles if archived id
+  const wallet = useEdgeCurrencyWallet({ account, walletId: walletInfo.id })
   const tokens = useTokens(wallet)
-  const nativeCurrencyCode = wallet.currencyInfo.currencyCode
-  const isEnabled =
-    walletInfo.currencyCode === nativeCurrencyCode || tokens.enabled.includes(walletInfo.currencyCode)
+  const isEnabled = walletInfo.tokenId == null || tokens.enabled.includes(walletInfo.tokenId)
 
-  // selected token deactivated: keep the wallet, fall back to the native coin
   if (!isEnabled) {
-    selectWallet({ id: walletInfo.id, currencyCode: nativeCurrencyCode })
+    selectWallet({ id: walletInfo.id, tokenId: null })
 
     return <>{fallback}</>
   }
@@ -84,7 +64,7 @@ export const CurrencyCodeBoundary: React.FC<{ fallback?: React.ReactNode }> = ({
 
 export const SelectedWalletBoundary: React.FC<{ fallback?: React.ReactNode }> = ({ children, fallback = null }) => (
   <WalletInfoBoundary fallback={fallback}>
-    <CurrencyCodeBoundary fallback={fallback}>{children}</CurrencyCodeBoundary>
+    <TokenIdBoundary fallback={fallback}>{children}</TokenIdBoundary>
   </WalletInfoBoundary>
 )
 
@@ -93,7 +73,7 @@ export const useSelectedWallet = () => {
   if (!walletInfo) throw new Error('Missing <SelectedWalletBoundary>')
 
   const account = useEdgeAccount()
-  const wallet = useEdgeCurrencyWallet({ account, walletId: walletInfo.id }) // never settles if archived id
+  const wallet = useEdgeCurrencyWallet({ account, walletId: walletInfo.id })
 
-  return [{ wallet, id: walletInfo.id, currencyCode: walletInfo.currencyCode }, selectWallet] as const
+  return [{ wallet, id: walletInfo.id, tokenId: walletInfo.tokenId }, selectWallet] as const
 }

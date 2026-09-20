@@ -79,7 +79,7 @@ const useCreateWallet = () => {
     error,
     status,
   } = useCreateCurrencyWallet(account, {
-    onSuccess: (wallet) => select({ id: wallet.id, currencyCode: wallet.currencyInfo.currencyCode }),
+    onSuccess: (wallet) => select({ id: wallet.id, tokenId: null }),
   })
 
   const [type, setType] = React.useState(walletTypes[0].type)

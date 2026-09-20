@@ -1,4 +1,4 @@
-import { EdgeCurrencyWallet, EdgeTransaction } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeTokenId, EdgeTransaction } from 'edge-core-js'
 import * as React from 'react'
 import JSONPretty from 'react-json-pretty'
 
@@ -17,7 +17,7 @@ import {
   Select,
 } from '../../components'
 import {
-  useDenominations,
+  useAssetDenominations,
   useFiatCurrencyCode,
   useNewTransaction,
   usePasteUri,
@@ -32,7 +32,8 @@ import { CustomFee, canAdjustFees, useSpendInfo } from './useSpendInfo'
 const MULTIPLE_TARGETS_CURRENCIES = ['BCH', 'BTC', 'BSV']
 const QrReader = React.lazy(() => import('react-qr-scanner'))
 
-export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({ wallet, currencyCode }) => {
+export const Send: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId }> = ({ wallet, tokenId }) => {
+  const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
   const [scan, setScan] = React.useState(false)
   const spendMax = useSpendMax(wallet)
@@ -49,7 +50,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
     spendTargetRef,
     spendTargets,
     spendInfo,
-  } = useSpendInfo(wallet, currencyCode)
+  } = useSpendInfo(wallet, tokenId)
 
   const { data: transaction, error } = useNewTransaction(wallet, spendInfo, {
     enabled: !!spendInfo.spendTargets[0].publicAddress && !!Number(spendInfo.spendTargets[0].nativeAmount),
@@ -67,7 +68,8 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
         <div key={id}>
           {index === 0 ? (
             <SpendTarget
-              currencyCode={currencyCode}
+              wallet={wallet}
+              tokenId={tokenId}
               fiatCurrencyCode={fiatCurrencyCode}
               onChange={(newSpendTarget) => spendTargets.update(id, newSpendTarget)}
               ref={spendTargetRef}
@@ -76,7 +78,8 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }
             <>
               <Button onClick={() => spendTargets.remove(index)}>X - {index}</Button>
               <SpendTarget
-                currencyCode={currencyCode}
+                wallet={wallet}
+                tokenId={tokenId}
                 fiatCurrencyCode={fiatCurrencyCode}
                 onChange={(spendTarget) => spendTargets.update(index, spendTarget)}
               />
@@ -199,8 +202,8 @@ const CustomFeeForm = ({
   setCustomFee: (customFee: CustomFee) => any
 }) => {
   const account = useEdgeAccount()
-  const [{ wallet, currencyCode }] = useSelectedWallet()
-  const { display } = useDenominations(account, currencyCode)
+  const [{ wallet, tokenId }] = useSelectedWallet()
+  const { display } = useAssetDenominations(account, wallet, tokenId)
 
   return (
     <div>
@@ -236,7 +239,8 @@ const Fee = ({ wallet, transaction }: { wallet: EdgeCurrencyWallet; transaction:
           <li key={`${fee.tokenId ?? 'native'}-${index}`}>
             <DisplayAmount
               nativeAmount={fee.nativeAmount}
-              currencyCode={getCurrencyCodeFromTokenId(wallet, fee.tokenId)}
+              wallet={wallet}
+              tokenId={fee.tokenId}
             />
           </li>
         ))}

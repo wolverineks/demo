@@ -1,4 +1,4 @@
-import { EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
+import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 
 import { useSelectWallet } from '../../../App'
@@ -13,7 +13,7 @@ import {
   Logo,
   Select,
 } from '../../../components'
-import { useTokens } from '../../../hooks'
+import { TokenInfo, useTokens } from '../../../hooks'
 import { AddToken } from './AddToken'
 import { StatusFilter, useFilteredTokenInfos } from './useFilteredTokenInfos'
 
@@ -34,18 +34,18 @@ const NoAvailableTokens = () => (
 const AvailableTokens = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
   const tokens = useTokens(wallet)
   const [, select] = useSelectWallet()
-  const toggleToken = (currencyCode: string) => {
-    if (tokens.enabled.includes(currencyCode)) {
-      tokens.disable(currencyCode)
+  const toggleToken = (tokenId: string) => {
+    if (tokens.enabled.includes(tokenId)) {
+      tokens.disable(tokenId)
 
       return
     }
 
-    void tokens.enable(currencyCode).then(() => select({ id: wallet.id, currencyCode }))
+    void tokens.enable(tokenId).then(() => select({ id: wallet.id, tokenId }))
   }
   const [addToken, setAddToken] = React.useState<'addToken' | undefined>()
-  const [editTokenInfo, setEditTokenInfo] = React.useState<EdgeMetaToken | undefined>()
-  const editToken = (tokenInfo: EdgeMetaToken) => {
+  const [editTokenInfo, setEditTokenInfo] = React.useState<TokenInfo | undefined>()
+  const editToken = (tokenInfo: TokenInfo) => {
     setAddToken('addToken')
     setEditTokenInfo(tokenInfo)
   }
@@ -73,7 +73,7 @@ const AvailableTokens = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
         <MatchingTokens
           includedTokenInfos={filteredTokenInfos.included}
           customTokenInfos={filteredTokenInfos.custom}
-          enabledTokenCurrencyCodes={tokens.enabled}
+          enabledTokenIds={tokens.enabled}
           editToken={editToken}
           toggleToken={toggleToken}
         />
@@ -113,23 +113,23 @@ const NoMatchingTokens = () => <ListGroup.Item>No Matching Tokens</ListGroup.Ite
 const MatchingTokens = ({
   customTokenInfos,
   includedTokenInfos,
-  enabledTokenCurrencyCodes,
+  enabledTokenIds,
   editToken,
   toggleToken,
 }: {
-  customTokenInfos: EdgeMetaToken[]
-  includedTokenInfos: EdgeMetaToken[]
-  enabledTokenCurrencyCodes: string[]
-  editToken: (tokenInfo: EdgeMetaToken) => unknown
-  toggleToken: (currencyCode: string) => unknown
+  customTokenInfos: TokenInfo[]
+  includedTokenInfos: TokenInfo[]
+  enabledTokenIds: string[]
+  editToken: (tokenInfo: TokenInfo) => unknown
+  toggleToken: (tokenId: string) => unknown
 }) => (
   <>
     <TokenList
       tokenInfos={customTokenInfos}
-      renderRow={(tokenInfo: EdgeMetaToken) => (
+      renderRow={(tokenInfo: TokenInfo) => (
         <TokenRow
-          key={tokenInfo.currencyCode}
-          isEnabled={enabledTokenCurrencyCodes.includes(tokenInfo.currencyCode)}
+          key={tokenInfo.tokenId}
+          isEnabled={enabledTokenIds.includes(tokenInfo.tokenId)}
           tokenInfo={tokenInfo}
           onEdit={editToken}
           onClick={toggleToken}
@@ -140,10 +140,10 @@ const MatchingTokens = ({
 
     <TokenList
       tokenInfos={includedTokenInfos}
-      renderRow={(tokenInfo: EdgeMetaToken) => (
+      renderRow={(tokenInfo: TokenInfo) => (
         <TokenRow
-          key={tokenInfo.currencyCode}
-          isEnabled={enabledTokenCurrencyCodes.includes(tokenInfo.currencyCode)}
+          key={tokenInfo.tokenId}
+          isEnabled={enabledTokenIds.includes(tokenInfo.tokenId)}
           tokenInfo={tokenInfo}
           onEdit={editToken}
           onClick={toggleToken}
@@ -153,13 +153,7 @@ const MatchingTokens = ({
   </>
 )
 
-const TokenList = ({
-  tokenInfos,
-  renderRow,
-}: {
-  tokenInfos: EdgeMetaToken[]
-  renderRow: (tokenInfo: EdgeMetaToken) => JSX.Element
-}) => (
+const TokenList = ({ tokenInfos, renderRow }: { tokenInfos: TokenInfo[]; renderRow: (tokenInfo: TokenInfo) => JSX.Element }) => (
   <>
     {Object.values(tokenInfos)
       .sort((a, b) => a.currencyCode.localeCompare(b.currencyCode))
@@ -168,30 +162,28 @@ const TokenList = ({
 )
 
 const TokenRow: React.FC<{
-  tokenInfo: EdgeMetaToken
+  tokenInfo: TokenInfo
   isEnabled: boolean
-  onEdit: (tokenInfo: EdgeMetaToken) => void
-  onClick: (currencyCode: string) => void
+  onEdit: (tokenInfo: TokenInfo) => void
+  onClick: (tokenId: string) => void
   canEdit?: boolean
 }> = ({ tokenInfo, isEnabled, onClick, onEdit, canEdit }) => {
-  const { currencyName, displayName } = tokenInfo as any
-
   return (
     <ListGroup.Item
-      key={tokenInfo.currencyCode}
+      key={tokenInfo.tokenId}
       className="token-picker-row"
       variant={isEnabled ? 'primary' : undefined}
-      onClick={() => onClick(tokenInfo.currencyCode)}
+      onClick={() => onClick(tokenInfo.tokenId)}
     >
       <Boundary error={{ fallback: null }} suspense={{ fallback: null }}>
         <Logo
           currencyCode={tokenInfo.currencyCode}
-          pluginId={(tokenInfo as any).pluginId}
-          tokenId={(tokenInfo as any).tokenId}
+          pluginId={tokenInfo.pluginId}
+          tokenId={tokenInfo.tokenId}
           contractAddress={tokenInfo.contractAddress}
         />
       </Boundary>{' '}
-      {tokenInfo.currencyCode} - {currencyName || displayName}
+      {tokenInfo.currencyCode} - {tokenInfo.currencyName}
       {canEdit ? (
         <Button
           onClick={(event) => {

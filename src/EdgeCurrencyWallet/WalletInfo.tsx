@@ -1,4 +1,4 @@
-import { EdgeCurrencyWallet } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 import { useQueryClient } from 'react-query'
 
@@ -10,11 +10,9 @@ import { Send } from './Send'
 import { Settings } from './Settings'
 import { TransactionList } from './TransactionList'
 
-export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: string }> = ({
-  wallet,
-  currencyCode,
-}) => {
+export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId }> = ({ wallet, tokenId }) => {
   const queryClient = useQueryClient()
+  const assetKey = `${wallet.id}:${tokenId ?? 'native'}`
 
   useOnNewTransactions(
     wallet,
@@ -23,43 +21,43 @@ export const WalletInfo: React.FC<{ wallet: EdgeCurrencyWallet; currencyCode: st
 
   React.useEffect(() => {
     const nativeAmount = '0'
-    const options = { currencyCode }
+    const options = { tokenId }
     queryClient.prefetchQuery({
       queryKey: receiveAddressQueryKey(wallet.id, nativeAmount, options),
       queryFn: () => fetchReceiveAddressAndUri({ wallet, nativeAmount, options }),
       staleTime: Infinity,
     })
-  }, [currencyCode, queryClient, wallet])
+  }, [queryClient, tokenId, wallet])
 
   return (
     <Tabs id={'walletTabs'} defaultActiveKey={'history'} mountOnEnter unmountOnExit>
       <Tab eventKey={'history'} title={'History'}>
         <Boundary>
-          <TransactionList wallet={wallet} currencyCode={currencyCode} key={`${wallet.id}:${currencyCode}`} />
+          <TransactionList wallet={wallet} tokenId={tokenId} key={assetKey} />
         </Boundary>
       </Tab>
 
       <Tab eventKey={'send'} title={'Send'}>
         <Boundary>
-          <Send wallet={wallet} currencyCode={currencyCode} key={`${wallet.id}:${currencyCode}`} />
+          <Send wallet={wallet} tokenId={tokenId} key={assetKey} />
         </Boundary>
       </Tab>
 
       <Tab eventKey={'request'} title={'Request'}>
         <Boundary>
-          <Request wallet={wallet} currencyCode={currencyCode} key={`${wallet.id}:${currencyCode}`} />
+          <Request wallet={wallet} tokenId={tokenId} key={assetKey} />
         </Boundary>
       </Tab>
 
       <Tab eventKey={'settings'} title={'Settings'}>
         <Boundary>
-          <Settings wallet={wallet} key={`${wallet.id}:${currencyCode}`} />
+          <Settings wallet={wallet} key={assetKey} />
         </Boundary>
       </Tab>
 
       <Tab eventKey={'storage'} title={'Storage'}>
         <Boundary>
-          <Disklets wallet={wallet} key={`${wallet.id}:${currencyCode}`} />
+          <Disklets wallet={wallet} key={assetKey} />
         </Boundary>
       </Tab>
     </Tabs>

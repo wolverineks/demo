@@ -1,9 +1,10 @@
-import { EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
+import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 
 import { useSelectWallet } from '../../App'
 import { Balance, Boundary, ListGroup, Logo } from '../../components'
-import { useTokens } from '../../hooks'
+import { TokenInfo, useTokens } from '../../hooks'
+import { getCurrencyCodeFromTokenId } from '../../utils'
 
 export const EnabledTokens: React.FC<{
   wallet: EdgeCurrencyWallet
@@ -14,12 +15,12 @@ export const EnabledTokens: React.FC<{
 
   return (
     <>
-      {tokens.enabled.map((currencyCode) => (
+      {tokens.enabled.map((tokenId) => (
         <EnabledToken
-          key={currencyCode}
+          key={tokenId}
           wallet={wallet}
-          currencyCode={currencyCode}
-          tokenInfo={tokens.includedInfos[currencyCode] || tokens.customTokenInfos[currencyCode]}
+          tokenId={tokenId}
+          tokenInfo={tokens.includedInfos[tokenId] || tokens.customTokenInfos[tokenId]}
         />
       ))}
     </>
@@ -28,31 +29,31 @@ export const EnabledTokens: React.FC<{
 
 const EnabledToken: React.FC<{
   wallet: EdgeCurrencyWallet
-  currencyCode: string
-  tokenInfo?: EdgeMetaToken
-}> = ({ wallet, currencyCode, tokenInfo }) => {
+  tokenId: string
+  tokenInfo?: TokenInfo
+}> = ({ wallet, tokenId, tokenInfo }) => {
   const [selected, select] = useSelectWallet()
-  const extra = tokenInfo as (EdgeMetaToken & { pluginId?: string; tokenId?: string }) | undefined
+  const currencyCode = tokenInfo?.currencyCode ?? getCurrencyCodeFromTokenId(wallet, tokenId)
 
   return (
     <ListGroup.Item
       className="token-row"
-      variant={wallet.id === selected?.id && currencyCode === selected?.currencyCode ? 'primary' : undefined}
-      onClick={() => select({ id: wallet.id, currencyCode })}
+      variant={wallet.id === selected?.id && selected?.tokenId === tokenId ? 'primary' : undefined}
+      onClick={() => select({ id: wallet.id, tokenId })}
     >
       <Boundary error={{ fallback: null }} suspense={{ fallback: null }}>
         <Logo
           currencyCode={currencyCode}
-          pluginId={extra?.pluginId || wallet.currencyInfo.pluginId}
-          tokenId={extra?.tokenId}
-          contractAddress={extra?.contractAddress}
+          pluginId={tokenInfo?.pluginId || wallet.currencyInfo.pluginId}
+          tokenId={tokenId}
+          contractAddress={tokenInfo?.contractAddress}
         />
       </Boundary>
       <div className="token-row__text">
         <div className="token-row__name">{currencyCode}</div>
         <div className="token-row__balance">
           <Boundary suspense={{ fallback: <span>Loading...</span> }}>
-            <Balance wallet={wallet} currencyCode={currencyCode} />
+            <Balance wallet={wallet} tokenId={tokenId} />
           </Boundary>
         </div>
       </div>

@@ -11,10 +11,11 @@ export type Explorers = {
   tokenId?: string
 }
 
-export type MetaTokenMap = { [currencyCode: string]: EdgeMetaToken & Explorers }
+export type TokenInfo = EdgeMetaToken & Explorers & { tokenId: string }
 
-// CUSTOM TOKEN INFOS
-const customTokenExplorers = (wallet: EdgeCurrencyWallet): Explorers => ({
+export type MetaTokenMap = { [tokenId: string]: TokenInfo }
+
+const explorersFromWallet = (wallet: EdgeCurrencyWallet): Explorers => ({
   addressExplorer: wallet.currencyInfo.addressExplorer,
   blockExplorer: wallet.currencyInfo.blockExplorer,
   transactionExplorer: wallet.currencyInfo.transactionExplorer,
@@ -23,17 +24,10 @@ const customTokenExplorers = (wallet: EdgeCurrencyWallet): Explorers => ({
 })
 
 export const readCustomTokenInfos = (wallet: EdgeCurrencyWallet): MetaTokenMap =>
-  toMetaTokenMapFromTokenMap(wallet.currencyConfig.customTokens, customTokenExplorers(wallet))
+  toMetaTokenMapFromTokenMap(wallet.currencyConfig.customTokens, explorersFromWallet(wallet))
 
 export const readCustomTokenInfo = (wallet: EdgeCurrencyWallet, tokenId: string) =>
   wallet.currencyConfig.customTokens[tokenId]
-
-export const enabledTokenCurrencyCodes = (wallet: EdgeCurrencyWallet) =>
-  wallet.enabledTokenIds
-    .map((tokenId) => wallet.currencyConfig.allTokens[tokenId]?.currencyCode)
-    .filter((currencyCode): currencyCode is string => {
-      return !!currencyCode && currencyCode !== wallet.currencyInfo.currencyCode
-    })
 
 export const removeKey = <T extends { [key: string]: any }>(key: string, object: T) => {
   const dup = { ...object }
@@ -42,11 +36,7 @@ export const removeKey = <T extends { [key: string]: any }>(key: string, object:
   return dup
 }
 
-// HELPERS
-export const toCurrencyCodeMap = (items: EdgeMetaToken[]) =>
-  items.reduce((result, current) => ({ ...result, [current.currencyCode]: current }), {} as MetaTokenMap)
-
-export const metaTokenFromEdgeToken = (token: EdgeToken, extras: Explorers = {}): EdgeMetaToken & Explorers => {
+export const metaTokenFromEdgeToken = (token: EdgeToken, extras: Explorers = {}): TokenInfo => {
   const networkLocation = token.networkLocation as { contractAddress?: string } | undefined
 
   return {
@@ -54,40 +44,36 @@ export const metaTokenFromEdgeToken = (token: EdgeToken, extras: Explorers = {})
     currencyName: token.displayName,
     contractAddress: networkLocation?.contractAddress,
     denominations: token.denominations,
+    tokenId: extras.tokenId ?? '',
     ...extras,
   }
 }
 
 export const toMetaTokenMapFromTokenMap = (tokens: EdgeTokenMap = {}, extras: Explorers = {}): MetaTokenMap =>
   Object.entries(tokens).reduce((result, [tokenId, token]) => {
-    result[token.currencyCode] = metaTokenFromEdgeToken(token, { ...extras, tokenId })
+    result[tokenId] = metaTokenFromEdgeToken(token, { ...extras, tokenId })
 
     return result
   }, {} as MetaTokenMap)
 
 export const getIncludedInfos = (wallet: EdgeCurrencyWallet): MetaTokenMap => {
-  const extras: Explorers = {
-    addressExplorer: wallet.currencyInfo.addressExplorer,
-    blockExplorer: wallet.currencyInfo.blockExplorer,
-    transactionExplorer: wallet.currencyInfo.transactionExplorer,
-    xpubExplorer: wallet.currencyInfo.xpubExplorer,
-    pluginId: wallet.currencyInfo.pluginId,
-  }
+  const extras = explorersFromWallet(wallet)
+  const fromMeta = (wallet.currencyInfo.metaTokens || []).reduce((result, token) => {
+    const tokenId = contractToTokenId(token.contractAddress)
+    if (!tokenId) return result
+    result[tokenId] = { ...token, ...extras, tokenId }
+
+    return result
+  }, {} as MetaTokenMap)
 
   return {
-    ...toCurrencyCodeMap(
-      (wallet.currencyInfo.metaTokens || []).map((token) => ({
-        ...token,
-        ...extras,
-        tokenId: contractToTokenId(token.contractAddress),
-      })),
-    ),
+    ...fromMeta,
     ...toMetaTokenMapFromTokenMap(wallet.currencyConfig?.builtinTokens, extras),
   }
 }
 
 export const getConfigTokenInfos = (config: EdgeCurrencyConfig) => {
-  const extras: Explorers & { pluginId?: string } = {
+  const extras: Explorers = {
     addressExplorer: config.currencyInfo.addressExplorer,
     blockExplorer: config.currencyInfo.blockExplorer,
     transactionExplorer: config.currencyInfo.transactionExplorer,
@@ -108,14 +94,10 @@ export const getConfigTokenInfos = (config: EdgeCurrencyConfig) => {
   return [...fromMeta, ...fromConfig]
 }
 
-export const toMetaToken = (wallet: EdgeCurrencyWallet, tokenInfo: EdgeTokenInfo): EdgeMetaToken & Explorers => ({
+export const toMetaToken = (wallet: EdgeCurrencyWallet, tokenInfo: EdgeTokenInfo): TokenInfo => ({
   ...tokenInfo,
   denominations: [{ name: tokenInfo.currencyName, multiplier: tokenInfo.multiplier }],
   symbolImage: '',
-  addressExplorer: wallet.currencyInfo.addressExplorer,
-  blockExplorer: wallet.currencyInfo.blockExplorer,
-  transactionExplorer: wallet.currencyInfo.transactionExplorer,
-  xpubExplorer: wallet.currencyInfo.xpubExplorer,
-  pluginId: wallet.currencyInfo.pluginId,
-  tokenId: contractToTokenId(tokenInfo.contractAddress),
+  ...explorersFromWallet(wallet),
+  tokenId: contractToTokenId(tokenInfo.contractAddress) ?? '',
 })

@@ -1,8 +1,8 @@
-import { EdgeCurrencyWallet, EdgeMetaToken } from 'edge-core-js'
+import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 
 import { Button, Form, FormControl } from '../../../components'
-import { useTokens } from '../../../hooks'
+import { TokenInfo, useTokens } from '../../../hooks'
 
 export const AddToken = ({
   wallet,
@@ -10,7 +10,7 @@ export const AddToken = ({
   onSuccess,
 }: {
   wallet: EdgeCurrencyWallet
-  tokenInfo?: EdgeMetaToken
+  tokenInfo?: TokenInfo
   onSuccess: () => void
 }) => {
   const [currencyName, setCurrencyName] = React.useState(tokenInfo?.currencyName || '')

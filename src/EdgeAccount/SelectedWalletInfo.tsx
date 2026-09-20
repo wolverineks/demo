@@ -6,5 +6,5 @@ import { useSelectedWallet } from '../SelectedWallet'
 export const SelectedWalletInfo = () => {
   const [selected] = useSelectedWallet()
 
-  return <WalletInfo wallet={selected.wallet} currencyCode={selected.currencyCode} />
+  return <WalletInfo wallet={selected.wallet} tokenId={selected.tokenId} />
 }

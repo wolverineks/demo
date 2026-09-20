@@ -1,7 +1,8 @@
-import { EdgeSpendTarget } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeSpendTarget, EdgeTokenId } from 'edge-core-js'
 import * as React from 'react'
 
 import { FlipInput, FlipInputRef, FormControl, FormGroup, FormLabel, InputGroup, Matcher } from '../../components'
+import { getCurrencyCodeFromTokenId } from '../../utils'
 
 const UNIQUE_IDENTIFIER_CURRENCIES = ['BNB', 'EOS', 'TLOS', 'XLM', 'XRP']
 
@@ -10,13 +11,14 @@ export type SpendTargetRef = {
 }
 
 type SpendTargetProps = {
-  currencyCode: string
+  wallet: EdgeCurrencyWallet
+  tokenId: EdgeTokenId
   fiatCurrencyCode: string
   onChange: (spendTarget: EdgeSpendTarget) => void
 }
 
 export const SpendTarget = React.forwardRef<SpendTargetRef, SpendTargetProps>(function SpendInfo( // function syntax required for component display name
-  { currencyCode, fiatCurrencyCode, onChange },
+  { wallet, tokenId, fiatCurrencyCode, onChange },
   ref,
 ) {
   const flipInputRef = React.useRef<FlipInputRef>(null)
@@ -37,6 +39,8 @@ export const SpendTarget = React.forwardRef<SpendTargetRef, SpendTargetProps>(fu
       onChange(spendTarget)
     },
   }))
+
+  const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
 
   return (
     <>
@@ -63,7 +67,8 @@ export const SpendTarget = React.forwardRef<SpendTargetRef, SpendTargetProps>(fu
 
       <FormGroup>
         <FlipInput
-          currencyCode={currencyCode}
+          wallet={wallet}
+          tokenId={tokenId}
           fiatCurrencyCode={fiatCurrencyCode}
           onChange={(nativeAmount: string) => onChange({ nativeAmount })}
           ref={flipInputRef}
