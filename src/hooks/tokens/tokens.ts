@@ -1,7 +1,7 @@
 import { EdgeCurrencyWallet, EdgeTokenInfo } from 'edge-core-js'
 import { UseQueryOptions, useMutation, useQuery, useQueryClient } from 'react-query'
 
-import { getTokenId, unique } from '../../utils'
+import { getTokenIdFromCurrencyCode, unique } from '../../utils'
 import {
   MetaTokenMap,
   addCustomToken,
@@ -72,7 +72,7 @@ const useRemoveCustomInfo = (wallet: EdgeCurrencyWallet) => {
       return disableTokenCurrencyCode(wallet, currencyCode)
         .then(() => removeCustomToken(wallet, currencyCode))
         .then(async () => {
-          const tokenId = getTokenId(wallet, currencyCode)
+          const tokenId = getTokenIdFromCurrencyCode(wallet, currencyCode)
           await wallet.changeEnabledTokenIds(wallet.enabledTokenIds.filter((id) => id !== tokenId))
           if (tokenId) await wallet.currencyConfig.removeCustomToken(tokenId)
         })
@@ -99,7 +99,7 @@ const useEnableToken = (wallet: EdgeCurrencyWallet) => {
       throw new Error(`Invalid Currency Code: ${tokenCurrencyCode}`)
 
     await enableTokenCurrencyCode(wallet, tokenCurrencyCode)
-    const tokenId = getTokenId(wallet, tokenCurrencyCode)
+    const tokenId = getTokenIdFromCurrencyCode(wallet, tokenCurrencyCode)
     if (!tokenId) return
     await wallet.changeEnabledTokenIds([...wallet.enabledTokenIds, tokenId])
   }
@@ -128,7 +128,7 @@ const useDisableToken = (wallet: EdgeCurrencyWallet) => {
   const queryClient = useQueryClient()
   const disableToken = async (tokenCurrencyCode: string) => {
     return disableTokenCurrencyCode(wallet, tokenCurrencyCode).then(async () => {
-      const tokenId = getTokenId(wallet, tokenCurrencyCode)
+      const tokenId = getTokenIdFromCurrencyCode(wallet, tokenCurrencyCode)
       await wallet.changeEnabledTokenIds(wallet.enabledTokenIds.filter((id) => id !== tokenId))
     })
   }

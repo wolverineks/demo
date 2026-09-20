@@ -6,7 +6,7 @@ import JSONPretty from 'react-json-pretty'
 import { useEdgeAccount } from '../../auth'
 import { Accordion, Button, Col, Debug, Form, FormControl, Row } from '../../components'
 import { useDenominations, useExportTransactions } from '../../hooks'
-import { getTokenId } from '../../utils'
+import { getTokenIdFromCurrencyCode } from '../../utils'
 
 enum ExportFormat {
   'QBO' = 'QBO',
@@ -34,7 +34,7 @@ export const ExportTransactions = ({
       returnEntries?: number
     }
   >({
-    tokenId: getTokenId(wallet, currencyCode),
+    tokenId: getTokenIdFromCurrencyCode(wallet, currencyCode),
     denomination: display.multiplier,
   })
   const [format, setFormat] = React.useState<ExportFormat>(ExportFormat.CSV)

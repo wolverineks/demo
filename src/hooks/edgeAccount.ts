@@ -9,7 +9,7 @@ import {
 import React from 'react'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
-import { getCurrencyCodeFromTokenId, getTokenId } from '../utils'
+import { getCurrencyCodeFromTokenId, getTokenIdFromCurrencyCode } from '../utils'
 import { walletTransactionQueryKeys } from './edgeCurrencyWallet'
 import { convertCurrency, useOnRateChange } from './rates'
 import { readCustomTokenInfo } from './tokens'
@@ -219,8 +219,8 @@ export const useSwapQuote = ({
       ? {
           fromWallet,
           toWallet,
-          fromTokenId: getTokenId(fromWallet, fromCurrencyCode),
-          toTokenId: getTokenId(toWallet, toCurrencyCode),
+          fromTokenId: getTokenIdFromCurrencyCode(fromWallet, fromCurrencyCode),
+          toTokenId: getTokenIdFromCurrencyCode(toWallet, toCurrencyCode),
           nativeAmount,
           quoteFor: 'from',
         }

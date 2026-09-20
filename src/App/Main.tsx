@@ -9,7 +9,7 @@ import { Exchange } from '../Exchange'
 import { readCustomTokenInfos, readEnabledTokenCurrencyCodes, useActiveWalletIds } from '../hooks'
 import { Route, useRoute } from '../route'
 import { SelectedWalletBoundary, useSelectedWallet } from '../SelectedWallet'
-import { getTokenId } from '../utils'
+import { getTokenIdFromCurrencyCode } from '../utils'
 
 export const Main = () => {
   const route = useRoute()
@@ -72,7 +72,7 @@ const enableTokens = async (wallet: EdgeCurrencyWallet) => {
       }),
   )
   const tokenIds = enabledTokenCurrencyCodes
-    .map((currencyCode) => getTokenId(wallet, currencyCode))
+    .map((currencyCode) => getTokenIdFromCurrencyCode(wallet, currencyCode))
     .filter((tokenId): tokenId is string => tokenId != null)
   if (tokenIds.length > 0) {
     await wallet.changeEnabledTokenIds(Array.from(new Set([...wallet.enabledTokenIds, ...tokenIds])))

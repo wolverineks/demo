@@ -2,7 +2,7 @@ import { EdgeCurrencyWallet, EdgeMemo, EdgeMetadata, EdgeSpendInfo } from 'edge-
 import * as React from 'react'
 
 import { useParsedUri } from '../../hooks'
-import { getTokenId } from '../../utils'
+import { getTokenIdFromCurrencyCode } from '../../utils'
 import { SpendTargetRef } from './SpendTarget'
 import { useSpendTargets } from './useSpendTargets'
 
@@ -41,7 +41,7 @@ export const useSpendInfo = (wallet: EdgeCurrencyWallet, currencyCode: string) =
   })
 
   const spendInfo: EdgeSpendInfo = {
-    tokenId: getTokenId(wallet, currencyCode),
+    tokenId: getTokenIdFromCurrencyCode(wallet, currencyCode),
     spendTargets: spendTargets.all.map(
       ({ id: _id, uniqueIdentifier: _uniqueIdentifier, memo: _memo, ...spendTarget }) => spendTarget,
     ),

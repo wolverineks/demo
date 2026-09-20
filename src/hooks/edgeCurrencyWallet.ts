@@ -10,7 +10,7 @@ import {
 import React from 'react'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
-import { getCurrencyCodeFromTokenId, getNativeBalance, getPublicAddress, getTokenId } from '../utils'
+import { getCurrencyCodeFromTokenId, getNativeBalance, getPublicAddress, getTokenIdFromCurrencyCode } from '../utils'
 import { useInvalidateQueries } from './useInvalidateQueries'
 import { useWatch } from './watch'
 
@@ -43,7 +43,7 @@ export const useSyncRatio = (wallet: EdgeCurrencyWallet) => {
 export const useBalance = (wallet: EdgeCurrencyWallet, currencyCode: string) => {
   useWatch(wallet, 'balanceMap')
 
-  return getNativeBalance(wallet, getTokenId(wallet, currencyCode))
+  return getNativeBalance(wallet, getTokenIdFromCurrencyCode(wallet, currencyCode))
 }
 
 export const useWriteFiatCurrencyCode = (wallet: EdgeCurrencyWallet) => {
@@ -87,7 +87,7 @@ export const fetchReceiveAddressAndUri = async ({
   nativeAmount: string
   options?: { currencyCode?: string; tokenId?: EdgeTokenId }
 }) => {
-  const tokenId = options?.tokenId ?? getTokenId(wallet, options?.currencyCode)
+  const tokenId = options?.tokenId ?? getTokenIdFromCurrencyCode(wallet, options?.currencyCode)
   const addresses = await wallet.getAddresses({ tokenId })
   const publicAddress = getPublicAddress(addresses)
   if (!publicAddress) throw new Error('No receive address')
@@ -332,6 +332,6 @@ const toTransactionOptions = (
 
   return {
     ...rest,
-    tokenId: tokenId !== undefined ? tokenId : getTokenId(wallet, currencyCode ?? wallet.currencyInfo.currencyCode),
+    tokenId: tokenId !== undefined ? tokenId : getTokenIdFromCurrencyCode(wallet, currencyCode ?? wallet.currencyInfo.currencyCode),
   }
 }
