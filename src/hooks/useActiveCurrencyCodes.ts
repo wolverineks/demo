@@ -23,7 +23,7 @@ export const useActiveCurrencyCodes = (account: EdgeAccount) => {
   return getActiveCurrencyCodes(account)
 }
 
-export type ActiveAsset = {
+export type ActiveTokenId = {
   key: string
   pluginId: string
   tokenId: EdgeTokenId
@@ -31,9 +31,9 @@ export type ActiveAsset = {
   currencyCode: string
 }
 
-export const getActiveAssets = (account: EdgeAccount): ActiveAsset[] =>
+export const getActiveTokenIds = (account: EdgeAccount): ActiveTokenId[] =>
   uniqueBy(
-    (asset) => asset.key,
+    ({ key }) => key,
     Object.values(account.currencyWallets).flatMap((wallet) =>
       [null, ...wallet.enabledTokenIds].map((tokenId) => ({
         key: `${wallet.currencyInfo.pluginId}:${tokenId ?? 'native'}`,
@@ -45,9 +45,9 @@ export const getActiveAssets = (account: EdgeAccount): ActiveAsset[] =>
     ),
   )
 
-export const useActiveAssets = (account: EdgeAccount) => {
+export const useActiveTokenIds = (account: EdgeAccount) => {
   useWatch(account, 'activeWalletIds')
   useWatch(account, 'currencyWallets')
 
-  return getActiveAssets(account)
+  return getActiveTokenIds(account)
 }
