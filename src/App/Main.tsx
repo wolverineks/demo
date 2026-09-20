@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { useEdgeAccount } from '../auth'
 import { CreateWallet } from '../EdgeAccount'
 import { SelectedWalletInfo } from '../EdgeAccount/SelectedWalletInfo'
@@ -13,7 +11,6 @@ export const Main = () => {
   const route = useRoute()
   const account = useEdgeAccount()
   const activeWalletIds = useActiveWalletIds(account)
-  useBootstapWallets()
 
   return (
     <>
@@ -40,14 +37,4 @@ const ExchangeWithSelectedWallet = () => {
   const [{ wallet, currencyCode }] = useSelectedWallet()
 
   return <Exchange wallet={wallet} currencyCode={currencyCode} />
-}
-
-const useBootstapWallets = () => {
-  const account = useEdgeAccount()
-
-  React.useEffect(() => {
-    account.activeWalletIds.map((id) => {
-      void account.waitForCurrencyWallet(id)
-    })
-  }, [account])
 }
