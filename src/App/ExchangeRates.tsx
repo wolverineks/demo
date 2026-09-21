@@ -3,23 +3,14 @@ import React from 'react'
 
 import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, FiatAmount, FormControl, Logo } from '../components'
-import {
-  denominatedToNative,
-  useActiveWalletTokenIds,
-  useDefaultFiatCurrencyCode,
-  useTokenDisplayDenomination,
-} from '../hooks'
+import { denominatedToNative, getWalletTokenIds, useDefaultFiatCurrencyCode, useTokenDisplayDenomination, useWatch } from '../hooks'
 import { getCurrencyCodeFromTokenId, normalize } from '../utils'
 
 export const ExchangeRates = () => {
   const [searchQuery, setSearchQuery] = React.useState('')
   const account = useEdgeAccount()
-  const walletTokenIds = useActiveWalletTokenIds(account)
-  const query = normalize(searchQuery)
-
-  const visible = walletTokenIds.filter(({ wallet, tokenId }) =>
-    normalize(getCurrencyCodeFromTokenId(wallet, tokenId)).includes(query),
-  )
+  useWatch(account, 'activeWalletIds')
+  useWatch(account, 'currencyWallets')
 
   return (
     <div>
@@ -31,27 +22,42 @@ export const ExchangeRates = () => {
         onChange={(event) => setSearchQuery(event.currentTarget.value)}
       />
 
-      {visible.map(({ wallet, tokenId }) => {
-        const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
-
-        return (
-          <Boundary
-            key={`${wallet.currencyInfo.pluginId}:${tokenId ?? 'native'}`}
-            error={{
-              fallbackRender: function RateFallback() {
-                return (
-                  <div className="rate-row">
-                    <span>{currencyCode}</span>
-                  </div>
-                )
-              },
-            }}
-          >
-            <ExchangeRate wallet={wallet} tokenId={tokenId} />
-          </Boundary>
-        )
-      })}
+      {Object.values(account.currencyWallets).map((wallet) => (
+        <WalletRates key={wallet.id} wallet={wallet} searchQuery={searchQuery} />
+      ))}
     </div>
+  )
+}
+
+const WalletRates: React.FC<{ wallet: EdgeCurrencyWallet; searchQuery: string }> = ({ wallet, searchQuery }) => {
+  useWatch(wallet, 'enabledTokenIds')
+  const query = normalize(searchQuery)
+
+  return (
+    <>
+      {getWalletTokenIds(wallet)
+        .filter((tokenId) => normalize(getCurrencyCodeFromTokenId(wallet, tokenId)).includes(query))
+        .map((tokenId) => {
+          const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
+
+          return (
+            <Boundary
+              key={`${wallet.id}:${tokenId ?? 'native'}`}
+              error={{
+                fallbackRender: function RateFallback() {
+                  return (
+                    <div className="rate-row">
+                      <span>{currencyCode}</span>
+                    </div>
+                  )
+                },
+              }}
+            >
+              <ExchangeRate wallet={wallet} tokenId={tokenId} />
+            </Boundary>
+          )
+        })}
+    </>
   )
 }
 
