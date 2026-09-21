@@ -1,30 +1,15 @@
-import { EdgeAccount, EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 
 import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, FiatAmount, FormControl, Logo } from '../components'
-import { useExchangeToNative, useWatch } from '../hooks'
-import { getCurrencyCodeFromTokenId, getWalletTokenIds, normalize, uniqueBy } from '../utils'
-
-const getRatePairs = (account: EdgeAccount) =>
-  uniqueBy(
-    ({ currencyCode, fiatCurrencyCode }) => `${currencyCode}_${fiatCurrencyCode}`,
-    Object.values(account.currencyWallets).flatMap((wallet) =>
-      getWalletTokenIds(wallet).map((tokenId) => ({
-        currencyCode: getCurrencyCodeFromTokenId(wallet, tokenId),
-        fiatCurrencyCode: wallet.fiatCurrencyCode,
-      })),
-    ),
-  )
+import { useExchangeToNative, useRatePairs } from '../hooks'
+import { normalize } from '../utils'
 
 export const ExchangeRates = () => {
   const [searchQuery, setSearchQuery] = React.useState('')
-  const [, setVersion] = React.useState(0)
   const account = useEdgeAccount()
-  useWatch(account, 'currencyWallets')
-  const bump = React.useCallback(() => setVersion((version) => version + 1), [])
   const query = normalize(searchQuery)
-  const pairs = getRatePairs(account).filter(
+  const pairs = useRatePairs(account).filter(
     ({ currencyCode, fiatCurrencyCode }) =>
       normalize(currencyCode).includes(query) || normalize(fiatCurrencyCode).includes(query),
   )
@@ -32,10 +17,6 @@ export const ExchangeRates = () => {
   return (
     <div>
       <div className="panel-title">Exchange Rates</div>
-
-      {Object.values(account.currencyWallets).map((wallet) => (
-        <WalletPairSource key={wallet.id} wallet={wallet} onChange={bump} />
-      ))}
 
       <FormControl
         placeholder={'Search'}
@@ -61,13 +42,6 @@ export const ExchangeRates = () => {
       ))}
     </div>
   )
-}
-
-const WalletPairSource: React.FC<{ wallet: EdgeCurrencyWallet; onChange: () => void }> = ({ wallet, onChange }) => {
-  useWatch(wallet, 'enabledTokenIds', onChange)
-  useWatch(wallet, 'fiatCurrencyCode', onChange)
-
-  return null
 }
 
 const ExchangeRate: React.FC<{ currencyCode: string; fiatCurrencyCode: string }> = ({
