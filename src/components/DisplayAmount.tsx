@@ -2,7 +2,7 @@ import { EdgeCurrencyWallet, EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 
 import { useEdgeAccount } from '../auth'
-import { useTokenIdDisplayAmount, useDisplayAmount } from '../hooks'
+import { useTokenDisplayAmount, useDisplayAmount } from '../hooks'
 
 export const DisplayAmount = ({
   nativeAmount,
@@ -16,13 +16,13 @@ export const DisplayAmount = ({
   currencyCode?: string
 }) => {
   if (wallet != null && tokenId !== undefined) {
-    return <TokenIdDisplay nativeAmount={nativeAmount} wallet={wallet} tokenId={tokenId} />
+    return <TokenDisplay nativeAmount={nativeAmount} wallet={wallet} tokenId={tokenId} />
   }
 
   return <TickerDisplay nativeAmount={nativeAmount} currencyCode={currencyCode!} />
 }
 
-const TokenIdDisplay = ({
+const TokenDisplay = ({
   nativeAmount,
   wallet,
   tokenId,
@@ -32,7 +32,7 @@ const TokenIdDisplay = ({
   tokenId: EdgeTokenId
 }) => {
   const account = useEdgeAccount()
-  const { name, symbol, amount } = useTokenIdDisplayAmount({ account, wallet, tokenId, nativeAmount })
+  const { name, symbol, amount } = useTokenDisplayAmount({ account, wallet, tokenId, nativeAmount })
 
   return (
     <>

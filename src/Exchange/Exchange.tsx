@@ -6,7 +6,7 @@ import { useEdgeAccount } from '../auth'
 import { Alert, Balance, Boundary, Button, Debug, DisplayAmount, FlipInput, FormControl, Logo } from '../components'
 import {
   useApproveSwapQuote,
-  useTokenIdDisplayDenomination,
+  useTokenDisplayDenomination,
   useEdgeCurrencyWallet,
   useFiatCurrencyCode,
   useName,
@@ -14,7 +14,7 @@ import {
 } from '../hooks'
 import { getCurrencyCodeFromTokenId, getWalletListMeta } from '../utils'
 
-type TokenIdChoice = {
+type TokenChoice = {
   key: string
   walletId: string
   tokenId: EdgeTokenId
@@ -31,7 +31,7 @@ const parseTokenIdKey = (value: string) => {
   return { walletId: value.slice(0, separator), tokenId: tokenPart === 'native' ? null : tokenPart }
 }
 
-const getTokenIdChoices = (account: ReturnType<typeof useEdgeAccount>): TokenIdChoice[] =>
+const getTokenChoices = (account: ReturnType<typeof useEdgeAccount>): TokenChoice[] =>
   account.activeWalletIds.flatMap((walletId) => {
     const meta = getWalletListMeta(account, walletId)
     const wallet = account.currencyWallets[walletId]
@@ -57,9 +57,9 @@ const getTokenIdChoices = (account: ReturnType<typeof useEdgeAccount>): TokenIdC
 
 export const Exchange = ({ wallet, tokenId }: { wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId }) => {
   const account = useEdgeAccount()
-  const choices = getTokenIdChoices(account)
+  const choices = getTokenChoices(account)
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
-  const [displayDenomination] = useTokenIdDisplayDenomination(account, wallet, tokenId)
+  const [displayDenomination] = useTokenDisplayDenomination(account, wallet, tokenId)
 
   const [nativeAmount, setNativeAmount] = React.useState('0')
   const [fromWalletId, setFromWalletId] = React.useState(wallet.id)
@@ -67,7 +67,7 @@ export const Exchange = ({ wallet, tokenId }: { wallet: EdgeCurrencyWallet; toke
   const [toWalletId, setToWalletId] = React.useState<string>()
   const [toTokenId, setToTokenId] = React.useState<EdgeTokenId>()
 
-  const onSelectTokenId = (value: string, direction: 'from' | 'to') => {
+  const onSelectToken = (value: string, direction: 'from' | 'to') => {
     const parsed = parseTokenIdKey(value)
     if (!parsed) return
 
@@ -94,13 +94,13 @@ export const Exchange = ({ wallet, tokenId }: { wallet: EdgeCurrencyWallet; toke
     <div className="exchange">
       <div className="panel-title">Exchange</div>
 
-      <TokenIdCard
+      <TokenCard
         label="From"
         walletId={fromWalletId}
         tokenId={fromTokenId}
         choices={choices}
         value={tokenIdKey(fromWalletId, fromTokenId)}
-        onSelect={(value) => onSelectTokenId(value, 'from')}
+        onSelect={(value) => onSelectToken(value, 'from')}
       >
         <div className="exchange__amount">
           <FlipInput
@@ -111,7 +111,7 @@ export const Exchange = ({ wallet, tokenId }: { wallet: EdgeCurrencyWallet; toke
             fiatCurrencyCode={fiatCurrencyCode}
           />
         </div>
-      </TokenIdCard>
+      </TokenCard>
 
       <div className="exchange__swap">
         <Button size="sm" variant="outline-secondary" disabled={!toWalletId} onClick={swapDirection}>
@@ -119,14 +119,14 @@ export const Exchange = ({ wallet, tokenId }: { wallet: EdgeCurrencyWallet; toke
         </Button>
       </div>
 
-      <TokenIdCard
+      <TokenCard
         label="To"
         walletId={toWalletId}
         tokenId={toTokenId}
         choices={choices}
         value={toWalletId && toTokenId !== undefined ? tokenIdKey(toWalletId, toTokenId) : ''}
         placeholder="Select destination"
-        onSelect={(value) => onSelectTokenId(value, 'to')}
+        onSelect={(value) => onSelectToken(value, 'to')}
       />
 
       {toWalletId && toTokenId !== undefined ? (
@@ -158,7 +158,7 @@ export const Exchange = ({ wallet, tokenId }: { wallet: EdgeCurrencyWallet; toke
   )
 }
 
-const TokenIdCard = ({
+const TokenCard = ({
   label,
   walletId,
   tokenId,
@@ -171,19 +171,19 @@ const TokenIdCard = ({
   label: string
   walletId?: string
   tokenId?: EdgeTokenId
-  choices: TokenIdChoice[]
+  choices: TokenChoice[]
   value: string
   placeholder?: string
   onSelect: (value: string) => void
   children?: React.ReactNode
 }) => {
   return (
-    <div className="exchange-token-id">
-      <div className="exchange-token-id__header">
-        <div className="exchange-token-id__label">{label}</div>
+    <div className="exchange-token">
+      <div className="exchange-token__header">
+        <div className="exchange-token__label">{label}</div>
         <FormControl
           as="select"
-          className="exchange-token-id__select"
+          className="exchange-token__select"
           value={value}
           onChange={(event) => onSelect(event.currentTarget.value)}
         >
@@ -200,13 +200,13 @@ const TokenIdCard = ({
         </FormControl>
       </div>
 
-      {walletId && tokenId !== undefined ? <SelectedTokenId walletId={walletId} tokenId={tokenId} /> : null}
+      {walletId && tokenId !== undefined ? <SelectedToken walletId={walletId} tokenId={tokenId} /> : null}
       {children}
     </div>
   )
 }
 
-const SelectedTokenId = ({ walletId, tokenId }: { walletId: string; tokenId: EdgeTokenId }) => {
+const SelectedToken = ({ walletId, tokenId }: { walletId: string; tokenId: EdgeTokenId }) => {
   const account = useEdgeAccount()
   const wallet = useEdgeCurrencyWallet({ account, walletId })
   const [name] = useName(wallet)
@@ -214,15 +214,15 @@ const SelectedTokenId = ({ walletId, tokenId }: { walletId: string; tokenId: Edg
   const label = name || wallet.currencyInfo.displayName || wallet.currencyInfo.currencyCode
 
   return (
-    <div className="exchange-token-id__selected">
+    <div className="exchange-token__selected">
       <Boundary error={{ fallback: null }} suspense={{ fallback: null }}>
         <Logo currencyCode={currencyCode} pluginId={wallet.currencyInfo.pluginId} tokenId={tokenId ?? undefined} />
       </Boundary>
-      <div className="exchange-token-id__text">
-        <div className="exchange-token-id__name">
+      <div className="exchange-token__text">
+        <div className="exchange-token__name">
           {label} · {currencyCode}
         </div>
-        <div className="exchange-token-id__balance">
+        <div className="exchange-token__balance">
           <Boundary>
             <Balance wallet={wallet} tokenId={tokenId} />
           </Boundary>
@@ -260,7 +260,7 @@ const SwapQuote = ({
 
   return (
     <div className="swap-quote">
-      <div className="exchange-token-id__label">Quote</div>
+      <div className="exchange-token__label">Quote</div>
       {Number(nativeAmount) <= 0 ? <div className="swap-quote__hint">Enter an amount to fetch a quote.</div> : null}
       {isFetching ? <div className="swap-quote__hint">Fetching quote…</div> : null}
       {error ? <Alert variant="danger">{error.message}</Alert> : null}

@@ -20,7 +20,7 @@ export const FiatAmount = ({
   const account = useEdgeAccount()
   const fiatAmount =
     wallet != null && tokenId !== undefined ? (
-      <TokenIdFiat
+      <TokenFiat
         account={account}
         wallet={wallet}
         tokenId={tokenId}
@@ -39,7 +39,7 @@ export const FiatAmount = ({
   return fiatAmount
 }
 
-const TokenIdFiat = ({
+const TokenFiat = ({
   account,
   wallet,
   tokenId,

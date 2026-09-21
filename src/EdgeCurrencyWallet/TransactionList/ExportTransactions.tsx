@@ -5,7 +5,7 @@ import JSONPretty from 'react-json-pretty'
 
 import { useEdgeAccount } from '../../auth'
 import { Accordion, Button, Col, Debug, Form, FormControl, Row } from '../../components'
-import { useTokenIdDenominations, useExportTransactions } from '../../hooks'
+import { useTokenDenominations, useExportTransactions } from '../../hooks'
 
 enum ExportFormat {
   'QBO' = 'QBO',
@@ -22,7 +22,7 @@ export const ExportTransactions = ({
   isActive: boolean
 }) => {
   const account = useEdgeAccount()
-  const { display, all } = useTokenIdDenominations(account, wallet, tokenId)
+  const { display, all } = useTokenDenominations(account, wallet, tokenId)
 
   const [options, setOptions] = React.useState<
     EdgeGetTransactionsOptions & {

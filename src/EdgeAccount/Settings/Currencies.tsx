@@ -6,8 +6,8 @@ import { useEdgeAccount } from '../../auth'
 import { Boundary, FormControl, ListGroup, ListGroupItem, Logo } from '../../components'
 import {
   useActiveTokenIds,
-  useTokenIdDenominations,
-  useTokenIdInfo,
+  useTokenDenominations,
+  useTokenInfo,
   useDefaultFiatCurrencyCode,
   useDenominations,
   useInfo,
@@ -47,9 +47,9 @@ export const Currencies: React.FC = () => {
       ))}
 
       {tokenIds.map(({ key, wallet, tokenId }) => (
-        <TokenIdMatcher key={key} wallet={wallet} tokenId={tokenId} query={searchQuery}>
-          <TokenIdSetting wallet={wallet} tokenId={tokenId} />
-        </TokenIdMatcher>
+        <TokenMatcher key={key} wallet={wallet} tokenId={tokenId} query={searchQuery}>
+          <TokenSetting wallet={wallet} tokenId={tokenId} />
+        </TokenMatcher>
       ))}
     </ListGroup>
   )
@@ -70,12 +70,12 @@ const FiatMatcher: React.FC<{ query: string; currencyCode: string }> = ({ query,
   return <>{matches(query)(info) ? children : null}</>
 }
 
-const TokenIdMatcher: React.FC<{
+const TokenMatcher: React.FC<{
   query: string
   wallet: EdgeCurrencyWallet
   tokenId: EdgeTokenId
 }> = ({ query, wallet, tokenId, children }) => {
-  const info = useTokenIdInfo(wallet, tokenId)
+  const info = useTokenInfo(wallet, tokenId)
 
   return <>{matches(query)(info) ? children : null}</>
 }
@@ -97,9 +97,9 @@ const FiatSetting: React.FC<{ currencyCode: string }> = ({ currencyCode }) => {
   )
 }
 
-const TokenIdSetting: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId }> = ({ wallet, tokenId }) => {
+const TokenSetting: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId }> = ({ wallet, tokenId }) => {
   const account = useEdgeAccount()
-  const info = useTokenIdInfo(wallet, tokenId)
+  const info = useTokenInfo(wallet, tokenId)
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
@@ -112,7 +112,7 @@ const TokenIdSetting: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenI
         {isToken(info) ? info.currencyName : info.displayName} - {info.currencyCode}
       </ListGroupItem>
       <Boundary>
-        <TokenIdDenominations wallet={wallet} tokenId={tokenId} account={account} />
+        <TokenDenominations wallet={wallet} tokenId={tokenId} account={account} />
       </Boundary>
     </ListGroup>
   )
@@ -125,7 +125,7 @@ const FiatDenominations = ({ currencyCode }: { currencyCode: string }) => {
   return <DenominationList denominations={denominations} />
 }
 
-const TokenIdDenominations = ({
+const TokenDenominations = ({
   account,
   wallet,
   tokenId,
@@ -134,7 +134,7 @@ const TokenIdDenominations = ({
   wallet: EdgeCurrencyWallet
   tokenId: EdgeTokenId
 }) => {
-  const denominations = useTokenIdDenominations(account, wallet, tokenId)
+  const denominations = useTokenDenominations(account, wallet, tokenId)
 
   return <DenominationList denominations={denominations} />
 }

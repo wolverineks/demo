@@ -507,14 +507,14 @@ iframe {
   line-height: 1.2;
 }
 
-.exchange-token-id {
+.exchange-token {
   padding: 12px 14px;
   background: #f7f8fa;
   border: 1px solid var(--app-border);
   border-radius: 10px;
 }
 
-.exchange-token-id__header {
+.exchange-token__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -522,7 +522,7 @@ iframe {
   margin-bottom: 10px;
 }
 
-.exchange-token-id__label {
+.exchange-token__label {
   font-size: 12px;
   font-weight: 650;
   letter-spacing: 0.02em;
@@ -530,7 +530,7 @@ iframe {
   text-transform: uppercase;
 }
 
-.panel .exchange-token-id__select.form-control {
+.panel .exchange-token__select.form-control {
   width: auto;
   max-width: 220px;
   min-width: 140px;
@@ -539,7 +539,7 @@ iframe {
   font-size: 13px;
 }
 
-.exchange-token-id__selected {
+.exchange-token__selected {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -547,15 +547,15 @@ iframe {
   margin-bottom: 12px;
 }
 
-.exchange-token-id__selected:last-child {
+.exchange-token__selected:last-child {
   margin-bottom: 0;
 }
 
-.exchange-token-id__text {
+.exchange-token__text {
   min-width: 0;
 }
 
-.exchange-token-id__name {
+.exchange-token__name {
   overflow: hidden;
   font-size: 15px;
   font-weight: 650;
@@ -563,7 +563,7 @@ iframe {
   white-space: nowrap;
 }
 
-.exchange-token-id__balance {
+.exchange-token__balance {
   overflow: hidden;
   font-size: 12px;
   color: var(--app-muted);
