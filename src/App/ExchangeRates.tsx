@@ -3,8 +3,8 @@ import React from 'react'
 
 import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, FiatAmount, FormControl, Logo } from '../components'
-import { denominatedToNative, getWalletTokenIds, useDefaultFiatCurrencyCode, useTokenDisplayDenomination, useWatch } from '../hooks'
-import { getCurrencyCodeFromTokenId, normalize } from '../utils'
+import { denominatedToNative, useDefaultFiatCurrencyCode, useTokenDisplayDenomination, useWatch } from '../hooks'
+import { getCurrencyCodeFromTokenId, getWalletTokenIds, normalize } from '../utils'
 
 export const ExchangeRates = () => {
   const [searchQuery, setSearchQuery] = React.useState('')

@@ -5,7 +5,6 @@ import { useQuery } from 'react-query'
 import { useEdgeAccount } from '../../auth'
 import { Boundary, FormControl, ListGroup, ListGroupItem, Logo } from '../../components'
 import {
-  useActiveWalletTokenIds,
   useTokenDenominations,
   useTokenInfo,
   useDefaultFiatCurrencyCode,
@@ -13,7 +12,7 @@ import {
   useInfo,
   useWatch,
 } from '../../hooks'
-import { FiatInfo, getSortedCurrencyWallets, isFiat, isToken, normalize, unique } from '../../utils'
+import { FiatInfo, getSortedCurrencyWallets, getWalletTokenIds, isFiat, isToken, normalize, unique } from '../../utils'
 
 const useWalletFiatCurrencyCodes = (account: EdgeAccount) => {
   const getWalletFiatCurrencyCodes = () =>
@@ -34,7 +33,8 @@ export const Currencies: React.FC = () => {
   const [fiatCurrencyCode] = useDefaultFiatCurrencyCode(account)
   const walletFiatCurrencyCodes = useWalletFiatCurrencyCodes(account)
   const fiatCodes = unique([fiatCurrencyCode, ...walletFiatCurrencyCodes])
-  const walletTokenIds = useActiveWalletTokenIds(account)
+  useWatch(account, 'activeWalletIds')
+  useWatch(account, 'currencyWallets')
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
@@ -46,9 +46,21 @@ export const Currencies: React.FC = () => {
         </FiatMatcher>
       ))}
 
-      {walletTokenIds.map(({ wallet, tokenId }) => (
+      {Object.values(account.currencyWallets).map((wallet) => (
+        <WalletTokens key={wallet.id} wallet={wallet} searchQuery={searchQuery} />
+      ))}
+    </ListGroup>
+  )
+}
+
+const WalletTokens: React.FC<{ wallet: EdgeCurrencyWallet; searchQuery: string }> = ({ wallet, searchQuery }) => {
+  useWatch(wallet, 'enabledTokenIds')
+
+  return (
+    <>
+      {getWalletTokenIds(wallet).map((tokenId) => (
         <TokenMatcher
-          key={`${wallet.currencyInfo.pluginId}:${tokenId ?? 'native'}`}
+          key={`${wallet.id}:${tokenId ?? 'native'}`}
           wallet={wallet}
           tokenId={tokenId}
           query={searchQuery}
@@ -56,7 +68,7 @@ export const Currencies: React.FC = () => {
           <TokenSetting wallet={wallet} tokenId={tokenId} />
         </TokenMatcher>
       ))}
-    </ListGroup>
+    </>
   )
 }
 

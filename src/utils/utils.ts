@@ -66,6 +66,8 @@ export const getCurrencyCodeFromTokenId = (wallet: EdgeCurrencyWallet, tokenId: 
   return wallet.currencyConfig.allTokens[tokenId]?.currencyCode ?? wallet.currencyInfo.currencyCode
 }
 
+export const getWalletTokenIds = (wallet: EdgeCurrencyWallet): EdgeTokenId[] => [null, ...wallet.enabledTokenIds]
+
 export const getNativeBalance = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId): string =>
   wallet.balanceMap.get(tokenId) ?? '0'
 
