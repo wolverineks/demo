@@ -3,16 +3,23 @@ import React from 'react'
 
 import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, FiatAmount, FormControl, Logo } from '../components'
-import { denominatedToNative, useActiveTokenIds, useDefaultFiatCurrencyCode, useTokenDisplayDenomination } from '../hooks'
-import { normalize } from '../utils'
+import {
+  denominatedToNative,
+  useActiveWalletTokenIds,
+  useDefaultFiatCurrencyCode,
+  useTokenDisplayDenomination,
+} from '../hooks'
+import { getCurrencyCodeFromTokenId, normalize } from '../utils'
 
 export const ExchangeRates = () => {
   const [searchQuery, setSearchQuery] = React.useState('')
   const account = useEdgeAccount()
-  const tokenIds = useActiveTokenIds(account)
+  const walletTokenIds = useActiveWalletTokenIds(account)
   const query = normalize(searchQuery)
 
-  const visibleTokenIds = tokenIds.filter(({ currencyCode }) => normalize(currencyCode).includes(query))
+  const visible = walletTokenIds.filter(({ wallet, tokenId }) =>
+    normalize(getCurrencyCodeFromTokenId(wallet, tokenId)).includes(query),
+  )
 
   return (
     <div>
@@ -24,33 +31,33 @@ export const ExchangeRates = () => {
         onChange={(event) => setSearchQuery(event.currentTarget.value)}
       />
 
-      {visibleTokenIds.map(({ key, wallet, tokenId, currencyCode, pluginId }) => (
-        <Boundary
-          key={key}
-          error={{
-            fallbackRender: function RateFallback() {
-              return (
-                <div className="rate-row">
-                  <span>{currencyCode}</span>
-                </div>
-              )
-            },
-          }}
-        >
-          <ExchangeRate wallet={wallet} tokenId={tokenId} currencyCode={currencyCode} pluginId={pluginId} />
-        </Boundary>
-      ))}
+      {visible.map(({ wallet, tokenId }) => {
+        const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
+
+        return (
+          <Boundary
+            key={`${wallet.currencyInfo.pluginId}:${tokenId ?? 'native'}`}
+            error={{
+              fallbackRender: function RateFallback() {
+                return (
+                  <div className="rate-row">
+                    <span>{currencyCode}</span>
+                  </div>
+                )
+              },
+            }}
+          >
+            <ExchangeRate wallet={wallet} tokenId={tokenId} />
+          </Boundary>
+        )
+      })}
     </div>
   )
 }
 
-const ExchangeRate: React.FC<{
-  wallet: EdgeCurrencyWallet
-  tokenId: EdgeTokenId
-  currencyCode: string
-  pluginId: string
-}> = ({ wallet, tokenId, currencyCode, pluginId }) => {
+const ExchangeRate: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId }> = ({ wallet, tokenId }) => {
   const account = useEdgeAccount()
+  const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
   const [fiatCurrencyCode] = useDefaultFiatCurrencyCode(account)
   const [displayDenomination] = useTokenDisplayDenomination(account, wallet, tokenId)
   const nativeAmount = denominatedToNative({ denomination: displayDenomination, amount: '1' })
@@ -58,7 +65,7 @@ const ExchangeRate: React.FC<{
   return (
     <div className="rate-row">
       <Boundary error={{ fallback: null }} suspense={{ fallback: null }}>
-        <Logo currencyCode={currencyCode} pluginId={pluginId} tokenId={tokenId ?? undefined} />
+        <Logo currencyCode={currencyCode} pluginId={wallet.currencyInfo.pluginId} tokenId={tokenId ?? undefined} />
       </Boundary>
       <span>
         <Boundary error={{ fallback: <span>{currencyCode}</span> }}>

@@ -5,7 +5,7 @@ import { useQuery } from 'react-query'
 import { useEdgeAccount } from '../../auth'
 import { Boundary, FormControl, ListGroup, ListGroupItem, Logo } from '../../components'
 import {
-  useActiveTokenIds,
+  useActiveWalletTokenIds,
   useTokenDenominations,
   useTokenInfo,
   useDefaultFiatCurrencyCode,
@@ -34,7 +34,7 @@ export const Currencies: React.FC = () => {
   const [fiatCurrencyCode] = useDefaultFiatCurrencyCode(account)
   const walletFiatCurrencyCodes = useWalletFiatCurrencyCodes(account)
   const fiatCodes = unique([fiatCurrencyCode, ...walletFiatCurrencyCodes])
-  const tokenIds = useActiveTokenIds(account)
+  const walletTokenIds = useActiveWalletTokenIds(account)
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
@@ -46,8 +46,13 @@ export const Currencies: React.FC = () => {
         </FiatMatcher>
       ))}
 
-      {tokenIds.map(({ key, wallet, tokenId }) => (
-        <TokenMatcher key={key} wallet={wallet} tokenId={tokenId} query={searchQuery}>
+      {walletTokenIds.map(({ wallet, tokenId }) => (
+        <TokenMatcher
+          key={`${wallet.currencyInfo.pluginId}:${tokenId ?? 'native'}`}
+          wallet={wallet}
+          tokenId={tokenId}
+          query={searchQuery}
+        >
           <TokenSetting wallet={wallet} tokenId={tokenId} />
         </TokenMatcher>
       ))}
