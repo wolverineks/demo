@@ -17,7 +17,7 @@ export const useFilteredTokenInfos = (wallet: EdgeCurrencyWallet) => {
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>(StatusFilter.all)
 
   const matches = (tokenInfo: TokenInfo): boolean => {
-    const isEnabled = tokens.enabled.includes(tokenInfo.tokenId)
+    const isEnabled = tokens.enabledTokenIds.includes(tokenInfo.tokenId)
     const displayFilter =
       statusFilter === StatusFilter.enabledOnly
         ? isEnabled
@@ -33,7 +33,7 @@ export const useFilteredTokenInfos = (wallet: EdgeCurrencyWallet) => {
   }
 
   return {
-    included: Object.values(tokens.includedInfos).filter(matches),
+    included: Object.values(tokens.includedTokenInfos).filter(matches),
     custom: Object.values(tokens.customTokenInfos).filter(matches),
     setSearchQuery,
     setStatusFilter,

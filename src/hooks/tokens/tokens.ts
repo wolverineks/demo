@@ -1,7 +1,7 @@
 import { EdgeCurrencyWallet, EdgeTokenInfo } from 'edge-core-js'
 import { useMutation, useQueryClient } from 'react-query'
 
-import { getIncludedInfos, readCustomTokenInfos } from './utils'
+import { getIncludedTokenInfos, readCustomTokenInfos } from './utils'
 import { useInvalidateQueries, useWatch } from '..'
 
 const useCustomInfos = (wallet: EdgeCurrencyWallet) => {
@@ -40,12 +40,12 @@ const useRemoveCustomInfo = (wallet: EdgeCurrencyWallet) => {
 }
 
 const useEnableToken = (wallet: EdgeCurrencyWallet) => {
-  const tokenInfos = getIncludedInfos(wallet)
+  const includedTokenInfos = getIncludedTokenInfos(wallet)
   const customTokenInfos = useCustomInfos(wallet)
 
   return useMutation(
     async (tokenId: string) => {
-      if (!tokenInfos[tokenId] && !customTokenInfos[tokenId]) throw new Error(`Invalid tokenId: ${tokenId}`)
+      if (!includedTokenInfos[tokenId] && !customTokenInfos[tokenId]) throw new Error(`Invalid tokenId: ${tokenId}`)
 
       await wallet.changeEnabledTokenIds([...wallet.enabledTokenIds, tokenId])
     },
@@ -64,12 +64,16 @@ export const useTokens = (wallet: EdgeCurrencyWallet) => {
   useWatch(wallet.currencyConfig, 'allTokens')
   useWatch(wallet.currencyConfig, 'builtinTokens')
 
+  const includedTokenInfos = getIncludedTokenInfos(wallet)
+  const customTokenInfos = useCustomInfos(wallet)
+
   return {
-    includedInfos: getIncludedInfos(wallet),
-    customTokenInfos: useCustomInfos(wallet),
+    includedTokenInfos,
+    customTokenInfos,
+    availableTokenInfos: [...Object.values(customTokenInfos), ...Object.values(includedTokenInfos)],
     addCustomInfo: useAddCustomInfo(wallet).mutate,
     removeCustomInfo: useRemoveCustomInfo(wallet).mutate,
-    enabled: wallet.enabledTokenIds,
+    enabledTokenIds: wallet.enabledTokenIds,
     enable: useEnableToken(wallet).mutateAsync,
     disable: useDisableToken(wallet).mutate,
   }

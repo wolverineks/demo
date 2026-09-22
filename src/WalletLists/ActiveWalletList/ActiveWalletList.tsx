@@ -48,7 +48,7 @@ const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId
   const [name] = useName(wallet)
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
 
-  const enabledCodes = tokens.enabled.map((tokenId) => getCurrencyCodeFromTokenId(wallet, tokenId))
+  const enabledCodes = tokens.enabledTokenIds.map((tokenId) => getCurrencyCodeFromTokenId(wallet, tokenId))
   const display = [name || '', wallet.currencyInfo.currencyCode, fiatCurrencyCode, ...enabledCodes].some((target) =>
     normalize(target).includes(normalize(searchQuery)),
   )

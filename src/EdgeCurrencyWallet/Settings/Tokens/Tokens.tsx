@@ -19,7 +19,7 @@ import { StatusFilter, useFilteredTokenInfos } from './useFilteredTokenInfos'
 
 export const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const tokens = useTokens(wallet)
-  const availableTokens = [...Object.values(tokens.customTokenInfos), ...Object.values(tokens.includedInfos)].length > 0
+  const availableTokens = tokens.availableTokenInfos.length > 0
 
   return !availableTokens ? <NoAvailableTokens /> : <AvailableTokens wallet={wallet} />
 }
@@ -35,7 +35,7 @@ const AvailableTokens = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
   const tokens = useTokens(wallet)
   const [, select] = useSelectWallet()
   const toggleToken = (tokenId: string) => {
-    if (tokens.enabled.includes(tokenId)) {
+    if (tokens.enabledTokenIds.includes(tokenId)) {
       tokens.disable(tokenId)
 
       return
@@ -73,7 +73,7 @@ const AvailableTokens = ({ wallet }: { wallet: EdgeCurrencyWallet }) => {
         <MatchingTokens
           includedTokenInfos={filteredTokenInfos.included}
           customTokenInfos={filteredTokenInfos.custom}
-          enabledTokenIds={tokens.enabled}
+          enabledTokenIds={tokens.enabledTokenIds}
           editToken={editToken}
           toggleToken={toggleToken}
         />

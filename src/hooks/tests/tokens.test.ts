@@ -20,21 +20,21 @@ describe('useTokens', () => {
     const { wallet } = await setup()
     const { result, waitFor } = render(() => useTokens(wallet))
 
-    await waitFor(() => Object.keys(result.current.includedInfos).length > 0)
-    expect(result.current.enabled).toEqual([])
+    await waitFor(() => result.current.availableTokenInfos.length > 0)
+    expect(result.current.enabledTokenIds).toEqual([])
 
-    const tokenId = Object.keys(result.current.includedInfos)[0]
+    const tokenId = result.current.availableTokenInfos[0].tokenId
 
     await act(async () => {
       await result.current.enable(tokenId)
     })
 
-    await waitFor(() => expect(result.current.enabled).toContain(tokenId))
+    await waitFor(() => expect(result.current.enabledTokenIds).toContain(tokenId))
 
     act(() => {
       result.current.disable(tokenId)
     })
 
-    await waitFor(() => expect(result.current.enabled).not.toContain(tokenId))
+    await waitFor(() => expect(result.current.enabledTokenIds).not.toContain(tokenId))
   })
 })

@@ -46,7 +46,7 @@ export const toMetaTokenMapFromTokenMap = (tokens: EdgeTokenMap = {}, extras: Ex
     return result
   }, {} as MetaTokenMap)
 
-export const getIncludedInfos = (wallet: EdgeCurrencyWallet): MetaTokenMap => {
+export const getIncludedTokenInfos = (wallet: EdgeCurrencyWallet): MetaTokenMap => {
   const extras = explorersFromWallet(wallet)
   const fromMeta = (wallet.currencyInfo.metaTokens || []).reduce((result, token) => {
     const tokenId = contractToTokenId(token.contractAddress)

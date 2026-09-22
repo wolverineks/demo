@@ -51,7 +51,7 @@ export const TokenIdBoundary: React.FC<{ fallback?: React.ReactNode }> = ({ chil
   const account = useEdgeAccount()
   const wallet = useEdgeCurrencyWallet({ account, walletId: walletInfo.id })
   const tokens = useTokens(wallet)
-  const isEnabled = walletInfo.tokenId == null || tokens.enabled.includes(walletInfo.tokenId)
+  const isEnabled = walletInfo.tokenId == null || tokens.enabledTokenIds.includes(walletInfo.tokenId)
 
   if (!isEnabled) {
     selectWallet({ id: walletInfo.id, tokenId: null })

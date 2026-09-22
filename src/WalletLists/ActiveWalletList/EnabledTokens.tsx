@@ -11,16 +11,16 @@ export const EnabledTokens: React.FC<{
 }> = ({ wallet }) => {
   const tokens = useTokens(wallet)
 
-  if (tokens.enabled.length === 0) return null
+  if (tokens.enabledTokenIds.length === 0) return null
 
   return (
     <>
-      {tokens.enabled.map((tokenId) => (
+      {tokens.enabledTokenIds.map((tokenId) => (
         <EnabledToken
           key={tokenId}
           wallet={wallet}
           tokenId={tokenId}
-          tokenInfo={tokens.includedInfos[tokenId] || tokens.customTokenInfos[tokenId]}
+          tokenInfo={tokens.includedTokenInfos[tokenId] || tokens.customTokenInfos[tokenId]}
         />
       ))}
     </>
