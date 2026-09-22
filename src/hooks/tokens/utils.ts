@@ -1,4 +1,4 @@
-import { EdgeCurrencyConfig, EdgeCurrencyWallet, EdgeMetaToken, EdgeToken, EdgeTokenInfo, EdgeTokenMap } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeMetaToken, EdgeToken, EdgeTokenMap } from 'edge-core-js'
 
 import { contractToTokenId } from '../../utils'
 
@@ -25,16 +25,6 @@ const explorersFromWallet = (wallet: EdgeCurrencyWallet): Explorers => ({
 
 export const readCustomTokenInfos = (wallet: EdgeCurrencyWallet): MetaTokenMap =>
   toMetaTokenMapFromTokenMap(wallet.currencyConfig.customTokens, explorersFromWallet(wallet))
-
-export const readCustomTokenInfo = (wallet: EdgeCurrencyWallet, tokenId: string) =>
-  wallet.currencyConfig.customTokens[tokenId]
-
-export const removeKey = <T extends { [key: string]: any }>(key: string, object: T) => {
-  const dup = { ...object }
-  delete dup[key]
-
-  return dup
-}
 
 export const metaTokenFromEdgeToken = (token: EdgeToken, extras: Explorers = {}): TokenInfo => {
   const networkLocation = token.networkLocation as { contractAddress?: string } | undefined
@@ -71,33 +61,3 @@ export const getIncludedInfos = (wallet: EdgeCurrencyWallet): MetaTokenMap => {
     ...toMetaTokenMapFromTokenMap(wallet.currencyConfig?.builtinTokens, extras),
   }
 }
-
-export const getConfigTokenInfos = (config: EdgeCurrencyConfig) => {
-  const extras: Explorers = {
-    addressExplorer: config.currencyInfo.addressExplorer,
-    blockExplorer: config.currencyInfo.blockExplorer,
-    transactionExplorer: config.currencyInfo.transactionExplorer,
-    xpubExplorer: config.currencyInfo.xpubExplorer,
-    pluginId: config.currencyInfo.pluginId,
-  }
-
-  const fromMeta = (config.currencyInfo.metaTokens || []).map((token) => ({
-    ...token,
-    ...extras,
-    tokenId: contractToTokenId(token.contractAddress),
-  }))
-  const fromConfig = Object.entries({
-    ...(config.builtinTokens || {}),
-    ...(config.allTokens || {}),
-  }).map(([tokenId, token]) => metaTokenFromEdgeToken(token, { ...extras, tokenId }))
-
-  return [...fromMeta, ...fromConfig]
-}
-
-export const toMetaToken = (wallet: EdgeCurrencyWallet, tokenInfo: EdgeTokenInfo): TokenInfo => ({
-  ...tokenInfo,
-  denominations: [{ name: tokenInfo.currencyName, multiplier: tokenInfo.multiplier }],
-  symbolImage: '',
-  ...explorersFromWallet(wallet),
-  tokenId: contractToTokenId(tokenInfo.contractAddress) ?? '',
-})

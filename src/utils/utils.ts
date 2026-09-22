@@ -52,14 +52,6 @@ export const getCurrencyInfos = (account: EdgeAccount) => {
   return Object.values(account.currencyConfig).map(({ currencyInfo }) => currencyInfo)
 }
 
-export const getTokenIdFromCurrencyCode = (wallet: EdgeCurrencyWallet, currencyCode?: string): EdgeTokenId => {
-  if (!currencyCode || currencyCode === wallet.currencyInfo.currencyCode) return null
-
-  const match = Object.entries(wallet.currencyConfig.allTokens).find(([, token]) => token.currencyCode === currencyCode)
-
-  return match?.[0] ?? null
-}
-
 export const getCurrencyCodeFromTokenId = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId): string => {
   if (tokenId == null) return wallet.currencyInfo.currencyCode
 

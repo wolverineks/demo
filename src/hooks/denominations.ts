@@ -49,63 +49,6 @@ export const useNativeDenomination = (account: EdgeAccount, currencyCode: string
   return info.denominations.find(({ multiplier }) => multiplier === '1')
 }
 
-export const useDisplayToNative = ({
-  account,
-  currencyCode,
-  displayAmount,
-}: {
-  account: EdgeAccount
-  currencyCode: string
-  displayAmount: string
-}) => {
-  const denomination = useDisplayDenomination(account, currencyCode)[0]
-
-  return denominatedToNative({ denomination, amount: displayAmount })
-}
-
-export const useNativeToDisplay = ({
-  account,
-  currencyCode,
-  nativeAmount,
-}: {
-  account: EdgeAccount
-  currencyCode: string
-  nativeAmount: string
-}) => {
-  const denomination = useDisplayDenomination(account, currencyCode)[0]
-
-  return nativeToDenominated({ denomination, nativeAmount })
-}
-
-export const useExchangeToDisplay = ({
-  account,
-  currencyCode,
-  exchangeAmount,
-}: {
-  account: EdgeAccount
-  currencyCode: string
-  exchangeAmount: string
-}) => {
-  const nativeAmount = useExchangeToNative({ account, currencyCode, exchangeAmount })
-
-  return useNativeToDisplay({ account, currencyCode, nativeAmount })
-}
-
-export const useDisplayToExchange = ({
-  account,
-  currencyCode,
-  displayAmount,
-}: {
-  account: EdgeAccount
-  currencyCode: string
-  displayAmount: string
-}) => {
-  const nativeAmount = useDisplayToNative({ account, displayAmount, currencyCode })
-  const denomination = useExchangeDenomination(account, currencyCode)
-
-  return nativeToDenominated({ denomination, nativeAmount })
-}
-
 export const useNativeToExchange = ({
   account,
   currencyCode,
