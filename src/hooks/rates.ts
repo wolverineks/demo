@@ -93,13 +93,3 @@ export const convertCurrency = async (fromCurrencyCode: string, toCurrencyCode: 
     return 0
   }
 }
-
-export const useOnRateChange = (_account: EdgeAccount, callback: () => any) => {
-  React.useEffect(() => {
-    const id = setInterval(callback, 15_000)
-
-    return () => {
-      clearInterval(id)
-    }
-  }, [_account, callback])
-}

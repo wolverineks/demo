@@ -12,7 +12,7 @@ import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'reac
 
 import { getCurrencyCodeFromTokenId } from '../utils'
 import { walletTransactionQueryKeys } from './edgeCurrencyWallet'
-import { convertCurrency, useOnRateChange } from './rates'
+import { convertCurrency } from './rates'
 import { getTokenInfo, getFiatInfo } from './useInfo'
 import { useInvalidateQueries } from './useInvalidateQueries'
 import { useWatch } from './watch'
@@ -73,15 +73,11 @@ export const useEdgeAccountTotal = (account: EdgeAccount) => {
     return parts.reduce((total, amount) => total + amount, 0)
   }
 
-  const { data, refetch } = useQuery({
+  const { data } = useQuery({
     queryKey: [account.username, 'accountTotal'],
     queryFn: () => getTotal(),
+    refetchInterval: 30_000,
   })
-
-  useOnRateChange(
-    account,
-    React.useCallback(() => refetch(), [refetch]),
-  )
 
   return { total: data!, denomination: displayDenomination }
 }
