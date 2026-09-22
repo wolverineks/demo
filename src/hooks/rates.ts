@@ -1,8 +1,8 @@
 import { EdgeAccount } from 'edge-core-js'
 import React from 'react'
-import { useQuery } from 'react-query'
 
 import { getCurrencyCodeFromTokenId, getWalletTokenIds, uniqueBy } from '../utils'
+import { useRerender } from './useRerender'
 import { getFiatInfo } from './useInfo'
 import { useWatch } from './watch'
 
@@ -18,23 +18,19 @@ export const getRatePairs = (account: EdgeAccount) =>
   )
 
 export const useRatePairs = (account: EdgeAccount) => {
-  const { data, refetch } = useQuery({
-    queryKey: [account.username, 'ratePairs'],
-    queryFn: () => getRatePairs(account),
-    initialData: () => getRatePairs(account),
-  })
-  useWatch(account, 'currencyWallets', () => refetch())
+  const rerender = useRerender()
+  useWatch(account, 'currencyWallets')
 
   React.useEffect(() => {
     const unsubs = Object.values(account.currencyWallets).flatMap((wallet) => [
-      wallet.watch('enabledTokenIds', () => refetch()),
-      wallet.watch('fiatCurrencyCode', () => refetch()),
+      wallet.watch('enabledTokenIds', rerender),
+      wallet.watch('fiatCurrencyCode', rerender),
     ])
 
     return () => unsubs.forEach((unsub) => unsub())
-  }, [account.currencyWallets, refetch])
+  }, [account.currencyWallets, rerender])
 
-  return data ?? []
+  return getRatePairs(account)
 }
 
 const RATE_SERVERS = ['https://rates1.edge.app', 'https://rates2.edge.app']
