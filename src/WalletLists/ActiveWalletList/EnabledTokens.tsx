@@ -43,7 +43,6 @@ const EnabledToken: React.FC<{
     >
       <Boundary error={{ fallback: null }} suspense={{ fallback: null }}>
         <Logo
-          currencyCode={currencyCode}
           pluginId={tokenInfo?.pluginId || wallet.currencyInfo.pluginId}
           tokenId={tokenId}
           contractAddress={tokenInfo?.contractAddress}

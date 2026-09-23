@@ -1,15 +1,22 @@
-import { EdgeAccount, EdgeCurrencyInfo, EdgeCurrencyWallet, EdgeDenomination, EdgeMetaToken, EdgeTokenId } from 'edge-core-js'
+import {
+  EdgeAccount,
+  EdgeCurrencyInfo,
+  EdgeCurrencyWallet,
+  EdgeDenomination,
+  EdgeMetaToken,
+  EdgeTokenId,
+} from 'edge-core-js'
 import React from 'react'
 import { useQuery } from 'react-query'
 
 import { useEdgeAccount } from '../../auth'
 import { Boundary, FormControl, ListGroup, ListGroupItem, Logo } from '../../components'
 import {
-  useTokenDenominations,
-  useTokenInfo,
   useDefaultFiatCurrencyCode,
   useDenominations,
   useInfo,
+  useTokenDenominations,
+  useTokenInfo,
   useWatch,
 } from '../../hooks'
 import { FiatInfo, getSortedCurrencyWallets, getWalletTokenIds, isFiat, isToken, normalize, unique } from '../../utils'
@@ -59,12 +66,7 @@ const WalletTokens: React.FC<{ wallet: EdgeCurrencyWallet; searchQuery: string }
   return (
     <>
       {getWalletTokenIds(wallet).map((tokenId) => (
-        <TokenMatcher
-          key={`${wallet.id}:${tokenId ?? 'native'}`}
-          wallet={wallet}
-          tokenId={tokenId}
-          query={searchQuery}
-        >
+        <TokenMatcher key={`${wallet.id}:${tokenId ?? 'native'}`} wallet={wallet} tokenId={tokenId} query={searchQuery}>
           <TokenSetting wallet={wallet} tokenId={tokenId} />
         </TokenMatcher>
       ))}
@@ -121,11 +123,7 @@ const TokenSetting: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       <ListGroupItem>
-        <Logo
-          currencyCode={info.currencyCode}
-          pluginId={wallet.currencyInfo.pluginId}
-          tokenId={tokenId ?? undefined}
-        />
+        <Logo pluginId={wallet.currencyInfo.pluginId} tokenId={tokenId} />
         {isToken(info) ? info.currencyName : info.displayName} - {info.currencyCode}
       </ListGroupItem>
       <Boundary>

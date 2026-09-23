@@ -6,11 +6,11 @@ import { useEdgeAccount } from '../auth'
 import { Alert, Balance, Boundary, Button, Debug, DisplayAmount, FlipInput, FormControl, Logo } from '../components'
 import {
   useApproveSwapQuote,
-  useTokenDisplayDenomination,
   useEdgeCurrencyWallet,
   useFiatCurrencyCode,
   useName,
   useSwapQuote,
+  useTokenDisplayDenomination,
 } from '../hooks'
 import { getCurrencyCodeFromTokenId, getWalletListMeta } from '../utils'
 
@@ -216,7 +216,7 @@ const SelectedToken = ({ walletId, tokenId }: { walletId: string; tokenId: EdgeT
   return (
     <div className="exchange-token__selected">
       <Boundary error={{ fallback: null }} suspense={{ fallback: null }}>
-        <Logo currencyCode={currencyCode} pluginId={wallet.currencyInfo.pluginId} tokenId={tokenId ?? undefined} />
+        <Logo pluginId={wallet.currencyInfo.pluginId} tokenId={tokenId} />
       </Boundary>
       <div className="exchange-token__text">
         <div className="exchange-token__name">

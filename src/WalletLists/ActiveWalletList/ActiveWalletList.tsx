@@ -76,7 +76,7 @@ const ActiveWalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
         <SyncRatio wallet={wallet} />
         <div className="wallet-row__body">
           <div className="wallet-row__main" onClick={() => select({ id: walletId, tokenId: null })}>
-            <Logo currencyCode={currencyCode} pluginId={wallet.currencyInfo.pluginId} />
+            <Logo pluginId={wallet.currencyInfo.pluginId} />
             <div className="wallet-row__text">
               <div className="wallet-row__name">{name || currencyCode}</div>
               <div className="wallet-row__balance">

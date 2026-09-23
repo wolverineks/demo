@@ -18,10 +18,9 @@ import { AddToken } from './AddToken'
 import { StatusFilter, useFilteredTokenInfos } from './useFilteredTokenInfos'
 
 export const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
-  const tokens = useTokens(wallet)
-  const availableTokens = tokens.availableTokenInfos.length > 0
+  const { availableTokenInfos } = useTokens(wallet)
 
-  return !availableTokens ? <NoAvailableTokens /> : <AvailableTokens wallet={wallet} />
+  return availableTokenInfos.length > 0 ? <NoAvailableTokens /> : <AvailableTokens wallet={wallet} />
 }
 
 const NoAvailableTokens = () => (
@@ -153,7 +152,13 @@ const MatchingTokens = ({
   </>
 )
 
-const TokenList = ({ tokenInfos, renderRow }: { tokenInfos: TokenInfo[]; renderRow: (tokenInfo: TokenInfo) => JSX.Element }) => (
+const TokenList = ({
+  tokenInfos,
+  renderRow,
+}: {
+  tokenInfos: TokenInfo[]
+  renderRow: (tokenInfo: TokenInfo) => JSX.Element
+}) => (
   <>
     {Object.values(tokenInfos)
       .sort((a, b) => a.currencyCode.localeCompare(b.currencyCode))
@@ -176,12 +181,7 @@ const TokenRow: React.FC<{
       onClick={() => onClick(tokenInfo.tokenId)}
     >
       <Boundary error={{ fallback: null }} suspense={{ fallback: null }}>
-        <Logo
-          currencyCode={tokenInfo.currencyCode}
-          pluginId={tokenInfo.pluginId}
-          tokenId={tokenInfo.tokenId}
-          contractAddress={tokenInfo.contractAddress}
-        />
+        <Logo pluginId={tokenInfo.pluginId} tokenId={tokenInfo.tokenId} contractAddress={tokenInfo.contractAddress} />
       </Boundary>{' '}
       {tokenInfo.currencyCode} - {tokenInfo.currencyName}
       {canEdit ? (

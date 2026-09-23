@@ -1,23 +1,37 @@
 import React from 'react'
 
+import { useEdgeAccount } from '../auth'
+import { useWatch } from '../hooks'
 import { getCurrencyIconCandidates } from '../utils'
 
 export const Logo: React.FC<{
-  currencyCode: string
   pluginId?: string
-  tokenId?: string
+  tokenId?: string | null
+  currencyCode?: string
   contractAddress?: string
-}> = ({ currencyCode, pluginId, tokenId, contractAddress }) => {
+}> = ({ pluginId, tokenId, currencyCode, contractAddress }) => {
+  const account = useEdgeAccount()
+  const currencyConfig = pluginId ? account.currencyConfig[pluginId] : undefined
+  useWatch(currencyConfig, 'allTokens')
+
+  const derivedCurrencyCode =
+    currencyConfig == null
+      ? undefined
+      : tokenId != null
+      ? currencyConfig.allTokens[tokenId]?.currencyCode
+      : currencyConfig.currencyInfo.currencyCode
+  const resolvedCurrencyCode = derivedCurrencyCode ?? currencyCode
+
   const candidates = React.useMemo(
     () =>
       getCurrencyIconCandidates({
         pluginId,
-        currencyCode,
-        tokenId,
+        currencyCode: resolvedCurrencyCode,
+        tokenId: tokenId ?? undefined,
         contractAddress,
         isToken: tokenId != null || !!contractAddress,
       }),
-    [contractAddress, currencyCode, pluginId, tokenId],
+    [contractAddress, pluginId, resolvedCurrencyCode, tokenId],
   )
   const [index, setIndex] = React.useState(0)
   const src = candidates[Math.min(index, candidates.length - 1)]
@@ -28,7 +42,7 @@ export const Logo: React.FC<{
 
   return (
     <img
-      alt={currencyCode}
+      alt={resolvedCurrencyCode}
       src={src}
       className="currency-logo"
       onError={() => {
