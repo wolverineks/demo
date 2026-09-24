@@ -272,18 +272,26 @@ const SwapQuote = ({
           </div>
           <div className="swap-quote__row">
             <span>Send</span>
-            <DisplayAmount nativeAmount={swapQuote.fromNativeAmount} wallet={fromWallet} tokenId={fromTokenId} />
+            <DisplayAmount
+              nativeAmount={swapQuote.fromNativeAmount}
+              pluginId={fromWallet.currencyInfo.pluginId}
+              tokenId={fromTokenId}
+            />
           </div>
           <div className="swap-quote__row">
             <span>Receive</span>
-            <DisplayAmount nativeAmount={swapQuote.toNativeAmount} wallet={toWallet} tokenId={toTokenId} />
+            <DisplayAmount
+              nativeAmount={swapQuote.toNativeAmount}
+              pluginId={toWallet.currencyInfo.pluginId}
+              tokenId={toTokenId}
+            />
           </div>
           {swapQuote.networkFee?.nativeAmount ? (
             <div className="swap-quote__row">
               <span>Fee</span>
               <DisplayAmount
                 nativeAmount={swapQuote.networkFee.nativeAmount}
-                wallet={fromWallet}
+                pluginId={fromWallet.currencyInfo.pluginId}
                 tokenId={swapQuote.networkFee.tokenId}
               />
             </div>

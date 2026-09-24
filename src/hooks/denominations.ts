@@ -245,7 +245,7 @@ export const useFiatAmount = (
 
 export const useTokenDisplayDenomination = (account: EdgeAccount, wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) => {
   const info = useTokenInfo(wallet, tokenId)
-  const storageKey = tokenDenominationKey(wallet, tokenId)
+  const storageKey = tokenDenominationKey(wallet.currencyInfo.pluginId, tokenId)
   const multiplier =
     useReadDisplayDenominationMultiplier(account, info, storageKey).data ?? info.denominations[0].multiplier
   const displayDenomination =
@@ -284,25 +284,5 @@ export const useTokenDenominations = (account: EdgeAccount, wallet: EdgeCurrency
     setDisplay,
     exchange: useTokenExchangeDenomination(wallet, tokenId),
     all: info.denominations,
-  }
-}
-
-export const useTokenDisplayAmount = ({
-  account,
-  wallet,
-  tokenId,
-  nativeAmount,
-}: {
-  account: EdgeAccount
-  wallet: EdgeCurrencyWallet
-  tokenId: EdgeTokenId
-  nativeAmount: string
-}) => {
-  const [denomination] = useTokenDisplayDenomination(account, wallet, tokenId)
-
-  return {
-    amount: nativeToDenominated({ denomination, nativeAmount }),
-    denomination,
-    ...denomination,
   }
 }

@@ -66,5 +66,4 @@ export const useTokenInfo = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) =
   return getTokenInfo(wallet, tokenId)
 }
 
-export const tokenDenominationKey = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) =>
-  `${wallet.currencyInfo.pluginId}:${tokenId ?? 'native'}`
+export const tokenDenominationKey = (pluginId: string, tokenId: EdgeTokenId) => `${pluginId}:${tokenId ?? 'native'}`

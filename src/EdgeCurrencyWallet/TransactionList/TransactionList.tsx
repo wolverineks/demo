@@ -61,7 +61,6 @@ const TransactionListRow: React.FC<{ wallet: EdgeCurrencyWallet; transaction: Ed
   const transactionExplorerUrl = useTransactionExplorerUrl(account, transaction)
   const addressExplorerUrl = useAddressExplorerUrl(account, transaction)
   const blockExplorerUrl = useBlockExplorerUrl(account, transaction)
-  const currencyCode = getCurrencyCodeFromTokenId(wallet, transaction.tokenId)
 
   return (
     <ListGroup.Item
@@ -71,7 +70,11 @@ const TransactionListRow: React.FC<{ wallet: EdgeCurrencyWallet; transaction: Ed
     >
       <span>
         <DisplayDate transaction={transaction} />:{' '}
-        <DisplayAmount nativeAmount={transaction.nativeAmount} wallet={wallet} tokenId={transaction.tokenId} />{' '}
+        <DisplayAmount
+          nativeAmount={transaction.nativeAmount}
+          pluginId={wallet.currencyInfo.pluginId}
+          tokenId={transaction.tokenId}
+        />{' '}
         {transaction.txid}
       </span>
 

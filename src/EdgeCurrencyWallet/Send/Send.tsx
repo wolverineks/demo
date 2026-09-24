@@ -239,7 +239,7 @@ const Fee = ({ wallet, transaction }: { wallet: EdgeCurrencyWallet; transaction:
           <li key={`${fee.tokenId ?? 'native'}-${index}`}>
             <DisplayAmount
               nativeAmount={fee.nativeAmount}
-              wallet={wallet}
+              pluginId={wallet.currencyInfo.pluginId}
               tokenId={fee.tokenId}
             />
           </li>
