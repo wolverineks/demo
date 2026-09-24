@@ -20,7 +20,7 @@ import { StatusFilter, useFilteredTokenInfos } from './useFilteredTokenInfos'
 export const Tokens: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const { availableTokenInfos } = useTokens(wallet)
 
-  return availableTokenInfos.length > 0 ? <NoAvailableTokens /> : <AvailableTokens wallet={wallet} />
+  return availableTokenInfos.length > 0 ? <AvailableTokens wallet={wallet} /> : <NoAvailableTokens />
 }
 
 const NoAvailableTokens = () => (
