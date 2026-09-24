@@ -2,9 +2,8 @@ import { EdgeCurrencyWallet, EdgeSpendTarget, EdgeTokenId } from 'edge-core-js'
 import * as React from 'react'
 
 import { FlipInput, FlipInputRef, FormControl, FormGroup, FormLabel, InputGroup, Matcher } from '../../components'
-import { getCurrencyCodeFromTokenId } from '../../utils'
 
-const UNIQUE_IDENTIFIER_CURRENCIES = ['BNB', 'EOS', 'TLOS', 'XLM', 'XRP']
+const UNIQUE_IDENTIFIER_PLUGINS = ['binance', 'eos', 'telos', 'stellar', 'ripple']
 
 export type SpendTargetRef = {
   setSpendTarget: (spendTarget: Partial<EdgeSpendTarget>) => void
@@ -40,8 +39,6 @@ export const SpendTarget = React.forwardRef<SpendTargetRef, SpendTargetProps>(fu
     },
   }))
 
-  const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
-
   return (
     <>
       <FormGroup>
@@ -55,7 +52,7 @@ export const SpendTarget = React.forwardRef<SpendTargetRef, SpendTargetProps>(fu
         </InputGroup>
       </FormGroup>
 
-      <Matcher query={currencyCode} matchers={UNIQUE_IDENTIFIER_CURRENCIES}>
+      <Matcher query={wallet.currencyInfo.pluginId} matchers={UNIQUE_IDENTIFIER_PLUGINS}>
         <FormGroup>
           <FormLabel>Unique Identifier</FormLabel>
           <FormControl
