@@ -10,7 +10,7 @@ import React from 'react'
 import { useQuery } from 'react-query'
 
 import { useEdgeAccount } from '../../auth'
-import { Boundary, FormControl, ListGroup, ListGroupItem, Logo } from '../../components'
+import { Boundary, FiatLogo, FormControl, ListGroup, ListGroupItem, Logo } from '../../components'
 import {
   useDefaultFiatCurrencyCode,
   useDenominations,
@@ -106,7 +106,7 @@ const FiatSetting: React.FC<{ currencyCode: string }> = ({ currencyCode }) => {
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
       <ListGroupItem>
-        <Logo currencyCode={info.currencyCode} />
+        <FiatLogo fiatCurrencyCode={info.currencyCode} />
         {isFiat(info) ? info.currencyCode : isToken(info) ? info.currencyName : info.displayName} - {info.currencyCode}
       </ListGroupItem>
       <Boundary>

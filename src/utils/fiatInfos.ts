@@ -177,7 +177,7 @@ export const fiatInfos: FiatInfo[] = [
     { name: info.currencyCode, symbol: `c${info.symbol}`, multiplier: '.01' },
     { name: info.currencyCode, symbol: `m${info.symbol}`, multiplier: '.001' },
   ],
-  symbolImage: `https://www.countryflags.io/${toCountryCode(info.currencyCode)}/flat/64.png`,
+  symbolImage: `https://flagcdn.com/24x18/${toCountryCode(info.currencyCode).toLowerCase()}.png`,
   isoCurrencyCode: `iso:${info.currencyCode}`,
   displayName: info.currencyCode,
 }))
