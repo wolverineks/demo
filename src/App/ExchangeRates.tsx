@@ -1,28 +1,19 @@
-import { EdgeAccount, EdgeTokenId } from 'edge-core-js'
+import { EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 
 import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, FiatAmount, FormControl, Logo } from '../components'
-import { useCryptoInfo, useExchangeToNative, useRatePairs } from '../hooks'
+import { useCryptoInfo, useExchangeInfos, useExchangeToNative } from '../hooks'
 import { normalize } from '../utils'
-
-const currencyCodeForSearch = (account: EdgeAccount, pluginId: string, tokenId: EdgeTokenId) => {
-  const config = account.currencyConfig[pluginId]
-  if (!config) return ''
-  if (tokenId == null) return config.currencyInfo.currencyCode
-
-  return config.allTokens[tokenId]?.currencyCode ?? ''
-}
 
 export const ExchangeRates = () => {
   const [searchQuery, setSearchQuery] = React.useState('')
   const account = useEdgeAccount()
   const query = normalize(searchQuery)
-  const pairs = useRatePairs(account).filter(({ pluginId, tokenId, fiatCurrencyCode }) => {
-    const currencyCode = currencyCodeForSearch(account, pluginId, tokenId)
-
-    return normalize(currencyCode).includes(query) || normalize(fiatCurrencyCode).includes(query)
-  })
+  const exchangeInfos = useExchangeInfos(account).filter(
+    ({ currencyCode, fiatCurrencyCode }) =>
+      normalize(currencyCode).includes(query) || normalize(fiatCurrencyCode).includes(query),
+  )
 
   return (
     <div>
@@ -34,7 +25,7 @@ export const ExchangeRates = () => {
         onChange={(event) => setSearchQuery(event.currentTarget.value)}
       />
 
-      {pairs.map(({ pluginId, tokenId, fiatCurrencyCode }) => (
+      {exchangeInfos.map(({ pluginId, tokenId, fiatCurrencyCode }) => (
         <Boundary
           key={`${pluginId}:${tokenId ?? 'native'}_${fiatCurrencyCode}`}
           error={{

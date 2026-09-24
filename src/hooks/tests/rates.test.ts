@@ -1,6 +1,6 @@
 import { EdgeAccount, EdgeCurrencyWallet } from 'edge-core-js'
 
-import { getRatePairs } from '../rates'
+import { getExchangeInfos } from '../rates'
 
 const USDT = {
   ethereum: 'dac17f958d2ee523a2206206994597c13d831ec7',
@@ -9,13 +9,16 @@ const USDT = {
 
 const wallet = (pluginId: string, enabledTokenIds: string[], fiatCurrencyCode = 'iso:USD') =>
   ({
-    currencyInfo: { pluginId },
+    currencyInfo: { pluginId, currencyCode: 'ETH' },
+    currencyConfig: {
+      allTokens: Object.fromEntries(enabledTokenIds.map((tokenId) => [tokenId, { currencyCode: 'USDT' }])),
+    },
     enabledTokenIds,
     fiatCurrencyCode,
   } as EdgeCurrencyWallet)
 
-describe('getRatePairs', () => {
-  it('keeps a pair per plugin and token id when the currency code matches', () => {
+describe('getExchangeInfos', () => {
+  it('keeps a row per plugin and token id when the currency code matches', () => {
     const account = {
       currencyWallets: {
         ethereum: wallet('ethereum', [USDT.ethereum]),
@@ -24,11 +27,11 @@ describe('getRatePairs', () => {
       },
     } as EdgeAccount
 
-    expect(getRatePairs(account)).toEqual([
-      { pluginId: 'ethereum', tokenId: null, fiatCurrencyCode: 'iso:USD' },
-      { pluginId: 'ethereum', tokenId: USDT.ethereum, fiatCurrencyCode: 'iso:USD' },
-      { pluginId: 'optimism', tokenId: null, fiatCurrencyCode: 'iso:USD' },
-      { pluginId: 'optimism', tokenId: USDT.optimism, fiatCurrencyCode: 'iso:USD' },
+    expect(getExchangeInfos(account)).toEqual([
+      { pluginId: 'ethereum', tokenId: null, currencyCode: 'ETH', fiatCurrencyCode: 'iso:USD' },
+      { pluginId: 'ethereum', tokenId: USDT.ethereum, currencyCode: 'USDT', fiatCurrencyCode: 'iso:USD' },
+      { pluginId: 'optimism', tokenId: null, currencyCode: 'ETH', fiatCurrencyCode: 'iso:USD' },
+      { pluginId: 'optimism', tokenId: USDT.optimism, currencyCode: 'USDT', fiatCurrencyCode: 'iso:USD' },
     ])
   })
 })
