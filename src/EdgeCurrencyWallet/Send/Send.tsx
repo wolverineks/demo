@@ -29,7 +29,7 @@ import { categories, getCurrencyCodeFromTokenId } from '../../utils'
 import { SpendTarget } from './SpendTarget'
 import { CustomFee, canAdjustFees, useSpendInfo } from './useSpendInfo'
 
-const MULTIPLE_TARGETS_CURRENCIES = ['BCH', 'BTC', 'BSV']
+const MULTIPLE_OUTPUT_PLUGINS = ['bitcoin', 'bitcoincash', 'bitcoinsv']
 const QrReader = React.lazy(() => import('react-qr-scanner'))
 
 export const Send: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId }> = ({ wallet, tokenId }) => {
@@ -88,7 +88,7 @@ export const Send: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId }
         </div>
       ))}
 
-      <Matcher query={currencyCode} matchers={MULTIPLE_TARGETS_CURRENCIES}>
+      <Matcher query={wallet.currencyInfo.pluginId} matchers={MULTIPLE_OUTPUT_PLUGINS}>
         <FormGroup>
           <Button onClick={spendTargets.add}>Add another output</Button>
         </FormGroup>
