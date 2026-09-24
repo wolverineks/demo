@@ -2,6 +2,7 @@ import { act } from '@testing-library/react-hooks'
 import { closeEdge } from 'edge-core-js'
 
 import { useDenominations } from '../denominations'
+import { useCryptoInfo } from '../useInfo'
 import { fakeUser } from './fake-user'
 import { makeFakeEdgeContext, render } from './utils'
 
@@ -17,7 +18,11 @@ describe('denominations', () => {
 
   it('useDenominations', async () => {
     const account = await setup()
-    const { result: denominations, waitFor, waitForValueToChange } = render(() => useDenominations(account, 'BTC'))
+    const { result: denominations, waitFor, waitForValueToChange } = render(() => {
+      const info = useCryptoInfo(account, 'BTC')
+
+      return useDenominations(account, info)
+    })
 
     await waitFor(() => !!denominations.current.all)
     {
@@ -27,7 +32,7 @@ describe('denominations', () => {
 
     act(() => {
       const { all, setDisplay } = denominations.current
-      setDisplay(all[1])
+      setDisplay(all[1].multiplier)
     })
 
     await waitForValueToChange(() => denominations.current.display)

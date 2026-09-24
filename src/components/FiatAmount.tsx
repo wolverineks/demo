@@ -2,7 +2,7 @@ import { EdgeCurrencyWallet, EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 
 import { useEdgeAccount } from '../auth'
-import { useDisplayAmount, useFiatAmount, useTickerFiatAmount } from '../hooks'
+import { getFiatInfo, useDisplayAmount, useFiatAmount, useTickerFiatAmount } from '../hooks'
 
 export const FiatAmount = ({
   nativeAmount,
@@ -52,10 +52,12 @@ const TokenFiat = ({
   nativeAmount: string
   fiatCurrencyCode: string
 }) => {
+  const fiatInfo = getFiatInfo(fiatCurrencyCode)
+  if (!fiatInfo) throw new Error(`Invalid Currency Code: ${fiatCurrencyCode}`)
   const fiatAmount = useFiatAmount({ account, wallet, tokenId, nativeAmount, fiatCurrencyCode })
   const { name, symbol, amount } = useDisplayAmount({
     account,
-    currencyCode: fiatCurrencyCode,
+    info: fiatInfo,
     nativeAmount: String(fiatAmount),
   })
 
@@ -77,10 +79,12 @@ const TickerFiat = ({
   nativeAmount: string
   fiatCurrencyCode: string
 }) => {
+  const fiatInfo = getFiatInfo(fiatCurrencyCode)
+  if (!fiatInfo) throw new Error(`Invalid Currency Code: ${fiatCurrencyCode}`)
   const fiatAmount = useTickerFiatAmount({ account, nativeAmount, fromCurrencyCode, fiatCurrencyCode })
   const { name, symbol, amount } = useDisplayAmount({
     account,
-    currencyCode: fiatCurrencyCode,
+    info: fiatInfo,
     nativeAmount: String(fiatAmount),
   })
 

@@ -3,7 +3,7 @@ import { UseQueryOptions, useMutation, useQuery } from 'react-query'
 
 import { FiatInfo, getCurrencyCodeFromTokenId } from '../utils'
 import { convertCurrency } from './rates'
-import { tokenDenominationKey, getTokenInfo, useTokenInfo, useInfo } from './useInfo'
+import { tokenDenominationKey, getFiatInfo, getTokenInfo, useCryptoInfo, useTokenInfo } from './useInfo'
 import { useInvalidateQueries } from './useInvalidateQueries'
 
 export const nativeToDenominated = ({
@@ -37,44 +37,28 @@ export const denominatedToDenominated = ({
 
 export const getExchangeDenomination = (info: EdgeCurrencyInfo | EdgeMetaToken | FiatInfo) => info.denominations[0]
 
-export const useExchangeDenomination = (account: EdgeAccount, currencyCode: string) => {
-  const info = useInfo(account, currencyCode)
-
-  return getExchangeDenomination(info)
-}
-
-export const useNativeDenomination = (account: EdgeAccount, currencyCode: string) => {
-  const info = useInfo(account, currencyCode)
-
-  return info.denominations.find(({ multiplier }) => multiplier === '1')
-}
-
 export const useNativeToExchange = ({
-  account,
-  currencyCode,
+  info,
   nativeAmount,
 }: {
-  account: EdgeAccount
-  currencyCode: string
+  info: EdgeCurrencyInfo | EdgeMetaToken | FiatInfo
   nativeAmount: string
 }) => {
   return nativeToDenominated({
-    denomination: useExchangeDenomination(account, currencyCode),
+    denomination: getExchangeDenomination(info),
     nativeAmount,
   })
 }
 
 export const useExchangeToNative = ({
-  account,
-  currencyCode,
+  info,
   exchangeAmount,
 }: {
-  account: EdgeAccount
-  currencyCode: string
+  info: EdgeCurrencyInfo | EdgeMetaToken | FiatInfo
   exchangeAmount: string
 }) => {
   return denominatedToNative({
-    denomination: useExchangeDenomination(account, currencyCode),
+    denomination: getExchangeDenomination(info),
     amount: exchangeAmount,
   })
 }
@@ -114,10 +98,13 @@ export const useWriteDisplayDenominationMultiplier = (
   })
 }
 
-export const useDisplayDenomination = (account: EdgeAccount, currencyCode: string) => {
-  const info = useInfo(account, currencyCode)
+export const useDisplayDenomination = (
+  account: EdgeAccount,
+  info: EdgeCurrencyInfo | EdgeMetaToken | FiatInfo,
+  storageKey = info.currencyCode,
+) => {
   const multiplier =
-    useReadDisplayDenominationMultiplier(account, info).data ?? info.denominations[0].multiplier
+    useReadDisplayDenominationMultiplier(account, info, storageKey).data ?? info.denominations[0].multiplier
   const displayDenomination =
     info.denominations.find((denomination) => denomination.multiplier === multiplier) || info.denominations[0]
 
@@ -125,31 +112,37 @@ export const useDisplayDenomination = (account: EdgeAccount, currencyCode: strin
     throw new Error('Invalid Denomination Multiplier')
   }
 
-  return [displayDenomination, useWriteDisplayDenominationMultiplier(account, info).mutateAsync] as const
+  return [displayDenomination, useWriteDisplayDenominationMultiplier(account, info, storageKey).mutateAsync] as const
 }
 
-export const useDenominations = (account: EdgeAccount, currencyCode: string) => {
-  const [display, setDisplay] = useDisplayDenomination(account, currencyCode)
+export const useDenominations = (
+  account: EdgeAccount,
+  info: EdgeCurrencyInfo | EdgeMetaToken | FiatInfo,
+  storageKey = info.currencyCode,
+) => {
+  const [display, setDisplay] = useDisplayDenomination(account, info, storageKey)
 
   return {
     display,
     setDisplay,
-    native: useNativeDenomination(account, currencyCode),
-    exchange: useExchangeDenomination(account, currencyCode),
-    all: useInfo(account, currencyCode).denominations,
+    native: info.denominations.find(({ multiplier }) => multiplier === '1'),
+    exchange: getExchangeDenomination(info),
+    all: info.denominations,
   }
 }
 
 export const useDisplayAmount = ({
   account,
   nativeAmount,
-  currencyCode,
+  info,
+  storageKey,
 }: {
   account: EdgeAccount
   nativeAmount: string
-  currencyCode: string
+  info: EdgeCurrencyInfo | EdgeMetaToken | FiatInfo
+  storageKey?: string
 }) => {
-  const [denomination] = useDisplayDenomination(account, currencyCode)
+  const [denomination] = useDisplayDenomination(account, info, storageKey)
 
   return {
     amount: nativeToDenominated({ denomination, nativeAmount }),
@@ -172,12 +165,11 @@ export const useTickerFiatAmount = (
   },
   queryOptions?: UseQueryOptions<number>,
 ) => {
-  const fiatDenominations = useDenominations(account, fiatCurrencyCode)
-  const exchangeAmount = useNativeToExchange({
-    account,
-    currencyCode: fromCurrencyCode,
-    nativeAmount,
-  })
+  const fiatInfo = getFiatInfo(fiatCurrencyCode)
+  if (!fiatInfo) throw new Error(`Invalid Currency Code: ${fiatCurrencyCode}`)
+  const fromInfo = useCryptoInfo(account, fromCurrencyCode)
+  const fiatDenominations = useDenominations(account, fiatInfo)
+  const exchangeAmount = useNativeToExchange({ info: fromInfo, nativeAmount })
 
   const { data: fiatExchangeAmount } = useQuery({
     queryKey: [{ fromCurrencyCode, fiatCurrencyCode, exchangeAmount }],
@@ -215,7 +207,9 @@ export const useFiatAmount = (
   },
   queryOptions?: UseQueryOptions<number>,
 ) => {
-  const fiatDenominations = useDenominations(account, fiatCurrencyCode)
+  const fiatInfo = getFiatInfo(fiatCurrencyCode)
+  if (!fiatInfo) throw new Error(`Invalid Currency Code: ${fiatCurrencyCode}`)
+  const fiatDenominations = useDenominations(account, fiatInfo)
   const fromCurrencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
   const exchangeAmount = useTokenNativeToExchange({ wallet, tokenId, nativeAmount })
 

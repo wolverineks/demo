@@ -2,7 +2,7 @@ import React from 'react'
 
 import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, FiatAmount, FormControl, Logo } from '../components'
-import { useExchangeToNative, useRatePairs } from '../hooks'
+import { useCryptoInfo, useExchangeToNative, useRatePairs } from '../hooks'
 import { normalize } from '../utils'
 
 export const ExchangeRates = () => {
@@ -49,7 +49,8 @@ const ExchangeRate: React.FC<{ currencyCode: string; fiatCurrencyCode: string }>
   fiatCurrencyCode,
 }) => {
   const account = useEdgeAccount()
-  const nativeAmount = useExchangeToNative({ account, currencyCode, exchangeAmount: '1' })
+  const info = useCryptoInfo(account, currencyCode)
+  const nativeAmount = useExchangeToNative({ info, exchangeAmount: '1' })
 
   return (
     <div className="rate-row">

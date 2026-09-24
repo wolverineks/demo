@@ -3,7 +3,7 @@ import React from 'react'
 
 import { useEdgeAccount } from '../../auth'
 import { Boundary } from '../../components'
-import { nativeToDenominated, useDisplayDenomination, useExchangeToNative } from '../../hooks'
+import { getFiatInfo, nativeToDenominated, useDisplayDenomination, useExchangeToNative } from '../../hooks'
 
 export const Metadata = ({ metadata }: { metadata: NonNullable<EdgeTransaction['metadata']> }) => {
   return (
@@ -38,9 +38,11 @@ const ExchangeAmount: React.FC<{ currencyCode: string; exchangeAmount: number | 
   exchangeAmount,
 }) => {
   const account = useEdgeAccount()
-  const displayDenomination = useDisplayDenomination(account, currencyCode)[0]
+  const fiatInfo = getFiatInfo(currencyCode)
+  if (!fiatInfo) throw new Error(`Invalid Currency Code: ${currencyCode}`)
+  const displayDenomination = useDisplayDenomination(account, fiatInfo)[0]
   const displayAmount = nativeToDenominated({
-    nativeAmount: useExchangeToNative({ account, currencyCode, exchangeAmount: String(exchangeAmount) }),
+    nativeAmount: useExchangeToNative({ info: fiatInfo, exchangeAmount: String(exchangeAmount) }),
     denomination: displayDenomination,
   })
 
