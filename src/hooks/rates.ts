@@ -1,17 +1,23 @@
-import { EdgeAccount } from 'edge-core-js'
+import { EdgeAccount, EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 
-import { getCurrencyCodeFromTokenId, getWalletTokenIds, uniqueBy } from '../utils'
+import { fiatInfos, getWalletTokenIds, uniqueBy } from '../utils'
 import { useRerender } from './useRerender'
-import { fiatInfos } from '../utils'
 import { useWatch } from './watch'
 
-export const getRatePairs = (account: EdgeAccount) =>
+export type RatePair = {
+  pluginId: string
+  tokenId: EdgeTokenId
+  fiatCurrencyCode: string
+}
+
+export const getRatePairs = (account: EdgeAccount): RatePair[] =>
   uniqueBy(
-    ({ currencyCode, fiatCurrencyCode }) => `${currencyCode}_${fiatCurrencyCode}`,
+    ({ pluginId, tokenId, fiatCurrencyCode }) => `${pluginId}:${tokenId ?? 'native'}_${fiatCurrencyCode}`,
     Object.values(account.currencyWallets).flatMap((wallet) =>
       getWalletTokenIds(wallet).map((tokenId) => ({
-        currencyCode: getCurrencyCodeFromTokenId(wallet, tokenId),
+        pluginId: wallet.currencyInfo.pluginId,
+        tokenId,
         fiatCurrencyCode: wallet.fiatCurrencyCode,
       })),
     ),

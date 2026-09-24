@@ -1,9 +1,16 @@
-import { EdgeAccount, EdgeCurrencyInfo, EdgeCurrencyWallet, EdgeDenomination, EdgeMetaToken, EdgeTokenId } from 'edge-core-js'
+import {
+  EdgeAccount,
+  EdgeCurrencyInfo,
+  EdgeCurrencyWallet,
+  EdgeDenomination,
+  EdgeMetaToken,
+  EdgeTokenId,
+} from 'edge-core-js'
 import { UseQueryOptions, useMutation, useQuery } from 'react-query'
 
 import { FiatInfo, getCurrencyCodeFromTokenId } from '../utils'
 import { convertCurrency } from './rates'
-import { tokenDenominationKey, getFiatInfo, getTokenInfo, useCryptoInfo, useTokenInfo } from './useInfo'
+import { getFiatInfo, getTokenInfo, tokenDenominationKey, useTokenInfo } from './useInfo'
 import { useInvalidateQueries } from './useInvalidateQueries'
 
 export const nativeToDenominated = ({
@@ -88,7 +95,11 @@ export const useWriteDisplayDenominationMultiplier = (
   storageKey = currencyInfo.currencyCode,
 ) => {
   const queryFn = (displayDenominationMultiplier: string) =>
-    account.dataStore.setItem('displayDenominationMultiplier', storageKey, JSON.stringify(displayDenominationMultiplier))
+    account.dataStore.setItem(
+      'displayDenominationMultiplier',
+      storageKey,
+      JSON.stringify(displayDenominationMultiplier),
+    )
 
   return useMutation(queryFn, {
     ...useInvalidateQueries([
@@ -155,20 +166,20 @@ export const useTickerFiatAmount = (
   {
     account,
     nativeAmount,
-    fromCurrencyCode,
+    fromInfo,
     fiatCurrencyCode,
   }: {
     account: EdgeAccount
     nativeAmount: string
-    fromCurrencyCode: string
+    fromInfo: EdgeCurrencyInfo | EdgeMetaToken
     fiatCurrencyCode: string
   },
   queryOptions?: UseQueryOptions<number>,
 ) => {
   const fiatInfo = getFiatInfo(fiatCurrencyCode)
-  const fromInfo = useCryptoInfo(account, fromCurrencyCode)
   const fiatDenominations = useDenominations(account, fiatInfo)
   const exchangeAmount = useNativeToExchange({ info: fromInfo, nativeAmount })
+  const fromCurrencyCode = fromInfo.currencyCode
 
   const { data: fiatExchangeAmount } = useQuery({
     queryKey: [{ fromCurrencyCode, fiatCurrencyCode, exchangeAmount }],
@@ -232,11 +243,7 @@ export const useFiatAmount = (
   return fiatDisplayAmount
 }
 
-export const useTokenDisplayDenomination = (
-  account: EdgeAccount,
-  wallet: EdgeCurrencyWallet,
-  tokenId: EdgeTokenId,
-) => {
+export const useTokenDisplayDenomination = (account: EdgeAccount, wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) => {
   const info = useTokenInfo(wallet, tokenId)
   const storageKey = tokenDenominationKey(wallet, tokenId)
   const multiplier =
