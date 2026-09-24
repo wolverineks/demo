@@ -1,12 +1,11 @@
 import React from 'react'
 
 import { useEdgeAccount } from '../auth'
-import { Accordion, Boundary, Button, DisplayAmount, FiatAmount, ListGroup, Logo } from '../components'
+import { Accordion, Boundary, Button, ListGroup } from '../components'
 import { useArchivedWalletIds, useChangeWalletState, useReadWalletSnapshot } from '../hooks'
-import { normalize } from '../utils'
 import { WalletSnapshots } from '../WalletSnapshots'
 import { FallbackRender } from './FallbackRender'
-import { getBalance } from './utils'
+import { inactiveWalletMatches, InactiveWalletRows } from './InactiveWalletRows'
 
 export const ArchivedWalletList = ({ searchQuery }: { searchQuery: string }) => {
   const account = useEdgeAccount()
@@ -38,42 +37,15 @@ export const ArchivedWalletList = ({ searchQuery }: { searchQuery: string }) => 
 const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId, searchQuery, children }) => {
   const account = useEdgeAccount()
   const snapshot = useReadWalletSnapshot(account, walletId)
-  const display = [snapshot.name || '', snapshot.currencyInfo.currencyCode, snapshot.fiatCurrencyCode].some((target) =>
-    normalize(target).includes(normalize(searchQuery)),
-  )
 
-  return display ? <>{children}</> : null
+  return inactiveWalletMatches(account, snapshot, searchQuery) ? <>{children}</> : null
 }
 
 const WalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
   const account = useEdgeAccount()
   const snapshot = useReadWalletSnapshot(account, walletId)
-  const balance = getBalance(snapshot, snapshot.currencyInfo.currencyCode) || '0'
 
-  return (
-    <ListGroup.Item className="wallet-row">
-      <div className="wallet-row__body">
-        <div className="wallet-row__main">
-          <Logo currencyCode={snapshot.currencyInfo.currencyCode} />
-          <div className="wallet-row__text">
-            <div className="wallet-row__name">{snapshot.name}</div>
-            <div className="wallet-row__balance">
-              <DisplayAmount nativeAmount={balance} currencyCode={snapshot.currencyInfo.currencyCode} /> -{' '}
-              <FiatAmount
-                nativeAmount={balance}
-                fromCurrencyCode={snapshot.currencyInfo.currencyCode}
-                fiatCurrencyCode={snapshot.fiatCurrencyCode}
-              />
-            </div>
-          </div>
-        </div>
-
-        <span className="wallet-actions">
-          <WalletOptions walletId={snapshot.id} />
-        </span>
-      </div>
-    </ListGroup.Item>
-  )
+  return <InactiveWalletRows snapshot={snapshot} actions={<WalletOptions walletId={snapshot.id} />} />
 }
 
 const WalletOptions = ({ walletId }: { walletId: string }) => {

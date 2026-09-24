@@ -1,8 +1,72 @@
-import { EdgeAccount, EdgeCurrencyWallet } from 'edge-core-js'
+import { EdgeAccount, EdgeCurrencyWallet, EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 import { UseQueryOptions, useMutation, useQuery } from 'react-query'
 
+import { getWalletTokenIds } from '../utils'
 import { useInvalidateQueries } from '.'
+
+export type SnapshotTokenBalance = {
+  tokenId: EdgeTokenId
+  nativeAmount: string
+}
+
+export type InactiveWallet = {
+  id: string
+  name: string | null
+  fiatCurrencyCode: string
+  pluginId: string
+  tokenBalances: SnapshotTokenBalance[]
+}
+
+type LegacySnapshot = {
+  id: string
+  name?: string | null
+  fiatCurrencyCode: string
+  pluginId?: string
+  currencyInfo?: { pluginId: string; currencyCode: string }
+  balances?: { [currencyCode: string]: string }
+  tokenBalances?: SnapshotTokenBalance[]
+}
+
+export const toWalletSnapshot = (wallet: EdgeCurrencyWallet): InactiveWallet => ({
+  id: wallet.id,
+  name: wallet.name,
+  fiatCurrencyCode: wallet.fiatCurrencyCode,
+  pluginId: wallet.currencyInfo.pluginId,
+  tokenBalances: getWalletTokenIds(wallet).flatMap((tokenId) => {
+    if (tokenId != null && wallet.currencyConfig.allTokens[tokenId] == null) return []
+
+    return [{ tokenId, nativeAmount: wallet.balanceMap.get(tokenId) ?? '0' }]
+  }),
+})
+
+export const walletSnapshotFromJson = (raw: LegacySnapshot): InactiveWallet => {
+  const pluginId = raw.pluginId ?? raw.currencyInfo?.pluginId
+  if (!pluginId) throw new Error('Invalid wallet snapshot')
+
+  if (raw.tokenBalances) {
+    return {
+      id: raw.id,
+      name: raw.name ?? null,
+      fiatCurrencyCode: raw.fiatCurrencyCode,
+      pluginId,
+      tokenBalances: raw.tokenBalances,
+    }
+  }
+
+  return {
+    id: raw.id,
+    name: raw.name ?? null,
+    fiatCurrencyCode: raw.fiatCurrencyCode,
+    pluginId,
+    tokenBalances: [
+      {
+        tokenId: null,
+        nativeAmount: raw.balances?.[raw.currencyInfo?.currencyCode ?? ''] ?? '0',
+      },
+    ],
+  }
+}
 
 export const useReadWalletSnapshot = (
   account: EdgeAccount,
@@ -11,19 +75,23 @@ export const useReadWalletSnapshot = (
 ) => {
   return useQuery({
     queryKey: ['snapshot', walletId],
-    queryFn: () => account.dataStore.getItem('snapshot', walletId).then(JSON.parse) as Promise<InactiveWallet>,
+    queryFn: () =>
+      account.dataStore
+        .getItem('snapshot', walletId)
+        .then(JSON.parse)
+        .then(walletSnapshotFromJson) as Promise<InactiveWallet>,
     ...queryOptions,
   }).data!
 }
 
 export const useWriteWalletSnapshot = (account: EdgeAccount, wallet: EdgeCurrencyWallet) => {
-  const mutation = () => account.dataStore.setItem('snapshot', wallet.id, JSON.stringify(wallet))
+  const mutation = () => account.dataStore.setItem('snapshot', wallet.id, JSON.stringify(toWalletSnapshot(wallet)))
   const { mutate: update } = useMutation(mutation, {
     ...useInvalidateQueries([['snapshot', wallet.id]]),
   })
 
   React.useEffect(() => {
-    const keys = ['name', 'balances', 'fiatCurrencyCode', 'blockHeight', 'syncStatus'] as const
+    const keys = ['name', 'balanceMap', 'enabledTokenIds', 'fiatCurrencyCode'] as const
     const unsubs = keys.map((key) => wallet.watch(key, () => update()))
 
     update()
@@ -33,17 +101,3 @@ export const useWriteWalletSnapshot = (account: EdgeAccount, wallet: EdgeCurrenc
     }
   }, [account, wallet, update])
 }
-
-export type InactiveWallet = Pick<
-  EdgeCurrencyWallet,
-  | 'id'
-  | 'type'
-  | 'name'
-  | 'fiatCurrencyCode'
-  | 'currencyInfo'
-  | 'balances'
-  | 'blockHeight'
-  | 'publicWalletInfo'
-  | 'syncStatus'
-  | 'otherMethods'
->
