@@ -9,7 +9,6 @@ export const FiatAmount = ({
   wallet,
   tokenId,
   pluginId,
-  fromCurrencyCode,
   fiatCurrencyCode,
 }: {
   nativeAmount: string
@@ -17,11 +16,11 @@ export const FiatAmount = ({
   wallet?: EdgeCurrencyWallet
   tokenId?: EdgeTokenId
   pluginId?: string
-  fromCurrencyCode?: string
 }) => {
   const account = useEdgeAccount()
-  const fiatAmount =
-    wallet != null && tokenId !== undefined ? (
+
+  if (wallet != null && tokenId !== undefined) {
+    return (
       <TokenFiat
         account={account}
         wallet={wallet}
@@ -29,24 +28,18 @@ export const FiatAmount = ({
         nativeAmount={nativeAmount}
         fiatCurrencyCode={fiatCurrencyCode}
       />
-    ) : pluginId != null ? (
-      <PluginFiat
-        account={account}
-        pluginId={pluginId}
-        tokenId={tokenId ?? null}
-        nativeAmount={nativeAmount}
-        fiatCurrencyCode={fiatCurrencyCode}
-      />
-    ) : (
-      <TickerFiat
-        account={account}
-        fromCurrencyCode={fromCurrencyCode!}
-        nativeAmount={nativeAmount}
-        fiatCurrencyCode={fiatCurrencyCode}
-      />
     )
+  }
 
-  return fiatAmount
+  return (
+    <PluginFiat
+      account={account}
+      pluginId={pluginId!}
+      tokenId={tokenId ?? null}
+      nativeAmount={nativeAmount}
+      fiatCurrencyCode={fiatCurrencyCode}
+    />
+  )
 }
 
 const TokenFiat = ({
@@ -91,33 +84,6 @@ const PluginFiat = ({
   fiatCurrencyCode: string
 }) => {
   const fromInfo = useCryptoInfo(account, pluginId, tokenId)
-  const fiatInfo = getFiatInfo(fiatCurrencyCode)
-  const fiatAmount = useTickerFiatAmount({ account, nativeAmount, fromInfo, fiatCurrencyCode })
-  const { name, symbol, amount } = useDisplayAmount({
-    account,
-    info: fiatInfo,
-    nativeAmount: String(fiatAmount),
-  })
-
-  return (
-    <>
-      {symbol} {Number(amount).toFixed(2)} {name}
-    </>
-  )
-}
-
-const TickerFiat = ({
-  account,
-  fromCurrencyCode,
-  nativeAmount,
-  fiatCurrencyCode,
-}: {
-  account: ReturnType<typeof useEdgeAccount>
-  fromCurrencyCode: string
-  nativeAmount: string
-  fiatCurrencyCode: string
-}) => {
-  const fromInfo = useCryptoInfo(account, fromCurrencyCode)
   const fiatInfo = getFiatInfo(fiatCurrencyCode)
   const fiatAmount = useTickerFiatAmount({ account, nativeAmount, fromInfo, fiatCurrencyCode })
   const { name, symbol, amount } = useDisplayAmount({

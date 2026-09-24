@@ -9,23 +9,17 @@ export const DisplayAmount = ({
   wallet,
   tokenId,
   pluginId,
-  currencyCode,
 }: {
   nativeAmount: string
   wallet?: EdgeCurrencyWallet
   tokenId?: EdgeTokenId
   pluginId?: string
-  currencyCode?: string
 }) => {
   if (wallet != null && tokenId !== undefined) {
     return <TokenDisplay nativeAmount={nativeAmount} wallet={wallet} tokenId={tokenId} />
   }
 
-  if (pluginId != null) {
-    return <PluginDisplay nativeAmount={nativeAmount} pluginId={pluginId} tokenId={tokenId ?? null} />
-  }
-
-  return <TickerDisplay nativeAmount={nativeAmount} currencyCode={currencyCode!} />
+  return <PluginDisplay nativeAmount={nativeAmount} pluginId={pluginId!} tokenId={tokenId ?? null} />
 }
 
 const PluginDisplay = ({
@@ -59,18 +53,6 @@ const TokenDisplay = ({
 }) => {
   const account = useEdgeAccount()
   const { name, symbol, amount } = useTokenDisplayAmount({ account, wallet, tokenId, nativeAmount })
-
-  return (
-    <>
-      {symbol} {amount} {name}
-    </>
-  )
-}
-
-const TickerDisplay = ({ nativeAmount, currencyCode }: { nativeAmount: string; currencyCode: string }) => {
-  const account = useEdgeAccount()
-  const info = useCryptoInfo(account, currencyCode)
-  const { name, symbol, amount } = useDisplayAmount({ account, info, nativeAmount })
 
   return (
     <>

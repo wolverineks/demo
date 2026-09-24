@@ -19,7 +19,7 @@ describe('denominations', () => {
   it('useDenominations', async () => {
     const account = await setup()
     const { result: denominations, waitFor, waitForValueToChange } = render(() => {
-      const info = useCryptoInfo(account, 'BTC')
+      const info = useCryptoInfo(account, 'bitcoin', null)
 
       return useDenominations(account, info)
     })

@@ -181,7 +181,7 @@ const TokenRow: React.FC<{
       onClick={() => onClick(tokenInfo.tokenId)}
     >
       <Boundary error={{ fallback: null }} suspense={{ fallback: null }}>
-        <Logo pluginId={tokenInfo.pluginId} tokenId={tokenInfo.tokenId} contractAddress={tokenInfo.contractAddress} />
+        <Logo pluginId={tokenInfo.pluginId!} tokenId={tokenInfo.tokenId} contractAddress={tokenInfo.contractAddress} />
       </Boundary>{' '}
       {tokenInfo.currencyCode} - {tokenInfo.currencyName}
       {canEdit ? (

@@ -1,12 +1,8 @@
-import { EdgeAccount, EdgeCurrencyInfo, EdgeCurrencyWallet, EdgeMetaToken, EdgeToken, EdgeTokenId } from 'edge-core-js'
+import { EdgeAccount, EdgeCurrencyWallet, EdgeToken, EdgeTokenId } from 'edge-core-js'
 
-import { FiatInfo, fiatInfos, getCurrencyInfos } from '../utils'
+import { FiatInfo, fiatInfos } from '../utils'
 import { metaTokenFromEdgeToken } from './tokens/utils'
 import { useWatch } from './watch'
-
-export const getCurrencyInfo = (account: EdgeAccount, currencyCode: string) => {
-  return getCurrencyInfos(account).find((currencyInfo) => currencyInfo.currencyCode === currencyCode)
-}
 
 export const getFiatInfo = (currencyCode: string): FiatInfo => {
   const fiatInfo = fiatInfos.find(
@@ -41,35 +37,11 @@ export const cryptoInfoFromPlugin = (account: EdgeAccount, pluginId: string, tok
   return metaToken(account, pluginId, tokenId, token)
 }
 
-export const cryptoInfoFromCode = (account: EdgeAccount, currencyCode: string): EdgeCurrencyInfo | EdgeMetaToken => {
-  const parent = getCurrencyInfo(account, currencyCode)
-  if (parent) return parent
-
-  for (const [pluginId, config] of Object.entries(account.currencyConfig)) {
-    for (const [tokenId, token] of Object.entries(config.allTokens)) {
-      if (token.currencyCode !== currencyCode) continue
-
-      return metaToken(account, pluginId, tokenId, token)
-    }
-  }
-
-  throw new Error(`Invalid Currency Code: ${currencyCode}`)
-}
-
-export function useCryptoInfo(account: EdgeAccount, currencyCode: string): EdgeCurrencyInfo | EdgeMetaToken
-export function useCryptoInfo(
-  account: EdgeAccount,
-  pluginId: string,
-  tokenId: EdgeTokenId,
-): EdgeCurrencyInfo | EdgeMetaToken
-export function useCryptoInfo(account: EdgeAccount, pluginIdOrCode: string, tokenId?: EdgeTokenId) {
-  const byPlugin = arguments.length >= 3
-  const config = byPlugin ? account.currencyConfig[pluginIdOrCode] : undefined
+export const useCryptoInfo = (account: EdgeAccount, pluginId: string, tokenId: EdgeTokenId) => {
+  const config = account.currencyConfig[pluginId]
   useWatch(config, 'allTokens')
 
-  if (byPlugin) return cryptoInfoFromPlugin(account, pluginIdOrCode, tokenId as EdgeTokenId)
-
-  return cryptoInfoFromCode(account, pluginIdOrCode)
+  return cryptoInfoFromPlugin(account, pluginId, tokenId)
 }
 
 export const getTokenInfo = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) => {

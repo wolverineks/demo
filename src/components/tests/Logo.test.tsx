@@ -45,18 +45,4 @@ describe('Logo', () => {
     expect(img.getAttribute('src')).toContain(`/ethereum/${tokenId}.png`)
   })
 
-  it('uses a currency code when there is no plugin id', async () => {
-    const context = await makeFakeEdgeContext({ ethereum: true })
-    const account = await context.loginWithPassword(fakeUser.username, fakeUser.password)
-
-    render(
-      <AccountHarness account={account}>
-        <Logo currencyCode="ETH" />
-      </AccountHarness>,
-    )
-
-    const img = screen.getByRole('img')
-    expect(img).toHaveAttribute('alt', 'ETH')
-    expect(img.getAttribute('src')).toContain('/eth.png')
-  })
 })
