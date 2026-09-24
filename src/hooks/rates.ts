@@ -3,7 +3,7 @@ import React from 'react'
 
 import { getCurrencyCodeFromTokenId, getWalletTokenIds, uniqueBy } from '../utils'
 import { useRerender } from './useRerender'
-import { getFiatInfo } from './useInfo'
+import { fiatInfos } from '../utils'
 import { useWatch } from './watch'
 
 export const getRatePairs = (account: EdgeAccount) =>
@@ -42,7 +42,10 @@ const inflight = new Map<string, Promise<number>>()
 const toPairCode = (currencyCode: string) => {
   if (currencyCode.startsWith('iso:')) return currencyCode
 
-  return getFiatInfo(currencyCode)?.isoCurrencyCode ?? currencyCode
+  return (
+    fiatInfos.find((info) => info.isoCurrencyCode === currencyCode || info.currencyCode === currencyCode)
+      ?.isoCurrencyCode ?? currencyCode
+  )
 }
 
 const fetchRate = async (fromCurrencyCode: string, toCurrencyCode: string) => {

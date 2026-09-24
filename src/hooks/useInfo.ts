@@ -1,6 +1,6 @@
 import { EdgeAccount, EdgeCurrencyInfo, EdgeCurrencyWallet, EdgeMetaToken, EdgeToken, EdgeTokenId } from 'edge-core-js'
 
-import { fiatInfos, getCurrencyInfos } from '../utils'
+import { FiatInfo, fiatInfos, getCurrencyInfos } from '../utils'
 import { metaTokenFromEdgeToken } from './tokens/utils'
 import { useWatch } from './watch'
 
@@ -8,10 +8,13 @@ export const getCurrencyInfo = (account: EdgeAccount, currencyCode: string) => {
   return getCurrencyInfos(account).find((currencyInfo) => currencyInfo.currencyCode === currencyCode)
 }
 
-export const getFiatInfo = (currencyCode: string) => {
-  return fiatInfos.find(
-    (fiatInfo) => fiatInfo.isoCurrencyCode === currencyCode || fiatInfo.currencyCode === currencyCode,
+export const getFiatInfo = (currencyCode: string): FiatInfo => {
+  const fiatInfo = fiatInfos.find(
+    (info) => info.isoCurrencyCode === currencyCode || info.currencyCode === currencyCode,
   )
+  if (!fiatInfo) throw new Error(`Invalid Currency Code: ${currencyCode}`)
+
+  return fiatInfo
 }
 
 const metaToken = (account: EdgeAccount, pluginId: string, tokenId: string, token: EdgeToken) => {

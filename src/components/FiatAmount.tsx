@@ -53,7 +53,6 @@ const TokenFiat = ({
   fiatCurrencyCode: string
 }) => {
   const fiatInfo = getFiatInfo(fiatCurrencyCode)
-  if (!fiatInfo) throw new Error(`Invalid Currency Code: ${fiatCurrencyCode}`)
   const fiatAmount = useFiatAmount({ account, wallet, tokenId, nativeAmount, fiatCurrencyCode })
   const { name, symbol, amount } = useDisplayAmount({
     account,
@@ -80,7 +79,6 @@ const TickerFiat = ({
   fiatCurrencyCode: string
 }) => {
   const fiatInfo = getFiatInfo(fiatCurrencyCode)
-  if (!fiatInfo) throw new Error(`Invalid Currency Code: ${fiatCurrencyCode}`)
   const fiatAmount = useTickerFiatAmount({ account, nativeAmount, fromCurrencyCode, fiatCurrencyCode })
   const { name, symbol, amount } = useDisplayAmount({
     account,

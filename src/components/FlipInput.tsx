@@ -26,7 +26,6 @@ export const FlipInput = React.forwardRef<FlipInputRef, FlipInputProps>(function
   const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
   const topDenominations = useTokenDenominations(account, wallet, tokenId)
   const fiatInfo = getFiatInfo(fiatCurrencyCode)
-  if (!fiatInfo) throw new Error(`Invalid Currency Code: ${fiatCurrencyCode}`)
   const bottomDenominations = useDenominations(account, fiatInfo)
 
   const { top, bottom } = useFlipInput({

@@ -84,7 +84,6 @@ const matches = (query: string) => (info: EdgeCurrencyInfo | EdgeMetaToken | Fia
 
 const FiatMatcher: React.FC<{ query: string; currencyCode: string }> = ({ query, currencyCode, children }) => {
   const info = getFiatInfo(currencyCode)
-  if (!info) throw new Error(`Invalid Currency Code: ${currencyCode}`)
 
   return <>{normalize(info.currencyCode).includes(normalize(query)) ? children : null}</>
 }
@@ -102,7 +101,6 @@ const TokenMatcher: React.FC<{
 
 const FiatSetting: React.FC<{ currencyCode: string }> = ({ currencyCode }) => {
   const info = getFiatInfo(currencyCode)
-  if (!info) throw new Error(`Invalid Currency Code: ${currencyCode}`)
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
@@ -137,7 +135,6 @@ const TokenSetting: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId 
 const FiatDenominations = ({ currencyCode }: { currencyCode: string }) => {
   const account = useEdgeAccount()
   const info = getFiatInfo(currencyCode)
-  if (!info) throw new Error(`Invalid Currency Code: ${currencyCode}`)
   const denominations = useDenominations(account, info)
 
   return <DenominationList denominations={denominations} />

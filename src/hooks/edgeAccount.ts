@@ -50,9 +50,7 @@ export const useCurrencyWallets = (account: EdgeAccount) => {
 
 export const useEdgeAccountTotal = (account: EdgeAccount) => {
   const fiatCurrencyCode = useDefaultFiatCurrencyCode(account)[0]
-  const fiatInfo = getFiatInfo(fiatCurrencyCode)
-  if (!fiatInfo) throw new Error(`Invalid Currency Code: ${fiatCurrencyCode}`)
-  const [displayDenomination] = useDisplayDenomination(account, fiatInfo)
+  const [displayDenomination] = useDisplayDenomination(account, getFiatInfo(fiatCurrencyCode))
 
   const getTotal = async () => {
     const parts = await Promise.all(
@@ -173,10 +171,8 @@ export const useDefaultFiatCurrencyCode = (account: EdgeAccount) => {
 
 export const useDefaultFiatInfo = (account: EdgeAccount) => {
   const [currencyCode] = useDefaultFiatCurrencyCode(account)
-  const fiatInfo = getFiatInfo(currencyCode)
-  if (!fiatInfo) throw new Error(`Invalid Currency Code: ${currencyCode}`)
 
-  return fiatInfo
+  return getFiatInfo(currencyCode)
 }
 
 export const useEdgeCurrencyWallet = (

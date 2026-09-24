@@ -39,7 +39,6 @@ const ExchangeAmount: React.FC<{ currencyCode: string; exchangeAmount: number | 
 }) => {
   const account = useEdgeAccount()
   const fiatInfo = getFiatInfo(currencyCode)
-  if (!fiatInfo) throw new Error(`Invalid Currency Code: ${currencyCode}`)
   const displayDenomination = useDisplayDenomination(account, fiatInfo)[0]
   const displayAmount = nativeToDenominated({
     nativeAmount: useExchangeToNative({ info: fiatInfo, exchangeAmount: String(exchangeAmount) }),

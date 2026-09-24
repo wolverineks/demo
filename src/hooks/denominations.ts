@@ -166,7 +166,6 @@ export const useTickerFiatAmount = (
   queryOptions?: UseQueryOptions<number>,
 ) => {
   const fiatInfo = getFiatInfo(fiatCurrencyCode)
-  if (!fiatInfo) throw new Error(`Invalid Currency Code: ${fiatCurrencyCode}`)
   const fromInfo = useCryptoInfo(account, fromCurrencyCode)
   const fiatDenominations = useDenominations(account, fiatInfo)
   const exchangeAmount = useNativeToExchange({ info: fromInfo, nativeAmount })
@@ -208,7 +207,6 @@ export const useFiatAmount = (
   queryOptions?: UseQueryOptions<number>,
 ) => {
   const fiatInfo = getFiatInfo(fiatCurrencyCode)
-  if (!fiatInfo) throw new Error(`Invalid Currency Code: ${fiatCurrencyCode}`)
   const fiatDenominations = useDenominations(account, fiatInfo)
   const fromCurrencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
   const exchangeAmount = useTokenNativeToExchange({ wallet, tokenId, nativeAmount })
