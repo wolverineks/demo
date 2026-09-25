@@ -1,7 +1,6 @@
 import {
   EdgeAccount,
   EdgeCurrencyInfo,
-  EdgeCurrencyWallet,
   EdgeDenomination,
   EdgeMetaToken,
   EdgeTokenId,
@@ -210,14 +209,14 @@ export const useCryptoDisplayDenomination = (account: EdgeAccount, pluginId: str
 export const getCryptoExchangeDenomination = (account: EdgeAccount, pluginId: string, tokenId: EdgeTokenId) =>
   getExchangeDenomination(getCryptoInfo(account, pluginId, tokenId))
 
-export const useTokenDenominations = (account: EdgeAccount, wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) => {
-  const [display, setDisplay] = useCryptoDisplayDenomination(account, wallet.currencyInfo.pluginId, tokenId)
-  const info = useCryptoInfo(account, wallet.currencyInfo.pluginId, tokenId)
+export const useCryptoDenominations = (account: EdgeAccount, pluginId: string, tokenId: EdgeTokenId) => {
+  const [display, setDisplay] = useCryptoDisplayDenomination(account, pluginId, tokenId)
+  const info = useCryptoInfo(account, pluginId, tokenId)
 
   return {
     display,
     setDisplay,
-    exchange: getCryptoExchangeDenomination(account, wallet.currencyInfo.pluginId, tokenId),
+    exchange: getCryptoExchangeDenomination(account, pluginId, tokenId),
     all: info.denominations,
   }
 }

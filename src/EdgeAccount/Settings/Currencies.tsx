@@ -16,7 +16,7 @@ import {
   getFiatInfo,
   useCryptoInfo,
   useDenominations,
-  useTokenDenominations,
+  useCryptoDenominations,
   useWatch,
 } from '../../hooks'
 import { FiatInfo, getSortedCurrencyWallets, getWalletTokenIds, isFiat, isToken, normalize, unique } from '../../utils'
@@ -149,7 +149,7 @@ const TokenDenominations = ({
   wallet: EdgeCurrencyWallet
   tokenId: EdgeTokenId
 }) => {
-  const denominations = useTokenDenominations(account, wallet, tokenId)
+  const denominations = useCryptoDenominations(account, wallet.currencyInfo.pluginId, tokenId)
 
   return <DenominationList denominations={denominations} />
 }
