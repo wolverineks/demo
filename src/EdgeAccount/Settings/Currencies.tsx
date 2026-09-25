@@ -16,6 +16,7 @@ import {
   useCryptoInfo,
   useDenominations,
   useCryptoDenominations,
+  useCurrencyWallets,
   useWatch,
 } from '../../hooks'
 import { FiatInfo, getSortedCurrencyWallets, getWalletTokenIds, isFiat, isToken, normalize, unique } from '../../utils'
@@ -35,13 +36,11 @@ const useWalletFiatCurrencyCodes = () => {
 }
 
 export const Currencies: React.FC = () => {
-  const account = useEdgeAccount()
+  const currencyWallets = useCurrencyWallets()
   const [searchQuery, setSearchQuery] = React.useState('')
   const [fiatCurrencyCode] = useDefaultFiatCurrencyCode()
   const walletFiatCurrencyCodes = useWalletFiatCurrencyCodes()
   const fiatCodes = unique([fiatCurrencyCode, ...walletFiatCurrencyCodes])
-  useWatch(account, 'activeWalletIds')
-  useWatch(account, 'currencyWallets')
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
@@ -53,7 +52,7 @@ export const Currencies: React.FC = () => {
         </FiatMatcher>
       ))}
 
-      {Object.values(account.currencyWallets).map((wallet) => (
+      {Object.values(currencyWallets).map((wallet) => (
         <WalletTokens key={wallet.id} wallet={wallet} searchQuery={searchQuery} />
       ))}
     </ListGroup>
