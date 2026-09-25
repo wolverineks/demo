@@ -1,7 +1,8 @@
 import { EdgeAccount, EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 
-import { fiatInfos, getCurrencyCodeFromTokenId, getWalletTokenIds, uniqueBy } from '../utils'
+import { fiatInfos, getWalletTokenIds, uniqueBy } from '../utils'
+import { getCurrencyCodeFromTokenId } from './useInfo'
 import { useRerender } from './useRerender'
 import { useWatch } from './watch'
 
@@ -19,7 +20,7 @@ export const getExchangeInfos = (account: EdgeAccount): ExchangeInfo[] =>
       getWalletTokenIds(wallet).map((tokenId) => ({
         pluginId: wallet.currencyInfo.pluginId,
         tokenId,
-        currencyCode: getCurrencyCodeFromTokenId(wallet, tokenId),
+        currencyCode: getCurrencyCodeFromTokenId(account, wallet.currencyInfo.pluginId, tokenId),
         fiatCurrencyCode: wallet.fiatCurrencyCode,
       })),
     ),

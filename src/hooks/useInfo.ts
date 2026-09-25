@@ -37,6 +37,9 @@ export const getCryptoInfo = (account: EdgeAccount, pluginId: string, tokenId: E
   return metaToken(account, pluginId, tokenId, token)
 }
 
+export const getCurrencyCodeFromTokenId = (account: EdgeAccount, pluginId: string, tokenId: EdgeTokenId) =>
+  getCryptoInfo(account, pluginId, tokenId).currencyCode
+
 export const useCryptoInfo = (account: EdgeAccount, pluginId: string, tokenId: EdgeTokenId) => {
   const config = account.currencyConfig[pluginId]
   useWatch(config, 'allTokens')

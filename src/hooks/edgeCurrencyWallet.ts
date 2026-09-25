@@ -1,4 +1,5 @@
 import {
+  EdgeAccount,
   EdgeAddress,
   EdgeCurrencyWallet,
   EdgeGetTransactionsOptions,
@@ -10,7 +11,8 @@ import {
 import React from 'react'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
-import { getCurrencyCodeFromTokenId, getNativeBalance, getPublicAddress } from '../utils'
+import { getNativeBalance, getPublicAddress } from '../utils'
+import { getCurrencyCodeFromTokenId } from './useInfo'
 import { useInvalidateQueries } from './useInvalidateQueries'
 import { useWatch } from './watch'
 
@@ -178,6 +180,7 @@ export const usePasteUri = (wallet: EdgeCurrencyWallet) => {
   return useMutation(async () => {
     const clipboard = await navigator.clipboard.readText()
     await wallet.parseUri(clipboard)
+
     return clipboard
   })
 }
@@ -299,6 +302,7 @@ export const useSignBroadcastAndSaveTx = (
 }
 
 export const useExportTransactions = (
+  account: EdgeAccount,
   wallet: EdgeCurrencyWallet,
   options: EdgeGetTransactionsOptions,
   format: 'CSV' | 'QBO',
@@ -314,7 +318,7 @@ export const useExportTransactions = (
 
       const header = 'txid,date,currencyCode,nativeAmount'
       const rows = transactions.map((tx) => {
-        const currencyCode = getCurrencyCodeFromTokenId(wallet, tx.tokenId)
+        const currencyCode = getCurrencyCodeFromTokenId(account, wallet.currencyInfo.pluginId, tx.tokenId)
 
         return `${tx.txid},${tx.date},${currencyCode},${tx.nativeAmount}`
       })

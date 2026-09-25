@@ -5,6 +5,7 @@ import { useSelectWallet } from '../../App'
 import { useEdgeAccount } from '../../auth'
 import { Accordion, Balance, Boundary, ListGroup, Logo, ProgressBar } from '../../components'
 import {
+  getCurrencyCodeFromTokenId,
   useActiveWalletIds,
   useEdgeCurrencyWallet,
   useFiatCurrencyCode,
@@ -13,7 +14,7 @@ import {
   useSyncRatio,
   useTokens,
 } from '../../hooks'
-import { getCurrencyCodeFromTokenId, normalize } from '../../utils'
+import { normalize } from '../../utils'
 import { EnabledTokens } from './EnabledTokens'
 import { WalletOptions } from './WalletOptions'
 
@@ -43,12 +44,15 @@ export const ActiveWalletList: React.FC<{ searchQuery: string }> = ({ searchQuer
 }
 
 const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId, searchQuery, children }) => {
-  const wallet = useEdgeCurrencyWallet({ account: useEdgeAccount(), walletId })
+  const account = useEdgeAccount()
+  const wallet = useEdgeCurrencyWallet({ account, walletId })
   const tokens = useTokens(wallet)
   const [name] = useName(wallet)
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
 
-  const enabledCodes = tokens.enabledTokenIds.map((tokenId) => getCurrencyCodeFromTokenId(wallet, tokenId))
+  const enabledCodes = tokens.enabledTokenIds.map((tokenId) =>
+    getCurrencyCodeFromTokenId(account, wallet.currencyInfo.pluginId, tokenId),
+  )
   const display = [name || '', wallet.currencyInfo.currencyCode, fiatCurrencyCode, ...enabledCodes].some((target) =>
     normalize(target).includes(normalize(searchQuery)),
   )

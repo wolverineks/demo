@@ -5,14 +5,15 @@ import JSONPretty from 'react-json-pretty'
 import { useEdgeAccount } from '../auth'
 import { Alert, Balance, Boundary, Button, Debug, DisplayAmount, FlipInput, FormControl, Logo } from '../components'
 import {
+  getCurrencyCodeFromTokenId,
   useApproveSwapQuote,
+  useCryptoDisplayDenomination,
   useEdgeCurrencyWallet,
   useFiatCurrencyCode,
   useName,
   useSwapQuote,
-  useCryptoDisplayDenomination,
 } from '../hooks'
-import { getCurrencyCodeFromTokenId, getWalletListMeta } from '../utils'
+import { getWalletListMeta } from '../utils'
 
 type TokenChoice = {
   key: string
@@ -50,7 +51,7 @@ const getTokenChoices = (account: ReturnType<typeof useEdgeAccount>): TokenChoic
         key: tokenIdKey(walletId, tokenId),
         walletId,
         tokenId,
-        label: `${walletLabel} · ${getCurrencyCodeFromTokenId(wallet, tokenId)}`,
+        label: `${walletLabel} · ${getCurrencyCodeFromTokenId(account, wallet.currencyInfo.pluginId, tokenId)}`,
       })),
     ]
   })
@@ -210,7 +211,7 @@ const SelectedToken = ({ walletId, tokenId }: { walletId: string; tokenId: EdgeT
   const account = useEdgeAccount()
   const wallet = useEdgeCurrencyWallet({ account, walletId })
   const [name] = useName(wallet)
-  const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
+  const currencyCode = getCurrencyCodeFromTokenId(account, wallet.currencyInfo.pluginId, tokenId)
   const label = name || wallet.currencyInfo.displayName || wallet.currencyInfo.currencyCode
 
   return (

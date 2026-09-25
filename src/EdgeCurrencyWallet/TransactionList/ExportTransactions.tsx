@@ -38,6 +38,7 @@ export const ExportTransactions = ({
   })
   const [format, setFormat] = React.useState<ExportFormat>(ExportFormat.CSV)
   const { data, isLoading } = useExportTransactions(
+    account,
     wallet,
     {
       tokenId: options.tokenId,

@@ -43,7 +43,7 @@ export const denominatedToDenominated = ({
 
 export const getExchangeDenomination = (info: EdgeCurrencyInfo | EdgeMetaToken | FiatInfo) => info.denominations[0]
 
-export const useNativeToExchange = ({
+export const nativeToExchange = ({
   info,
   nativeAmount,
 }: {
@@ -56,7 +56,7 @@ export const useNativeToExchange = ({
   })
 }
 
-export const useExchangeToNative = ({
+export const exchangeToNative = ({
   info,
   exchangeAmount,
 }: {
@@ -177,7 +177,7 @@ export const useTickerFiatAmount = (
 ) => {
   const fiatInfo = getFiatInfo(fiatCurrencyCode)
   const fiatDenominations = useDenominations(account, fiatInfo)
-  const exchangeAmount = useNativeToExchange({ info: fromInfo, nativeAmount })
+  const exchangeAmount = nativeToExchange({ info: fromInfo, nativeAmount })
   const fromCurrencyCode = fromInfo.currencyCode
 
   const { data: fiatExchangeAmount } = useQuery({

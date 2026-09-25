@@ -10,10 +10,9 @@ import {
 import React from 'react'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
-import { getCurrencyCodeFromTokenId } from '../utils'
 import { walletTransactionQueryKeys } from './edgeCurrencyWallet'
 import { convertCurrency } from './rates'
-import { getCryptoInfo, getFiatInfo } from './useInfo'
+import { getCryptoInfo, getCurrencyCodeFromTokenId, getFiatInfo } from './useInfo'
 import { useInvalidateQueries } from './useInvalidateQueries'
 import { useWatch } from './watch'
 import { getExchangeDenomination, nativeToDenominated, useDisplayDenomination } from '.'
@@ -56,7 +55,7 @@ export const useEdgeAccountTotal = (account: EdgeAccount) => {
     const parts = await Promise.all(
       Object.values(account.currencyWallets).flatMap((wallet) =>
         Array.from(wallet.balanceMap.entries()).map(async ([tokenId, nativeAmount]) => {
-          const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
+          const currencyCode = getCurrencyCodeFromTokenId(account, wallet.currencyInfo.pluginId, tokenId)
           const info = getCryptoInfo(account, wallet.currencyInfo.pluginId, tokenId)
           if (!info) return 0
 

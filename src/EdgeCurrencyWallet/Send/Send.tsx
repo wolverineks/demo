@@ -17,6 +17,7 @@ import {
   Select,
 } from '../../components'
 import {
+  getCurrencyCodeFromTokenId,
   useCryptoDenominations,
   useFiatCurrencyCode,
   useNewTransaction,
@@ -25,7 +26,7 @@ import {
   useSpendMax,
 } from '../../hooks'
 import { useSelectedWallet } from '../../SelectedWallet'
-import { categories, getCurrencyCodeFromTokenId } from '../../utils'
+import { categories } from '../../utils'
 import { SpendTarget } from './SpendTarget'
 import { CustomFee, canAdjustFees, useSpendInfo } from './useSpendInfo'
 
@@ -33,7 +34,8 @@ const MULTIPLE_OUTPUT_PLUGINS = ['bitcoin', 'bitcoincash', 'bitcoinsv']
 const QrReader = React.lazy(() => import('react-qr-scanner'))
 
 export const Send: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId }> = ({ wallet, tokenId }) => {
-  const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
+  const account = useEdgeAccount()
+  const currencyCode = getCurrencyCodeFromTokenId(account, wallet.currencyInfo.pluginId, tokenId)
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
   const [scan, setScan] = React.useState(false)
   const spendMax = useSpendMax(wallet)

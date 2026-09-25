@@ -2,9 +2,8 @@ import React from 'react'
 
 import { useEdgeAccount } from '../auth'
 import { Button, Image, Navbar } from '../components'
-import { useLogout, useName, useUsername } from '../hooks'
+import { getCurrencyCodeFromTokenId, useLogout, useName, useUsername } from '../hooks'
 import { SelectedWalletBoundary, useSelectedWallet } from '../SelectedWallet'
-import { getCurrencyCodeFromTokenId } from '../utils'
 
 export const Header = () => {
   const account = useEdgeAccount()
@@ -33,9 +32,10 @@ export const Header = () => {
 }
 
 const SelectedWalletName: React.FC = () => {
+  const account = useEdgeAccount()
   const [{ wallet, tokenId }] = useSelectedWallet()
   const [name] = useName(wallet)
-  const currencyCode = getCurrencyCodeFromTokenId(wallet, tokenId)
+  const currencyCode = getCurrencyCodeFromTokenId(account, wallet.currencyInfo.pluginId, tokenId)
 
   return (
     <span className="app-header__wallet">

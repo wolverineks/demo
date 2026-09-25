@@ -10,7 +10,8 @@ import {
   useTransactionExplorerUrl,
   useTransactions,
 } from '../../hooks'
-import { getCurrencyCodeFromTokenId, normalize } from '../../utils'
+import { getCurrencyCodeFromTokenId } from '../../hooks'
+import { normalize } from '../../utils'
 import { useFilter } from '../useFilter'
 import { ExportTransactions } from './ExportTransactions'
 import { Metadata } from './Metadata'
@@ -19,8 +20,9 @@ export const TransactionList: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: Ed
   wallet,
   tokenId,
 }) => {
+  const account = useEdgeAccount()
   const transactionCount = useTransactionCount(wallet, { tokenId })
-  const [transactions, setFilterQuery] = useFilter(matches(wallet), useTransactions(wallet, { tokenId }))
+  const [transactions, setFilterQuery] = useFilter(matches(account, wallet), useTransactions(wallet, { tokenId }))
   const [isActive, setIsActive] = React.useState(false)
 
   return (
@@ -110,11 +112,11 @@ const DisplayDate: React.FC<{ transaction: EdgeTransaction }> = ({ transaction }
 }
 
 const matches =
-  (wallet: EdgeCurrencyWallet) =>
+  (account: ReturnType<typeof useEdgeAccount>, wallet: EdgeCurrencyWallet) =>
   (query: string) =>
   (transaction: EdgeTransaction): boolean => {
     const normalizedQuery = normalize(query)
-    const currencyCode = getCurrencyCodeFromTokenId(wallet, transaction.tokenId)
+    const currencyCode = getCurrencyCodeFromTokenId(account, wallet.currencyInfo.pluginId, transaction.tokenId)
 
     return (
       transaction.txid.includes(query) ||
