@@ -1,5 +1,4 @@
 import {
-  EdgeAccount,
   EdgeCurrencyInfo,
   EdgeCurrencyWallet,
   EdgeDenomination,
@@ -21,7 +20,8 @@ import {
 } from '../../hooks'
 import { FiatInfo, getSortedCurrencyWallets, getWalletTokenIds, isFiat, isToken, normalize, unique } from '../../utils'
 
-const useWalletFiatCurrencyCodes = (account: EdgeAccount) => {
+const useWalletFiatCurrencyCodes = () => {
+  const account = useEdgeAccount()
   const getWalletFiatCurrencyCodes = () =>
     unique(getSortedCurrencyWallets(account).map(({ fiatCurrencyCode }) => fiatCurrencyCode))
 
@@ -38,7 +38,7 @@ export const Currencies: React.FC = () => {
   const account = useEdgeAccount()
   const [searchQuery, setSearchQuery] = React.useState('')
   const [fiatCurrencyCode] = useDefaultFiatCurrencyCode()
-  const walletFiatCurrencyCodes = useWalletFiatCurrencyCodes(account)
+  const walletFiatCurrencyCodes = useWalletFiatCurrencyCodes()
   const fiatCodes = unique([fiatCurrencyCode, ...walletFiatCurrencyCodes])
   useWatch(account, 'activeWalletIds')
   useWatch(account, 'currencyWallets')
