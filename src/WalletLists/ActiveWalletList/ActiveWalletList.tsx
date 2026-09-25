@@ -19,8 +19,7 @@ import { EnabledTokens } from './EnabledTokens'
 import { WalletOptions } from './WalletOptions'
 
 export const ActiveWalletList: React.FC<{ searchQuery: string }> = ({ searchQuery }) => {
-  const account = useEdgeAccount()
-  const activeWalletIds = useActiveWalletIds(account)
+  const activeWalletIds = useActiveWalletIds()
 
   return (
     <Accordion defaultActiveKey={'0'}>

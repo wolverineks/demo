@@ -5,8 +5,7 @@ import { Button } from '../../components'
 import { useActiveWalletIds, useSortWallets } from '../../hooks'
 
 export const WalletOptions = ({ walletId }: { walletId: string }) => {
-  const account = useEdgeAccount()
-  const activeWalletIds = useActiveWalletIds(account)
+  const activeWalletIds = useActiveWalletIds()
 
   const isTop = activeWalletIds[0] === walletId
   const isBottom = activeWalletIds[activeWalletIds.length - 1] === walletId
@@ -22,7 +21,7 @@ export const WalletOptions = ({ walletId }: { walletId: string }) => {
 const MoveUpButton = ({ walletId }: { walletId: string }) => {
   const account = useEdgeAccount()
   const sortWallets = useSortWallets(account)
-  const activeWalletIds = useActiveWalletIds(account)
+  const activeWalletIds = useActiveWalletIds()
 
   const moveUp = () => {
     const currentIndex = activeWalletIds.indexOf(walletId)
@@ -43,7 +42,7 @@ const MoveUpButton = ({ walletId }: { walletId: string }) => {
 const MoveDownButton = ({ walletId }: { walletId: string }) => {
   const account = useEdgeAccount()
   const sortWallets = useSortWallets(account)
-  const activeWalletIds = useActiveWalletIds(account)
+  const activeWalletIds = useActiveWalletIds()
 
   const moveDown = () => {
     const currentIndex = activeWalletIds.indexOf(walletId)

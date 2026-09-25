@@ -10,6 +10,7 @@ import {
 import React from 'react'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
+import { useEdgeAccount } from '../auth'
 import { walletTransactionQueryKeys } from './edgeCurrencyWallet'
 import { convertCurrency } from './rates'
 import { getCryptoInfo, getCurrencyCodeFromTokenId, getFiatInfo } from './useInfo'
@@ -23,7 +24,8 @@ export const useUsername = (account: EdgeAccount) => {
   return account.username ?? ''
 }
 
-export const useActiveWalletIds = (account: EdgeAccount) => {
+export const useActiveWalletIds = () => {
+  const account = useEdgeAccount()
   useWatch(account, 'activeWalletIds')
 
   return account.activeWalletIds

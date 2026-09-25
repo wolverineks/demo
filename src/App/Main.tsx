@@ -1,6 +1,5 @@
 import React from 'react'
 
-import { useEdgeAccount } from '../auth'
 import { CreateWallet } from '../EdgeAccount'
 import { SelectedWalletInfo } from '../EdgeAccount/SelectedWalletInfo'
 import { Settings } from '../EdgeAccount/Settings'
@@ -11,8 +10,7 @@ import { SelectedWalletBoundary } from '../SelectedWallet'
 
 export const Main = () => {
   const route = useRoute()
-  const account = useEdgeAccount()
-  const activeWalletIds = useActiveWalletIds(account)
+  const activeWalletIds = useActiveWalletIds()
 
   return (
     <>

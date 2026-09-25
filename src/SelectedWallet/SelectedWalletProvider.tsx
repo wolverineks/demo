@@ -1,4 +1,4 @@
-import { EdgeAccount, EdgeTokenId } from 'edge-core-js'
+import { EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 
 import { useEdgeAccount } from '../auth'
@@ -29,9 +29,7 @@ export const useSelectedWalletInfo = () => React.useContext(SelectedWalletInfoCo
 
 export const WalletInfoBoundary: React.FC<{ fallback?: React.ReactNode }> = ({ children, fallback = null }) => {
   const [walletInfo, selectWallet] = useSelectedWalletInfo()
-
-  const account = useEdgeAccount()
-  const activeWalletIds = useActiveWalletIds(account)
+  const activeWalletIds = useActiveWalletIds()
 
   if (!walletInfo) return <>{fallback}</>
 
