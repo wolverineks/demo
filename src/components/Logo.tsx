@@ -1,7 +1,6 @@
 import React from 'react'
 
-import { useEdgeAccount } from '../auth'
-import { useWatch } from '../hooks'
+import { useCurrencyConfig } from '../hooks'
 import { getCurrencyIconCandidates } from '../utils'
 
 export const Logo: React.FC<{
@@ -9,9 +8,7 @@ export const Logo: React.FC<{
   tokenId?: string | null
   contractAddress?: string
 }> = ({ pluginId, tokenId, contractAddress }) => {
-  const account = useEdgeAccount()
-  const currencyConfig = account.currencyConfig[pluginId]
-  useWatch(currencyConfig, 'allTokens')
+  const currencyConfig = useCurrencyConfig(pluginId)
 
   const currencyCode =
     currencyConfig == null

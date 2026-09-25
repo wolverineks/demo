@@ -41,10 +41,17 @@ export const getCryptoInfo = (account: EdgeAccount, pluginId: string, tokenId: E
 export const getCurrencyCodeFromTokenId = (account: EdgeAccount, pluginId: string, tokenId: EdgeTokenId) =>
   getCryptoInfo(account, pluginId, tokenId).currencyCode
 
-export const useCryptoInfo = (pluginId: string, tokenId: EdgeTokenId) => {
+export const useCurrencyConfig = (pluginId: string) => {
   const account = useEdgeAccount()
   const config = account.currencyConfig[pluginId]
   useWatch(config, 'allTokens')
+
+  return config
+}
+
+export const useCryptoInfo = (pluginId: string, tokenId: EdgeTokenId) => {
+  const account = useEdgeAccount()
+  useCurrencyConfig(pluginId)
 
   return getCryptoInfo(account, pluginId, tokenId)
 }
