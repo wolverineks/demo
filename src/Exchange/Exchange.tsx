@@ -1,4 +1,4 @@
-import { EdgeCurrencyWallet, EdgeTokenId } from 'edge-core-js'
+import { EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 import JSONPretty from 'react-json-pretty'
 
@@ -13,6 +13,7 @@ import {
   useName,
   useSwapQuote,
 } from '../hooks'
+import { useSelectedWallet } from '../SelectedWallet'
 import { getWalletListMeta } from '../utils'
 
 type TokenChoice = {
@@ -56,7 +57,8 @@ const getTokenChoices = (account: ReturnType<typeof useEdgeAccount>): TokenChoic
     ]
   })
 
-export const Exchange = ({ wallet, tokenId }: { wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId }) => {
+export const Exchange = () => {
+  const [{ wallet, tokenId }] = useSelectedWallet()
   const account = useEdgeAccount()
   const choices = getTokenChoices(account)
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)

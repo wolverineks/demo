@@ -1,3 +1,5 @@
+import React from 'react'
+
 import { useEdgeAccount } from '../auth'
 import { CreateWallet } from '../EdgeAccount'
 import { SelectedWalletInfo } from '../EdgeAccount/SelectedWalletInfo'
@@ -5,7 +7,7 @@ import { Settings } from '../EdgeAccount/Settings'
 import { Exchange } from '../Exchange'
 import { useActiveWalletIds } from '../hooks'
 import { Route, useRoute } from '../route'
-import { SelectedWalletBoundary, useSelectedWallet } from '../SelectedWallet'
+import { SelectedWalletBoundary } from '../SelectedWallet'
 
 export const Main = () => {
   const route = useRoute()
@@ -24,17 +26,11 @@ export const Main = () => {
         <CreateWallet key={activeWalletIds.length} />
       ) : route === Route.exchange ? (
         <SelectedWalletBoundary>
-          <ExchangeWithSelectedWallet />
+          <Exchange />
         </SelectedWalletBoundary>
       ) : (
         <div>404</div>
       )}
     </>
   )
-}
-
-const ExchangeWithSelectedWallet = () => {
-  const [{ wallet, tokenId }] = useSelectedWallet()
-
-  return <Exchange wallet={wallet} tokenId={tokenId} />
 }
