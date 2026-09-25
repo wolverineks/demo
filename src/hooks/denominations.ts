@@ -201,26 +201,17 @@ export const useTickerFiatAmount = (
   })
 }
 
-export const useTokenDisplayDenomination = (account: EdgeAccount, wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) => {
-  const info = useCryptoInfo(account, wallet.currencyInfo.pluginId, tokenId)
-  const storageKey = tokenDenominationKey(wallet.currencyInfo.pluginId, tokenId)
-  const multiplier =
-    useReadDisplayDenominationMultiplier(account, info, storageKey).data ?? info.denominations[0].multiplier
-  const displayDenomination =
-    info.denominations.find((denomination) => denomination.multiplier === multiplier) || info.denominations[0]
+export const useCryptoDisplayDenomination = (account: EdgeAccount, pluginId: string, tokenId: EdgeTokenId) => {
+  const info = useCryptoInfo(account, pluginId, tokenId)
 
-  if (!displayDenomination) {
-    throw new Error('Invalid Denomination Multiplier')
-  }
-
-  return [displayDenomination, useWriteDisplayDenominationMultiplier(account, info, storageKey).mutateAsync] as const
+  return useDisplayDenomination(account, info, tokenDenominationKey(pluginId, tokenId))
 }
 
 export const useTokenExchangeDenomination = (account: EdgeAccount, wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) =>
   getExchangeDenomination(getCryptoInfo(account, wallet.currencyInfo.pluginId, tokenId))
 
 export const useTokenDenominations = (account: EdgeAccount, wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) => {
-  const [display, setDisplay] = useTokenDisplayDenomination(account, wallet, tokenId)
+  const [display, setDisplay] = useCryptoDisplayDenomination(account, wallet.currencyInfo.pluginId, tokenId)
   const info = useCryptoInfo(account, wallet.currencyInfo.pluginId, tokenId)
 
   return {

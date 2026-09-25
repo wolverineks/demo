@@ -10,7 +10,7 @@ import {
   useFiatCurrencyCode,
   useName,
   useSwapQuote,
-  useTokenDisplayDenomination,
+  useCryptoDisplayDenomination,
 } from '../hooks'
 import { getCurrencyCodeFromTokenId, getWalletListMeta } from '../utils'
 
@@ -59,7 +59,7 @@ export const Exchange = ({ wallet, tokenId }: { wallet: EdgeCurrencyWallet; toke
   const account = useEdgeAccount()
   const choices = getTokenChoices(account)
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
-  const [displayDenomination] = useTokenDisplayDenomination(account, wallet, tokenId)
+  const [displayDenomination] = useCryptoDisplayDenomination(account, wallet.currencyInfo.pluginId, tokenId)
 
   const [nativeAmount, setNativeAmount] = React.useState('0')
   const [fromWalletId, setFromWalletId] = React.useState(wallet.id)
