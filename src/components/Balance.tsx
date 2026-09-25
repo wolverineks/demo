@@ -11,7 +11,12 @@ export const Balance = ({ wallet, tokenId }: { wallet: EdgeCurrencyWallet; token
   return (
     <>
       <DisplayAmount nativeAmount={balance} pluginId={wallet.currencyInfo.pluginId} tokenId={tokenId} /> -{' '}
-      <FiatAmount nativeAmount={balance} wallet={wallet} tokenId={tokenId} fiatCurrencyCode={fiatCurrencyCode} />
+      <FiatAmount
+        nativeAmount={balance}
+        pluginId={wallet.currencyInfo.pluginId}
+        tokenId={tokenId}
+        fiatCurrencyCode={fiatCurrencyCode}
+      />
     </>
   )
 }
