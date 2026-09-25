@@ -3,7 +3,7 @@ import { EdgeAccount, closeEdge } from 'edge-core-js'
 
 import { useDefaultFiatCurrencyCode, useEdgeCurrencyWallet } from '../edgeAccount'
 import { fakeUser } from './fake-user'
-import { makeFakeEdgeContext, render } from './utils'
+import { accountCache, makeFakeEdgeContext, render } from './utils'
 
 const setup = async () => {
   const context = await makeFakeEdgeContext({ bitcoin: true })
@@ -27,7 +27,9 @@ describe('EdgeAccount', () => {
   })
 
   it('useDefaultFiatCurrencyCode', async () => {
-    const { result, waitFor, waitForValueToChange } = render(() => useDefaultFiatCurrencyCode(account))
+    const { result, waitFor, waitForValueToChange } = render(() => useDefaultFiatCurrencyCode(), {
+      wrapper: accountCache(account),
+    })
     await waitFor(() => {
       const [fiatCurrencyCode, setFiatCurrencyCode] = result.current
 

@@ -70,7 +70,7 @@ const fiatOptions = (fiatInfo: FiatInfo) => [
 
 const useCreateWallet = () => {
   const account = useEdgeAccount()
-  const defaultFiatInfo = useDefaultFiatInfo(account)
+  const defaultFiatInfo = useDefaultFiatInfo()
   const walletTypes = getWalletTypes(account)
   const [, select] = useSelectWallet()
 
@@ -78,7 +78,7 @@ const useCreateWallet = () => {
     mutate: createCurrencyWallet,
     error,
     status,
-  } = useCreateCurrencyWallet(account, {
+  } = useCreateCurrencyWallet({
     onSuccess: (wallet) => select({ id: wallet.id, tokenId: null }),
   })
 

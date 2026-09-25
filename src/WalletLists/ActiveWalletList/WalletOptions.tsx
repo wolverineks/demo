@@ -1,6 +1,5 @@
 import React from 'react'
 
-import { useEdgeAccount } from '../../auth'
 import { Button } from '../../components'
 import { useActiveWalletIds, useSortWallets } from '../../hooks'
 
@@ -19,8 +18,7 @@ export const WalletOptions = ({ walletId }: { walletId: string }) => {
 }
 
 const MoveUpButton = ({ walletId }: { walletId: string }) => {
-  const account = useEdgeAccount()
-  const sortWallets = useSortWallets(account)
+  const sortWallets = useSortWallets()
   const activeWalletIds = useActiveWalletIds()
 
   const moveUp = () => {
@@ -40,8 +38,7 @@ const MoveUpButton = ({ walletId }: { walletId: string }) => {
 }
 
 const MoveDownButton = ({ walletId }: { walletId: string }) => {
-  const account = useEdgeAccount()
-  const sortWallets = useSortWallets(account)
+  const sortWallets = useSortWallets()
   const activeWalletIds = useActiveWalletIds()
 
   const moveDown = () => {

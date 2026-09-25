@@ -1,12 +1,10 @@
 import React from 'react'
 
-import { useEdgeAccount } from '../auth'
 import { Button } from '../components'
 import { useChangeWalletState } from '../hooks'
 
 export const FallbackRender = ({ walletId }: { walletId: string }) => {
-  const account = useEdgeAccount()
-  const { activateWallet, status } = useChangeWalletState(account, walletId)
+  const { activateWallet, status } = useChangeWalletState(walletId)
 
   return (
     <div>

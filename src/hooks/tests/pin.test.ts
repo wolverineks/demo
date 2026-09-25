@@ -3,7 +3,7 @@ import { closeEdge } from 'edge-core-js'
 
 import { usePin } from '../pin'
 import { fakeUser } from './fake-user'
-import { makeFakeEdgeContext, render } from './utils'
+import { accountCache, makeFakeEdgeContext, render } from './utils'
 
 const setup = async () => {
   const context = await makeFakeEdgeContext({ bitcoin: true })
@@ -17,7 +17,9 @@ describe('usePin', () => {
 
   it('usePin', async () => {
     const { context, account } = await setup()
-    const { result, waitFor, waitForValueToChange } = render(() => usePin(context, account))
+    const { result, waitFor, waitForValueToChange } = render(() => usePin(context), {
+      wrapper: accountCache(account),
+    })
     await waitFor(() => !!result.current.checkPin)
 
     {

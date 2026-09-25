@@ -1,6 +1,5 @@
 import React from 'react'
 
-import { useEdgeAccount } from '../auth'
 import { Boundary, FormControl, ListGroup } from '../components'
 import { useEdgeAccountTotal } from '../hooks'
 import { Route, useRoute, useSetRoute } from '../route'
@@ -8,11 +7,10 @@ import { SelectedWalletInfo, useSelectedWalletInfo } from '../SelectedWallet'
 import { ActiveWalletList, ArchivedWalletList, DeletedWalletList } from '../WalletLists'
 
 const AccountTotal = () => {
-  const account = useEdgeAccount()
   const {
     total,
     denomination: { symbol, name },
-  } = useEdgeAccountTotal(account)
+  } = useEdgeAccountTotal()
 
   return (
     <ListGroup.Item>

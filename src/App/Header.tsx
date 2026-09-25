@@ -6,9 +6,8 @@ import { getCurrencyCodeFromTokenId, useLogout, useName, useUsername } from '../
 import { SelectedWalletBoundary, useSelectedWallet } from '../SelectedWallet'
 
 export const Header = () => {
-  const account = useEdgeAccount()
   const logout = useLogout()
-  const username = useUsername(account)
+  const username = useUsername()
 
   return (
     <Navbar className="app-header">

@@ -37,7 +37,7 @@ const useWalletFiatCurrencyCodes = (account: EdgeAccount) => {
 export const Currencies: React.FC = () => {
   const account = useEdgeAccount()
   const [searchQuery, setSearchQuery] = React.useState('')
-  const [fiatCurrencyCode] = useDefaultFiatCurrencyCode(account)
+  const [fiatCurrencyCode] = useDefaultFiatCurrencyCode()
   const walletFiatCurrencyCodes = useWalletFiatCurrencyCodes(account)
   const fiatCodes = unique([fiatCurrencyCode, ...walletFiatCurrencyCodes])
   useWatch(account, 'activeWalletIds')

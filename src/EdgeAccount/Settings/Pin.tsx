@@ -1,6 +1,5 @@
 import React from 'react'
 
-import { useEdgeAccount } from '../../auth'
 import { Button, Form, FormGroup, ListGroup, ListGroupItem, Tab, Tabs } from '../../components'
 import { useEdgeContext } from '../../Edge'
 import { usePin } from '../../hooks'
@@ -25,10 +24,9 @@ export const Pin = () => {
 
 const CheckPin = () => {
   const context = useEdgeContext()
-  const account = useEdgeAccount()
   const {
     checkPin: { mutateAsync: checkPin, data: isCorrect, error, reset, isLoading },
-  } = usePin(context, account)
+  } = usePin(context)
   const [pin, setPin] = React.useState('')
 
   React.useEffect(() => {
@@ -82,10 +80,9 @@ const CheckPin = () => {
 
 const ChangePin = () => {
   const context = useEdgeContext()
-  const account = useEdgeAccount()
   const {
     changePin: { mutateAsync: changePin, error, isLoading },
-  } = usePin(context, account)
+  } = usePin(context)
   const [pin, setPin] = React.useState('')
 
   return (
@@ -124,10 +121,9 @@ const ChangePin = () => {
 
 const DeletePin = () => {
   const context = useEdgeContext()
-  const account = useEdgeAccount()
   const {
     deletePin: { mutate: deletePin, error, isLoading },
-  } = usePin(context, account)
+  } = usePin(context)
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>

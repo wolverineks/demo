@@ -1,6 +1,6 @@
-import { EdgeAccount } from 'edge-core-js'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
+import { useEdgeAccount } from '../auth'
 import { useInvalidateQueries } from '.'
 
 export const defaultAutoLogout = { enabled: true, delay: 3600 }
@@ -10,7 +10,9 @@ type AutoLogoutSetting = {
   delay: number
 }
 
-export const useReadAutoLogout = (account: EdgeAccount, queryConfig?: UseQueryOptions<AutoLogoutSetting>) => {
+export const useReadAutoLogout = (queryConfig?: UseQueryOptions<AutoLogoutSetting>) => {
+  const account = useEdgeAccount()
+
   return useQuery({
     queryKey: [account.username, 'autoLogout'],
     queryFn: () =>
@@ -22,10 +24,8 @@ export const useReadAutoLogout = (account: EdgeAccount, queryConfig?: UseQueryOp
   })
 }
 
-export const useWriteAutoLogout = (
-  account: EdgeAccount,
-  mutationOptions?: UseMutationOptions<void, unknown, AutoLogoutSetting>,
-) => {
+export const useWriteAutoLogout = (mutationOptions?: UseMutationOptions<void, unknown, AutoLogoutSetting>) => {
+  const account = useEdgeAccount()
   const mutationFn = (autoLogout: AutoLogoutSetting) =>
     account.dataStore.setItem('autoLogout', 'autoLogout.json', JSON.stringify(autoLogout))
 
@@ -35,6 +35,6 @@ export const useWriteAutoLogout = (
   })
 }
 
-export const useAutoLogout = (account: EdgeAccount) => {
-  return [useReadAutoLogout(account).data!, useWriteAutoLogout(account).mutate] as const
+export const useAutoLogout = () => {
+  return [useReadAutoLogout().data!, useWriteAutoLogout().mutate] as const
 }

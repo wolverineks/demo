@@ -1,13 +1,11 @@
 import React from 'react'
 
-import { useEdgeAccount } from '../../auth'
 import { AutologoutContext } from '../../AutoLogout'
 import { Form, FormControl, FormGroup, FormLabel, ListGroup, ListGroupItem } from '../../components'
 import { useAutoLogout } from '../../hooks'
 
 export const AutoLogout = () => {
-  const account = useEdgeAccount()
-  const [{ enabled, delay }, setAutologout] = useAutoLogout(account)
+  const [{ enabled, delay }, setAutologout] = useAutoLogout()
   const remainingTime = React.useContext(AutologoutContext)
 
   return (

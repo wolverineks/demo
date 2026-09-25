@@ -1,25 +1,29 @@
-import { EdgeAccount } from 'edge-core-js'
 import { UseMutationOptions, useMutation } from 'react-query'
 
-export const useChangePassword = (account: EdgeAccount, mutationOptions?: UseMutationOptions<void, Error, string>) => {
+import { useEdgeAccount } from '../auth'
+
+export const useChangePassword = (mutationOptions?: UseMutationOptions<void, Error, string>) => {
+  const account = useEdgeAccount()
+
   return useMutation(account.changePassword, { ...mutationOptions })
 }
 
-export const useCheckPassword = (
-  account: EdgeAccount,
-  mutationOptions?: UseMutationOptions<boolean, Error, string>,
-) => {
+export const useCheckPassword = (mutationOptions?: UseMutationOptions<boolean, Error, string>) => {
+  const account = useEdgeAccount()
+
   return useMutation(account.checkPassword, { ...mutationOptions })
 }
 
-export const useDeletePassword = (account: EdgeAccount, mutationOptions?: UseMutationOptions<void>) => {
+export const useDeletePassword = (mutationOptions?: UseMutationOptions<void>) => {
+  const account = useEdgeAccount()
+
   return useMutation(account.deletePassword, { ...mutationOptions })
 }
 
-export const usePassword = (account: EdgeAccount) => {
+export const usePassword = () => {
   return {
-    changePassword: useChangePassword(account),
-    deletePassword: useDeletePassword(account),
-    checkPassword: useCheckPassword(account),
+    changePassword: useChangePassword(),
+    deletePassword: useDeletePassword(),
+    checkPassword: useCheckPassword(),
   }
 }

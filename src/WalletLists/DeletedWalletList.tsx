@@ -7,8 +7,7 @@ import { FallbackRender } from './FallbackRender'
 import { inactiveWalletMatches, InactiveWalletRows } from './InactiveWalletRows'
 
 export const DeletedWalletList = ({ searchQuery }: { searchQuery: string }) => {
-  const account = useEdgeAccount()
-  const deletedWalletIds = useDeletedWalletIds(account)
+  const deletedWalletIds = useDeletedWalletIds()
 
   return (
     <Accordion>
@@ -47,8 +46,7 @@ const WalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
 }
 
 const WalletOptions = ({ walletId }: { walletId: string }) => {
-  const account = useEdgeAccount()
-  const { activateWallet, archiveWallet, error, status } = useChangeWalletState(account, walletId)
+  const { activateWallet, archiveWallet, error, status } = useChangeWalletState(walletId)
 
   return (
     <>

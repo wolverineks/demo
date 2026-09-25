@@ -5,8 +5,7 @@ import { useEdgeAccount } from '../auth'
 import { useCurrencyWallets, useWriteWalletSnapshot } from '../hooks'
 
 export const WalletSnapshots = () => {
-  const account = useEdgeAccount()
-  const currencyWallets = useCurrencyWallets(account)
+  const currencyWallets = useCurrencyWallets()
 
   return (
     <>

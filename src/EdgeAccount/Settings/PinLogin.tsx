@@ -1,17 +1,15 @@
 import React from 'react'
 
-import { useEdgeAccount } from '../../auth'
 import { Form, FormGroup, ListGroup, ListGroupItem } from '../../components'
 import { useEdgeContext } from '../../Edge'
 import { usePin } from '../../hooks'
 
 export const PinLogin = () => {
   const context = useEdgeContext()
-  const account = useEdgeAccount()
   const {
     pinLoginEnabled,
     changePinLogin: { mutate: changePinLogin, error, isLoading },
-  } = usePin(context, account)
+  } = usePin(context)
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>

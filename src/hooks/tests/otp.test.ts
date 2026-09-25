@@ -3,7 +3,7 @@ import { EdgeAccount, closeEdge } from 'edge-core-js'
 
 import { useOTP } from '../otp'
 import { fakeUser } from './fake-user'
-import { makeFakeEdgeContext, render } from './utils'
+import { accountCache, makeFakeEdgeContext, render } from './utils'
 
 const setup = async () => {
   const context = await makeFakeEdgeContext({ bitcoin: true })
@@ -18,7 +18,7 @@ describe('useOTP', () => {
   afterAll(closeEdge)
 
   it('useOTP', async () => {
-    const { result, waitFor, waitForValueToChange } = render(() => useOTP(account))
+    const { result, waitFor, waitForValueToChange } = render(() => useOTP(), { wrapper: accountCache(account) })
     await waitFor(() => !!result.current.disableOTP)
 
     {

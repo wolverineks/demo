@@ -1,16 +1,14 @@
 import { EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 
-import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, FiatAmount, FormControl, Logo } from '../components'
 import { exchangeToNative, useCryptoInfo, useExchangeInfos } from '../hooks'
 import { normalize } from '../utils'
 
 export const ExchangeRates = () => {
   const [searchQuery, setSearchQuery] = React.useState('')
-  const account = useEdgeAccount()
   const query = normalize(searchQuery)
-  const exchangeInfos = useExchangeInfos(account).filter(
+  const exchangeInfos = useExchangeInfos().filter(
     ({ currencyCode, fiatCurrencyCode }) =>
       normalize(currencyCode).includes(query) || normalize(fiatCurrencyCode).includes(query),
   )

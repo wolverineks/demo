@@ -18,7 +18,8 @@ import { useInvalidateQueries } from './useInvalidateQueries'
 import { useWatch } from './watch'
 import { getExchangeDenomination, nativeToDenominated, useDisplayDenomination } from '.'
 
-export const useUsername = (account: EdgeAccount) => {
+export const useUsername = () => {
+  const account = useEdgeAccount()
   useWatch(account, 'username')
 
   return account.username ?? ''
@@ -31,26 +32,30 @@ export const useActiveWalletIds = () => {
   return account.activeWalletIds
 }
 
-export const useArchivedWalletIds = (account: EdgeAccount) => {
+export const useArchivedWalletIds = () => {
+  const account = useEdgeAccount()
   useWatch(account, 'archivedWalletIds')
 
   return account.archivedWalletIds
 }
 
-export const useDeletedWalletIds = (account: EdgeAccount) => {
+export const useDeletedWalletIds = () => {
+  const account = useEdgeAccount()
   useWatch(account, 'allKeys')
 
   return account.allKeys.filter(({ deleted }) => deleted).map(({ id }) => id)
 }
 
-export const useCurrencyWallets = (account: EdgeAccount) => {
+export const useCurrencyWallets = () => {
+  const account = useEdgeAccount()
   useWatch(account, 'currencyWallets')
 
   return account.currencyWallets
 }
 
-export const useEdgeAccountTotal = (account: EdgeAccount) => {
-  const fiatCurrencyCode = useDefaultFiatCurrencyCode(account)[0]
+export const useEdgeAccountTotal = () => {
+  const account = useEdgeAccount()
+  const fiatCurrencyCode = useDefaultFiatCurrencyCode()[0]
   const [displayDenomination] = useDisplayDenomination(getFiatInfo(fiatCurrencyCode))
 
   const getTotal = async () => {
@@ -87,7 +92,8 @@ const toActive = (walletId: string) => ({ [walletId]: { archived: false, deleted
 const toArchived = (walletId: string) => ({ [walletId]: { archived: true, deleted: false } })
 const toDeleted = (walletId: string) => ({ [walletId]: { archived: false, deleted: true } })
 
-export const useChangeWalletState = (account: EdgeAccount, walletId: string) => {
+export const useChangeWalletState = (walletId: string) => {
+  const account = useEdgeAccount()
   const { mutate: changeWalletStates, ...rest } = useMutation(account.changeWalletStates)
 
   const activateWallet = React.useCallback(() => changeWalletStates(toActive(walletId)), [changeWalletStates, walletId])
@@ -105,7 +111,8 @@ export const useChangeWalletState = (account: EdgeAccount, walletId: string) => 
   }
 }
 
-export const useSortWallets = (account: EdgeAccount) => {
+export const useSortWallets = () => {
+  const account = useEdgeAccount()
   const { mutate: changeWalletStates } = useMutation(account.changeWalletStates)
 
   return React.useCallback(
@@ -124,13 +131,13 @@ export const useSortWallets = (account: EdgeAccount) => {
 }
 
 export const useCreateCurrencyWallet = (
-  account: EdgeAccount,
   mutationOptions?: UseMutationOptions<
     EdgeCurrencyWallet,
     Error,
     { type: string; options: EdgeCreateCurrencyWalletOptions }
   >,
 ) => {
+  const account = useEdgeAccount()
   const mutationFn = ({ type, options }: { type: string; options: EdgeCreateCurrencyWalletOptions }) =>
     account.createCurrencyWallet(type, options)
 
@@ -149,7 +156,9 @@ export const getDefaultFiatCurrencyCode = (account: EdgeAccount) => {
     .catch(() => defaultFiatCurrencyCode) as Promise<string>
 }
 
-export const useReadDefaultFiatCurrencyCode = (account: EdgeAccount, queryOptions?: UseQueryOptions<string>) => {
+export const useReadDefaultFiatCurrencyCode = (queryOptions?: UseQueryOptions<string>) => {
+  const account = useEdgeAccount()
+
   return useQuery({
     queryKey: [account.username, 'defaultFiatCurrencyCode'],
     queryFn: () => getDefaultFiatCurrencyCode(account),
@@ -157,7 +166,8 @@ export const useReadDefaultFiatCurrencyCode = (account: EdgeAccount, queryOption
   })
 }
 
-export const useWriteDefaultFiatCurrencyCode = (account: EdgeAccount) => {
+export const useWriteDefaultFiatCurrencyCode = () => {
+  const account = useEdgeAccount()
   const queryFn = (currencyCode: string) =>
     account.dataStore.setItem('defaultFiatCurrencyCode', 'defaultFiatCurrencyCode.json', JSON.stringify(currencyCode))
 
@@ -166,12 +176,12 @@ export const useWriteDefaultFiatCurrencyCode = (account: EdgeAccount) => {
   })
 }
 
-export const useDefaultFiatCurrencyCode = (account: EdgeAccount) => {
-  return [useReadDefaultFiatCurrencyCode(account).data!, useWriteDefaultFiatCurrencyCode(account).mutate] as const
+export const useDefaultFiatCurrencyCode = () => {
+  return [useReadDefaultFiatCurrencyCode().data!, useWriteDefaultFiatCurrencyCode().mutate] as const
 }
 
-export const useDefaultFiatInfo = (account: EdgeAccount) => {
-  const [currencyCode] = useDefaultFiatCurrencyCode(account)
+export const useDefaultFiatInfo = () => {
+  const [currencyCode] = useDefaultFiatCurrencyCode()
 
   return getFiatInfo(currencyCode)
 }
@@ -252,7 +262,8 @@ export const useApproveSwapQuote = (
   })
 }
 
-export const useSplitWallet = (account: EdgeAccount, walletId: string) => {
+export const useSplitWallet = (walletId: string) => {
+  const account = useEdgeAccount()
   const enabledTypes = new Set(Object.values(account.currencyConfig).map(({ currencyInfo }) => currencyInfo.walletType))
 
   return {

@@ -1,6 +1,7 @@
 import { EdgeAccount, EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 
+import { useEdgeAccount } from '../auth'
 import { fiatInfos, getWalletTokenIds, uniqueBy } from '../utils'
 import { getCurrencyCodeFromTokenId } from './useInfo'
 import { useRerender } from './useRerender'
@@ -26,7 +27,8 @@ export const getExchangeInfos = (account: EdgeAccount): ExchangeInfo[] =>
     ),
   )
 
-export const useExchangeInfos = (account: EdgeAccount) => {
+export const useExchangeInfos = () => {
+  const account = useEdgeAccount()
   const rerender = useRerender()
   useWatch(account, 'currencyWallets')
 

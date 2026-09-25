@@ -1,6 +1,5 @@
 import React from 'react'
 
-import { useEdgeAccount } from '../../auth'
 import { Button, Form, FormGroup, ListGroup, ListGroupItem, Tab, Tabs } from '../../components'
 import { usePassword } from '../../hooks'
 
@@ -23,10 +22,9 @@ export const Password = () => {
 }
 
 const CheckPassword = () => {
-  const account = useEdgeAccount()
   const {
     checkPassword: { mutateAsync: checkPassword, data: isCorrect, error, reset, isLoading },
-  } = usePassword(account)
+  } = usePassword()
   const [password, setPassword] = React.useState('')
 
   React.useEffect(() => {
@@ -79,10 +77,9 @@ const CheckPassword = () => {
 }
 
 const ChangePassword = () => {
-  const account = useEdgeAccount()
   const {
     changePassword: { mutateAsync: changePassword, error, isLoading },
-  } = usePassword(account)
+  } = usePassword()
   const [password, setPassword] = React.useState('')
 
   return (
@@ -120,10 +117,9 @@ const ChangePassword = () => {
 }
 
 const DeletePassword = () => {
-  const account = useEdgeAccount()
   const {
     deletePassword: { mutate: deletePassword, error, isLoading },
-  } = usePassword(account)
+  } = usePassword()
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>

@@ -7,7 +7,7 @@ import { Disklet } from './Disklet'
 
 export const Storage = () => {
   const account = useEdgeAccount()
-  const username = useUsername(account)
+  const username = useUsername()
 
   return (
     <div>

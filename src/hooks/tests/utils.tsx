@@ -1,6 +1,8 @@
 import { RenderHookOptions, renderHook } from '@testing-library/react-hooks'
-import { EdgeContextOptions, makeFakeEdgeWorld } from 'edge-core-js'
+import { EdgeAccount, EdgeContextOptions, makeFakeEdgeWorld } from 'edge-core-js'
+import React from 'react'
 
+import { EdgeAccountContext } from '../../auth'
 import { EdgeCache } from '../../Edge'
 import { fakeUser } from './fake-user'
 
@@ -13,6 +15,13 @@ export const makeFakeEdgeContext = async (plugins: EdgeContextOptions['plugins']
     appId: '',
     plugins,
   })
+}
+
+export const accountCache = (account: EdgeAccount): React.FC => {
+  const AccountCache: React.FC = ({ children }) =>
+    React.createElement(EdgeCache, null, React.createElement(EdgeAccountContext.Provider, { value: account }, children))
+
+  return AccountCache
 }
 
 export const render = (callback: () => any, options?: RenderHookOptions<any>) => {

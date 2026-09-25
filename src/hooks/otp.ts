@@ -1,10 +1,11 @@
-import { EdgeAccount } from 'edge-core-js'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
+import { useEdgeAccount } from '../auth'
 import { useWatch } from './watch'
 import { useInvalidateQueries } from '.'
 
-export const useOtpEnabled = (account: EdgeAccount, queryOptions?: UseQueryOptions<boolean>) => {
+export const useOtpEnabled = (queryOptions?: UseQueryOptions<boolean>) => {
+  const account = useEdgeAccount()
   const { refetch, data } = useQuery({
     queryKey: [account.username, 'otpEnabled'],
     queryFn: () => Promise.resolve(!!account.otpKey),
@@ -17,7 +18,8 @@ export const useOtpEnabled = (account: EdgeAccount, queryOptions?: UseQueryOptio
   return data!
 }
 
-export const useEnableOTP = (account: EdgeAccount, mutationOptions?: UseMutationOptions) => {
+export const useEnableOTP = (mutationOptions?: UseMutationOptions) => {
+  const account = useEdgeAccount()
   const queryFn = () => account.enableOtp()
 
   return useMutation(queryFn, {
@@ -26,7 +28,8 @@ export const useEnableOTP = (account: EdgeAccount, mutationOptions?: UseMutation
   }).mutate
 }
 
-export const useDisableOTP = (account: EdgeAccount, mutationOptions?: UseMutationOptions) => {
+export const useDisableOTP = (mutationOptions?: UseMutationOptions) => {
+  const account = useEdgeAccount()
   const queryFn = () => account.disableOtp()
 
   return useMutation(queryFn, {
@@ -35,11 +38,13 @@ export const useDisableOTP = (account: EdgeAccount, mutationOptions?: UseMutatio
   }).mutate
 }
 
-export const useOTP = (account: EdgeAccount) => {
+export const useOTP = () => {
+  const account = useEdgeAccount()
+
   return {
     otpKey: account.otpKey,
-    enabled: useOtpEnabled(account),
-    enableOTP: useEnableOTP(account),
-    disableOTP: useDisableOTP(account),
+    enabled: useOtpEnabled(),
+    enableOTP: useEnableOTP(),
+    disableOTP: useDisableOTP(),
   }
 }

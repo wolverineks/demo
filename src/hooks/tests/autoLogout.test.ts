@@ -3,7 +3,7 @@ import { closeEdge } from 'edge-core-js'
 
 import { defaultAutoLogout, useAutoLogout } from '../autoLogout'
 import { fakeUser } from './fake-user'
-import { makeFakeEdgeContext, render } from './utils'
+import { accountCache, makeFakeEdgeContext, render } from './utils'
 
 const setup = async () => {
   const context = await makeFakeEdgeContext()
@@ -17,7 +17,9 @@ describe('autoLogout', () => {
 
   it('useAutoLogout', async () => {
     const account = await setup()
-    const { result, waitFor, waitForValueToChange } = render(() => useAutoLogout(account))
+    const { result, waitFor, waitForValueToChange } = render(() => useAutoLogout(), {
+      wrapper: accountCache(account),
+    })
 
     await waitFor(() => {
       const [autoLogout, setAutoLogout] = result.current

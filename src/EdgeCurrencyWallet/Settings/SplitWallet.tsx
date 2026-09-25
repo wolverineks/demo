@@ -7,7 +7,7 @@ import { useSplitWallet } from '../../hooks'
 
 export const SplitWallet: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
   const account = useEdgeAccount()
-  const { walletTypes, splitWallet } = useSplitWallet(account, wallet.id)
+  const { walletTypes, splitWallet } = useSplitWallet(wallet.id)
 
   if (walletTypes.length === 0) return null
 
