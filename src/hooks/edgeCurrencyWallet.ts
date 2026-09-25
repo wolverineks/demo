@@ -301,22 +301,13 @@ export const useSignBroadcastAndSaveTx = (
   )
 }
 
-export const useExportTransactions = (
-  wallet: EdgeCurrencyWallet,
-  options: EdgeGetTransactionsOptions,
-  format: 'CSV' | 'QBO',
-) => {
+export const useExportTransactions = (wallet: EdgeCurrencyWallet, options: EdgeGetTransactionsOptions) => {
   const account = useEdgeAccount()
 
   return useQuery({
-    queryKey: [wallet.id, 'export-transaction', options, format],
+    queryKey: [wallet.id, 'export-transaction', options],
     queryFn: async () => {
-      // CSV/QBO helpers left the core in 0.18; dump txs as CSV from getTransactions.
       const transactions = await wallet.getTransactions(options)
-      if (format === 'QBO') {
-        throw new Error('QBO export was removed from edge-core-js in 0.18.0')
-      }
-
       const header = 'txid,date,currencyCode,nativeAmount'
       const rows = transactions.map((tx) => {
         const currencyCode = getCurrencyCodeFromTokenId(account, wallet.currencyInfo.pluginId, tx.tokenId)

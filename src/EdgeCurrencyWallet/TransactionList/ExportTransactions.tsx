@@ -6,11 +6,6 @@ import JSONPretty from 'react-json-pretty'
 import { Accordion, Button, Col, Debug, Form, FormControl, Row } from '../../components'
 import { useCryptoDenominations, useExportTransactions } from '../../hooks'
 
-enum ExportFormat {
-  'QBO' = 'QBO',
-  'CSV' = 'CSV',
-}
-
 export const ExportTransactions = ({
   wallet,
   tokenId,
@@ -34,22 +29,14 @@ export const ExportTransactions = ({
     tokenId,
     denomination: display.multiplier,
   })
-  const [format, setFormat] = React.useState<ExportFormat>(ExportFormat.CSV)
-  const { data, isLoading } = useExportTransactions(
-    wallet,
-    {
-      tokenId: options.tokenId,
-      startDate: options.startDate,
-      endDate: options.endDate,
-      searchString: options.searchString,
-      spamThreshold: options.spamThreshold,
-    },
-    format,
-  )
-  const href = React.useMemo(
-    () => window.URL.createObjectURL(new Blob([data || ''], { type: `text/${format.toLowerCase()}` })),
-    [data, format],
-  )
+  const { data, isLoading } = useExportTransactions(wallet, {
+    tokenId: options.tokenId,
+    startDate: options.startDate,
+    endDate: options.endDate,
+    searchString: options.searchString,
+    spamThreshold: options.spamThreshold,
+  })
+  const href = React.useMemo(() => window.URL.createObjectURL(new Blob([data || ''], { type: 'text/csv' })), [data])
 
   return (
     <Accordion style={{ flex: 1 }} defaultActiveKey={'0'} activeKey={isActive ? 'export' : undefined}>
@@ -62,14 +49,6 @@ export const ExportTransactions = ({
                 <FormControl
                   onChange={(event) => setOptions({ ...options, searchString: event.currentTarget.value })}
                 />
-              </Col>
-
-              <Col>
-                <Form.Label>Format</Form.Label>
-                <Form.Control as="select" onChange={(event) => setFormat(event.currentTarget.value as ExportFormat)}>
-                  <option key={'CSV'}>CSV</option>
-                  <option key={'QBO'}>QBO</option>
-                </Form.Control>
               </Col>
 
               <Col>
@@ -146,12 +125,12 @@ export const ExportTransactions = ({
             </Row>
           </Form.Group>
 
-          <Button target={format === 'QBO' ? 'none' : undefined} disabled={isLoading} href={href}>
+          <Button disabled={isLoading} href={href}>
             Export
           </Button>
 
           <Debug>
-            <JSONPretty data={{ ...options, format }} />
+            <JSONPretty data={options} />
           </Debug>
         </Form>
       </Accordion.Collapse>
