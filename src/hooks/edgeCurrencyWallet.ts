@@ -1,5 +1,4 @@
 import {
-  EdgeAccount,
   EdgeAddress,
   EdgeCurrencyWallet,
   EdgeGetTransactionsOptions,
@@ -11,6 +10,7 @@ import {
 import React from 'react'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
+import { useEdgeAccount } from '../auth'
 import { getNativeBalance, getPublicAddress } from '../utils'
 import { getCurrencyCodeFromTokenId } from './useInfo'
 import { useInvalidateQueries } from './useInvalidateQueries'
@@ -302,11 +302,12 @@ export const useSignBroadcastAndSaveTx = (
 }
 
 export const useExportTransactions = (
-  account: EdgeAccount,
   wallet: EdgeCurrencyWallet,
   options: EdgeGetTransactionsOptions,
   format: 'CSV' | 'QBO',
 ) => {
+  const account = useEdgeAccount()
+
   return useQuery({
     queryKey: [wallet.id, 'export-transaction', options, format],
     queryFn: async () => {

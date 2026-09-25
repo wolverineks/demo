@@ -35,14 +35,13 @@ export const ArchivedWalletList = ({ searchQuery }: { searchQuery: string }) => 
 
 const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId, searchQuery, children }) => {
   const account = useEdgeAccount()
-  const snapshot = useReadWalletSnapshot(account, walletId)
+  const snapshot = useReadWalletSnapshot(walletId)
 
   return inactiveWalletMatches(account, snapshot, searchQuery) ? <>{children}</> : null
 }
 
 const WalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
-  const account = useEdgeAccount()
-  const snapshot = useReadWalletSnapshot(account, walletId)
+  const snapshot = useReadWalletSnapshot(walletId)
 
   return <InactiveWalletRows snapshot={snapshot} actions={<WalletOptions walletId={snapshot.id} />} />
 }

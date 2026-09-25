@@ -19,7 +19,9 @@ describe('EdgeAccount', () => {
 
   it('useEdgeCurrencyWallet', async () => {
     const walletId = 'FQwJxxej9q3Y81KsjjXeers03e/8hsvdWRSXLrrR55g='
-    const { result, waitFor } = render(() => useEdgeCurrencyWallet({ account, walletId }))
+    const { result, waitFor } = render(() => useEdgeCurrencyWallet({ walletId }), {
+      wrapper: accountCache(account),
+    })
     await waitFor(() => !!result.current.id)
 
     const wallet = result.current

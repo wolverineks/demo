@@ -211,7 +211,7 @@ const TokenCard = ({
 
 const SelectedToken = ({ walletId, tokenId }: { walletId: string; tokenId: EdgeTokenId }) => {
   const account = useEdgeAccount()
-  const wallet = useEdgeCurrencyWallet({ account, walletId })
+  const wallet = useEdgeCurrencyWallet({ walletId })
   const [name] = useName(wallet)
   const currencyCode = getCurrencyCodeFromTokenId(account, wallet.currencyInfo.pluginId, tokenId)
   const label = name || wallet.currencyInfo.displayName || wallet.currencyInfo.currencyCode
@@ -248,11 +248,9 @@ const SwapQuote = ({
   toWalletId: string
   nativeAmount: string
 }) => {
-  const account = useEdgeAccount()
-  const toWallet = useEdgeCurrencyWallet({ account, walletId: toWalletId })
-  const fromWallet = useEdgeCurrencyWallet({ account, walletId: fromWalletId })
+  const toWallet = useEdgeCurrencyWallet({ walletId: toWalletId })
+  const fromWallet = useEdgeCurrencyWallet({ walletId: fromWalletId })
   const { swapQuote, error, isFetching } = useSwapQuote({
-    account,
     nativeAmount,
     fromWallet,
     fromTokenId,

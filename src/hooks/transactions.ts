@@ -1,5 +1,6 @@
 import { EdgeAccount, EdgeTransaction } from 'edge-core-js'
 
+import { useEdgeAccount } from '../auth'
 import { Explorers } from './tokens'
 import { getCryptoInfo } from './useInfo'
 
@@ -13,14 +14,20 @@ const getTransactionExplorers = (account: EdgeAccount, transaction: EdgeTransact
     Explorers
 }
 
-export const useTransactionExplorerUrl = (account: EdgeAccount, transaction: EdgeTransaction) => {
+export const useTransactionExplorerUrl = (transaction: EdgeTransaction) => {
+  const account = useEdgeAccount()
+
   return getTransactionExplorers(account, transaction).transactionExplorer?.replace('%s', transaction.txid)
 }
 
-export const useAddressExplorerUrl = (account: EdgeAccount, transaction: EdgeTransaction) => {
+export const useAddressExplorerUrl = (transaction: EdgeTransaction) => {
+  const account = useEdgeAccount()
+
   return getTransactionExplorers(account, transaction).addressExplorer?.replace('%s', transaction.ourReceiveAddresses[0])
 }
 
-export const useBlockExplorerUrl = (account: EdgeAccount, transaction: EdgeTransaction) => {
+export const useBlockExplorerUrl = (transaction: EdgeTransaction) => {
+  const account = useEdgeAccount()
+
   return getTransactionExplorers(account, transaction).blockExplorer?.replace('%s', String(transaction.blockHeight))
 }

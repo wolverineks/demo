@@ -187,9 +187,10 @@ export const useDefaultFiatInfo = () => {
 }
 
 export const useEdgeCurrencyWallet = (
-  { account, walletId }: { account: EdgeAccount; walletId: string },
+  { walletId }: { walletId: string },
   queryOptions?: UseQueryOptions<EdgeCurrencyWallet>,
 ) => {
+  const account = useEdgeAccount()
   const { data: wallet } = useQuery({
     queryKey: [walletId, 'wallet'],
     queryFn: () => account.waitForCurrencyWallet(walletId),
@@ -204,20 +205,19 @@ export const useEdgeCurrencyWallet = (
 }
 
 export const useSwapQuote = ({
-  account,
   nativeAmount,
   fromWallet,
   fromTokenId,
   toWallet,
   toTokenId,
 }: {
-  account: EdgeAccount
   nativeAmount: string
   fromWallet: EdgeCurrencyWallet
   fromTokenId: EdgeTokenId
   toWallet: EdgeCurrencyWallet | undefined
   toTokenId: EdgeTokenId | undefined
 }) => {
+  const account = useEdgeAccount()
   const hasAmount = Number(nativeAmount) > 0
   const swapRequest: EdgeSwapRequest | undefined =
     toWallet && toTokenId !== undefined && hasAmount

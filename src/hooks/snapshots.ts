@@ -1,7 +1,8 @@
-import { EdgeAccount, EdgeCurrencyWallet, EdgeTokenId } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 import { UseQueryOptions, useMutation, useQuery } from 'react-query'
 
+import { useEdgeAccount } from '../auth'
 import { getWalletTokenIds } from '../utils'
 import { useInvalidateQueries } from '.'
 
@@ -68,11 +69,9 @@ export const walletSnapshotFromJson = (raw: LegacySnapshot): InactiveWallet => {
   }
 }
 
-export const useReadWalletSnapshot = (
-  account: EdgeAccount,
-  walletId: string,
-  queryOptions?: UseQueryOptions<InactiveWallet>,
-) => {
+export const useReadWalletSnapshot = (walletId: string, queryOptions?: UseQueryOptions<InactiveWallet>) => {
+  const account = useEdgeAccount()
+
   return useQuery({
     queryKey: ['snapshot', walletId],
     queryFn: () =>
@@ -84,7 +83,8 @@ export const useReadWalletSnapshot = (
   }).data!
 }
 
-export const useWriteWalletSnapshot = (account: EdgeAccount, wallet: EdgeCurrencyWallet) => {
+export const useWriteWalletSnapshot = (wallet: EdgeCurrencyWallet) => {
+  const account = useEdgeAccount()
   const mutation = () => account.dataStore.setItem('snapshot', wallet.id, JSON.stringify(toWalletSnapshot(wallet)))
   const { mutate: update } = useMutation(mutation, {
     ...useInvalidateQueries([['snapshot', wallet.id]]),

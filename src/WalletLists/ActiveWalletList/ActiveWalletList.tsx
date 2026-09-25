@@ -44,7 +44,7 @@ export const ActiveWalletList: React.FC<{ searchQuery: string }> = ({ searchQuer
 
 const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId, searchQuery, children }) => {
   const account = useEdgeAccount()
-  const wallet = useEdgeCurrencyWallet({ account, walletId })
+  const wallet = useEdgeCurrencyWallet({ walletId })
   const tokens = useTokens(wallet)
   const [name] = useName(wallet)
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
@@ -60,8 +60,7 @@ const Matcher: React.FC<{ walletId: string; searchQuery: string }> = ({ walletId
 }
 
 const ActiveWalletRow: React.FC<{ walletId: string }> = ({ walletId }) => {
-  const account = useEdgeAccount()
-  const wallet = useEdgeCurrencyWallet({ account, walletId })
+  const wallet = useEdgeCurrencyWallet({ walletId })
   const [name] = useName(wallet)
   const currencyCode = wallet.currencyInfo.currencyCode
   const [selected, select] = useSelectWallet()

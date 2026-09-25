@@ -59,10 +59,9 @@ const TransactionListRow: React.FC<{ wallet: EdgeCurrencyWallet; transaction: Ed
   wallet,
   transaction,
 }) => {
-  const account = useEdgeAccount()
-  const transactionExplorerUrl = useTransactionExplorerUrl(account, transaction)
-  const addressExplorerUrl = useAddressExplorerUrl(account, transaction)
-  const blockExplorerUrl = useBlockExplorerUrl(account, transaction)
+  const transactionExplorerUrl = useTransactionExplorerUrl(transaction)
+  const addressExplorerUrl = useAddressExplorerUrl(transaction)
+  const blockExplorerUrl = useBlockExplorerUrl(transaction)
 
   return (
     <ListGroup.Item

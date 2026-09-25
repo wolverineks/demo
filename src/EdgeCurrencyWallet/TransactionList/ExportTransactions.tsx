@@ -3,7 +3,6 @@ import React from 'react'
 import DatePicker from 'react-date-picker'
 import JSONPretty from 'react-json-pretty'
 
-import { useEdgeAccount } from '../../auth'
 import { Accordion, Button, Col, Debug, Form, FormControl, Row } from '../../components'
 import { useCryptoDenominations, useExportTransactions } from '../../hooks'
 
@@ -21,7 +20,6 @@ export const ExportTransactions = ({
   tokenId: EdgeTokenId
   isActive: boolean
 }) => {
-  const account = useEdgeAccount()
   const { display, all } = useCryptoDenominations(wallet.currencyInfo.pluginId, tokenId)
 
   const [options, setOptions] = React.useState<
@@ -38,7 +36,6 @@ export const ExportTransactions = ({
   })
   const [format, setFormat] = React.useState<ExportFormat>(ExportFormat.CSV)
   const { data, isLoading } = useExportTransactions(
-    account,
     wallet,
     {
       tokenId: options.tokenId,

@@ -1,7 +1,6 @@
 import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 
-import { useEdgeAccount } from '../auth'
 import { useCurrencyWallets, useWriteWalletSnapshot } from '../hooks'
 
 export const WalletSnapshots = () => {
@@ -17,8 +16,7 @@ export const WalletSnapshots = () => {
 }
 
 const WalletSnapshot: React.FC<{ wallet: EdgeCurrencyWallet }> = ({ wallet }) => {
-  const account = useEdgeAccount()
-  useWriteWalletSnapshot(account, wallet)
+  useWriteWalletSnapshot(wallet)
 
   return null
 }

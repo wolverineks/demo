@@ -46,8 +46,7 @@ export const TokenIdBoundary: React.FC<{ fallback?: React.ReactNode }> = ({ chil
   const [walletInfo, selectWallet] = useSelectedWalletInfo()
   if (!walletInfo) throw new Error('Missing <WalletInfoBoundary>')
 
-  const account = useEdgeAccount()
-  const wallet = useEdgeCurrencyWallet({ account, walletId: walletInfo.id })
+  const wallet = useEdgeCurrencyWallet({ walletId: walletInfo.id })
   const tokens = useTokens(wallet)
   const isEnabled = walletInfo.tokenId == null || tokens.enabledTokenIds.includes(walletInfo.tokenId)
 
@@ -70,8 +69,7 @@ export const useSelectedWallet = () => {
   const [walletInfo, selectWallet] = useSelectedWalletInfo()
   if (!walletInfo) throw new Error('Missing <SelectedWalletBoundary>')
 
-  const account = useEdgeAccount()
-  const wallet = useEdgeCurrencyWallet({ account, walletId: walletInfo.id })
+  const wallet = useEdgeCurrencyWallet({ walletId: walletInfo.id })
 
   return [{ wallet, id: walletInfo.id, tokenId: walletInfo.tokenId }, selectWallet] as const
 }
