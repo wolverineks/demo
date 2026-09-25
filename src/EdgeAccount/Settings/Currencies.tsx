@@ -17,9 +17,10 @@ import {
   useDenominations,
   useCryptoDenominations,
   useCurrencyWallets,
+  useTokens,
   useWatch,
 } from '../../hooks'
-import { FiatInfo, getSortedCurrencyWallets, getWalletTokenIds, isFiat, isToken, normalize, unique } from '../../utils'
+import { FiatInfo, getSortedCurrencyWallets, isFiat, isToken, normalize, unique } from '../../utils'
 
 const useWalletFiatCurrencyCodes = () => {
   const account = useEdgeAccount()
@@ -60,11 +61,11 @@ export const Currencies: React.FC = () => {
 }
 
 const WalletTokens: React.FC<{ wallet: EdgeCurrencyWallet; searchQuery: string }> = ({ wallet, searchQuery }) => {
-  useWatch(wallet, 'enabledTokenIds')
+  const { enabledTokenIds } = useTokens(wallet)
 
   return (
     <>
-      {getWalletTokenIds(wallet).map((tokenId) => (
+      {[null, ...enabledTokenIds].map((tokenId) => (
         <TokenMatcher key={`${wallet.id}:${tokenId ?? 'native'}`} wallet={wallet} tokenId={tokenId} query={searchQuery}>
           <TokenSetting wallet={wallet} tokenId={tokenId} />
         </TokenMatcher>
