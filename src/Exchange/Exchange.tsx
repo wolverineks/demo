@@ -1,8 +1,7 @@
-import { EdgeTokenId } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 import JSONPretty from 'react-json-pretty'
 
-import { useEdgeAccount } from '../auth'
 import { Alert, Balance, Boundary, Button, Debug, DisplayAmount, FlipInput, FormControl, Logo } from '../components'
 import {
   tokenChoiceKey,
@@ -28,14 +27,14 @@ const parseTokenIdKey = (value: string) => {
 
 export const Exchange = () => {
   const [{ wallet, tokenId }] = useSelectedWallet()
-  const account = useEdgeAccount()
   const choices = useTokenChoices()
-  const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
-  const [displayDenomination] = useCryptoDisplayDenomination(wallet.currencyInfo.pluginId, tokenId)
 
   const [nativeAmount, setNativeAmount] = React.useState('0')
   const [fromWalletId, setFromWalletId] = React.useState(wallet.id)
   const [fromTokenId, setFromTokenId] = React.useState<EdgeTokenId>(tokenId)
+  const fromWallet = useEdgeCurrencyWallet({ walletId: fromWalletId })
+  const [fiatCurrencyCode] = useFiatCurrencyCode(fromWallet)
+  const [displayDenomination] = useCryptoDisplayDenomination(fromWallet.currencyInfo.pluginId, fromTokenId)
   const [toWalletId, setToWalletId] = React.useState<string>()
   const [toTokenId, setToTokenId] = React.useState<EdgeTokenId>()
 
@@ -78,7 +77,7 @@ export const Exchange = () => {
           <FlipInput
             key={`${fromWalletId}-${fromTokenId ?? 'native'}`}
             onChange={setNativeAmount}
-            wallet={account.currencyWallets[fromWalletId] ?? wallet}
+            wallet={fromWallet}
             tokenId={fromTokenId}
             fiatCurrencyCode={fiatCurrencyCode}
           />
@@ -104,7 +103,7 @@ export const Exchange = () => {
       {toWalletId && toTokenId !== undefined ? (
         <SwapQuote
           toWalletId={toWalletId}
-          fromWalletId={fromWalletId}
+          fromWallet={fromWallet}
           toTokenId={toTokenId}
           nativeAmount={nativeAmount}
           fromTokenId={fromTokenId}
@@ -204,20 +203,19 @@ const SelectedToken = ({ walletId, tokenId }: { walletId: string; tokenId: EdgeT
 }
 
 const SwapQuote = ({
-  fromWalletId,
+  fromWallet,
   toWalletId,
   nativeAmount,
   toTokenId,
   fromTokenId,
 }: {
-  fromWalletId: string
+  fromWallet: EdgeCurrencyWallet
   fromTokenId: EdgeTokenId
   toTokenId: EdgeTokenId
   toWalletId: string
   nativeAmount: string
 }) => {
   const toWallet = useEdgeCurrencyWallet({ walletId: toWalletId })
-  const fromWallet = useEdgeCurrencyWallet({ walletId: fromWalletId })
   const { swapQuote, error, isFetching } = useSwapQuote({
     nativeAmount,
     fromWallet,
