@@ -11,6 +11,7 @@ import React from 'react'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
 import { useEdgeAccount } from '../auth'
+import { getWalletListMeta } from '../utils'
 import { walletTransactionQueryKeys } from './edgeCurrencyWallet'
 import { convertCurrency } from './rates'
 import { getCryptoInfo, getCurrencyCodeFromTokenId, getFiatInfo } from './useInfo'
@@ -51,6 +52,44 @@ export const useCurrencyWallets = () => {
   useWatch(account, 'currencyWallets')
 
   return account.currencyWallets
+}
+
+export type TokenChoice = {
+  key: string
+  walletId: string
+  tokenId: EdgeTokenId
+  label: string
+}
+
+export const tokenChoiceKey = (walletId: string, tokenId: EdgeTokenId) => `${walletId}::${tokenId ?? 'native'}`
+
+export const useTokenChoices = (): TokenChoice[] => {
+  const account = useEdgeAccount()
+  const activeWalletIds = useActiveWalletIds()
+  useCurrencyWallets()
+
+  return activeWalletIds.flatMap((walletId) => {
+    const meta = getWalletListMeta(account, walletId)
+    const wallet = account.currencyWallets[walletId]
+    const walletLabel = wallet?.name || meta.name
+    const native = {
+      key: tokenChoiceKey(walletId, null),
+      walletId,
+      tokenId: null as EdgeTokenId,
+      label: walletLabel,
+    }
+    if (!wallet) return [native]
+
+    return [
+      native,
+      ...wallet.enabledTokenIds.map((tokenId) => ({
+        key: tokenChoiceKey(walletId, tokenId),
+        walletId,
+        tokenId,
+        label: `${walletLabel} · ${getCurrencyCodeFromTokenId(account, wallet.currencyInfo.pluginId, tokenId)}`,
+      })),
+    ]
+  })
 }
 
 export const useEdgeAccountTotal = () => {

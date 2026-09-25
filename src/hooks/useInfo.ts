@@ -56,4 +56,7 @@ export const useCryptoInfo = (pluginId: string, tokenId: EdgeTokenId) => {
   return getCryptoInfo(account, pluginId, tokenId)
 }
 
+export const useCurrencyCodeFromTokenId = (pluginId: string, tokenId: EdgeTokenId) =>
+  useCryptoInfo(pluginId, tokenId).currencyCode
+
 export const tokenDenominationKey = (pluginId: string, tokenId: EdgeTokenId) => `${pluginId}:${tokenId ?? 'native'}`

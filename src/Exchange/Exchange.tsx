@@ -5,25 +5,18 @@ import JSONPretty from 'react-json-pretty'
 import { useEdgeAccount } from '../auth'
 import { Alert, Balance, Boundary, Button, Debug, DisplayAmount, FlipInput, FormControl, Logo } from '../components'
 import {
-  getCurrencyCodeFromTokenId,
+  tokenChoiceKey,
+  TokenChoice,
   useApproveSwapQuote,
   useCryptoDisplayDenomination,
+  useCurrencyCodeFromTokenId,
   useEdgeCurrencyWallet,
   useFiatCurrencyCode,
   useName,
   useSwapQuote,
+  useTokenChoices,
 } from '../hooks'
 import { useSelectedWallet } from '../SelectedWallet'
-import { getWalletListMeta } from '../utils'
-
-type TokenChoice = {
-  key: string
-  walletId: string
-  tokenId: EdgeTokenId
-  label: string
-}
-
-const tokenIdKey = (walletId: string, tokenId: EdgeTokenId) => `${walletId}::${tokenId ?? 'native'}`
 
 const parseTokenIdKey = (value: string) => {
   const separator = value.lastIndexOf('::')
@@ -33,34 +26,10 @@ const parseTokenIdKey = (value: string) => {
   return { walletId: value.slice(0, separator), tokenId: tokenPart === 'native' ? null : tokenPart }
 }
 
-const getTokenChoices = (account: ReturnType<typeof useEdgeAccount>): TokenChoice[] =>
-  account.activeWalletIds.flatMap((walletId) => {
-    const meta = getWalletListMeta(account, walletId)
-    const wallet = account.currencyWallets[walletId]
-    const walletLabel = wallet?.name || meta.name
-    const native = {
-      key: tokenIdKey(walletId, null),
-      walletId,
-      tokenId: null as EdgeTokenId,
-      label: walletLabel,
-    }
-    if (!wallet) return [native]
-
-    return [
-      native,
-      ...wallet.enabledTokenIds.map((tokenId) => ({
-        key: tokenIdKey(walletId, tokenId),
-        walletId,
-        tokenId,
-        label: `${walletLabel} · ${getCurrencyCodeFromTokenId(account, wallet.currencyInfo.pluginId, tokenId)}`,
-      })),
-    ]
-  })
-
 export const Exchange = () => {
   const [{ wallet, tokenId }] = useSelectedWallet()
   const account = useEdgeAccount()
-  const choices = getTokenChoices(account)
+  const choices = useTokenChoices()
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
   const [displayDenomination] = useCryptoDisplayDenomination(wallet.currencyInfo.pluginId, tokenId)
 
@@ -102,7 +71,7 @@ export const Exchange = () => {
         walletId={fromWalletId}
         tokenId={fromTokenId}
         choices={choices}
-        value={tokenIdKey(fromWalletId, fromTokenId)}
+        value={tokenChoiceKey(fromWalletId, fromTokenId)}
         onSelect={(value) => onSelectToken(value, 'from')}
       >
         <div className="exchange__amount">
@@ -127,7 +96,7 @@ export const Exchange = () => {
         walletId={toWalletId}
         tokenId={toTokenId}
         choices={choices}
-        value={toWalletId && toTokenId !== undefined ? tokenIdKey(toWalletId, toTokenId) : ''}
+        value={toWalletId && toTokenId !== undefined ? tokenChoiceKey(toWalletId, toTokenId) : ''}
         placeholder="Select destination"
         onSelect={(value) => onSelectToken(value, 'to')}
       />
@@ -210,10 +179,9 @@ const TokenCard = ({
 }
 
 const SelectedToken = ({ walletId, tokenId }: { walletId: string; tokenId: EdgeTokenId }) => {
-  const account = useEdgeAccount()
   const wallet = useEdgeCurrencyWallet({ walletId })
   const [name] = useName(wallet)
-  const currencyCode = getCurrencyCodeFromTokenId(account, wallet.currencyInfo.pluginId, tokenId)
+  const currencyCode = useCurrencyCodeFromTokenId(wallet.currencyInfo.pluginId, tokenId)
   const label = name || wallet.currencyInfo.displayName || wallet.currencyInfo.currencyCode
 
   return (

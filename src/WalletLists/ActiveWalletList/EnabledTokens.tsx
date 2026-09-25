@@ -2,9 +2,8 @@ import { EdgeCurrencyWallet } from 'edge-core-js'
 import React from 'react'
 
 import { useSelectWallet } from '../../App'
-import { useEdgeAccount } from '../../auth'
 import { Balance, Boundary, ListGroup, Logo } from '../../components'
-import { getCurrencyCodeFromTokenId, TokenInfo, useTokens } from '../../hooks'
+import { TokenInfo, useCurrencyCodeFromTokenId, useTokens } from '../../hooks'
 
 export const EnabledTokens: React.FC<{
   wallet: EdgeCurrencyWallet
@@ -32,9 +31,9 @@ const EnabledToken: React.FC<{
   tokenId: string
   tokenInfo?: TokenInfo
 }> = ({ wallet, tokenId, tokenInfo }) => {
-  const account = useEdgeAccount()
   const [selected, select] = useSelectWallet()
-  const currencyCode = tokenInfo?.currencyCode ?? getCurrencyCodeFromTokenId(account, wallet.currencyInfo.pluginId, tokenId)
+  const resolvedCode = useCurrencyCodeFromTokenId(wallet.currencyInfo.pluginId, tokenId)
+  const currencyCode = tokenInfo?.currencyCode ?? resolvedCode
 
   return (
     <ListGroup.Item
