@@ -1,4 +1,4 @@
-import { EdgeAccount, EdgeCurrencyWallet, EdgeToken, EdgeTokenId } from 'edge-core-js'
+import { EdgeAccount, EdgeToken, EdgeTokenId } from 'edge-core-js'
 
 import { FiatInfo, fiatInfos } from '../utils'
 import { metaTokenFromEdgeToken } from './tokens/utils'
@@ -26,7 +26,7 @@ const metaToken = (account: EdgeAccount, pluginId: string, tokenId: string, toke
   })
 }
 
-export const cryptoInfoFromPlugin = (account: EdgeAccount, pluginId: string, tokenId: EdgeTokenId) => {
+export const getCryptoInfo = (account: EdgeAccount, pluginId: string, tokenId: EdgeTokenId) => {
   const config = account.currencyConfig[pluginId]
   if (!config) throw new Error(`Invalid pluginId: ${pluginId}`)
   if (tokenId == null) return config.currencyInfo
@@ -41,29 +41,7 @@ export const useCryptoInfo = (account: EdgeAccount, pluginId: string, tokenId: E
   const config = account.currencyConfig[pluginId]
   useWatch(config, 'allTokens')
 
-  return cryptoInfoFromPlugin(account, pluginId, tokenId)
-}
-
-export const getTokenInfo = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) => {
-  if (tokenId == null) return wallet.currencyInfo
-
-  const token = wallet.currencyConfig.allTokens[tokenId]
-  if (!token) throw new Error(`Invalid tokenId: ${tokenId}`)
-
-  return metaTokenFromEdgeToken(token, {
-    tokenId,
-    pluginId: wallet.currencyInfo.pluginId,
-    addressExplorer: wallet.currencyInfo.addressExplorer,
-    blockExplorer: wallet.currencyInfo.blockExplorer,
-    transactionExplorer: wallet.currencyInfo.transactionExplorer,
-    xpubExplorer: wallet.currencyInfo.xpubExplorer,
-  })
-}
-
-export const useTokenInfo = (wallet: EdgeCurrencyWallet, tokenId: EdgeTokenId) => {
-  useWatch(wallet.currencyConfig, 'allTokens')
-
-  return getTokenInfo(wallet, tokenId)
+  return getCryptoInfo(account, pluginId, tokenId)
 }
 
 export const tokenDenominationKey = (pluginId: string, tokenId: EdgeTokenId) => `${pluginId}:${tokenId ?? 'native'}`
