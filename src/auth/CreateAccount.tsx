@@ -1,4 +1,4 @@
-import { EdgeAccount, EdgeContext } from 'edge-core-js'
+import { EdgeAccount } from 'edge-core-js'
 import React from 'react'
 
 import { Alert, Button, Form, FormGroup } from '../components'
@@ -7,11 +7,8 @@ import { useCreateAccount } from '../hooks'
 const onChange = (cb: (value: string) => any) => (event: React.ChangeEvent<HTMLInputElement>) =>
   cb(event.currentTarget.value)
 
-export const CreateAccount: React.FC<{ context: EdgeContext; onLogin: (account: EdgeAccount) => any }> = ({
-  onLogin,
-  context,
-}) => {
-  const { mutate: createAccount, status, error } = useCreateAccount(context)
+export const CreateAccount: React.FC<{ onLogin: (account: EdgeAccount) => any }> = ({ onLogin }) => {
+  const { mutate: createAccount, status, error } = useCreateAccount()
   const pending = status === 'loading'
   const [username, setUsername] = React.useState('')
   const [password, setPassword] = React.useState('')

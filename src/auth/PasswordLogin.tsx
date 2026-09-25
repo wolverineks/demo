@@ -1,14 +1,11 @@
-import { EdgeAccount, EdgeContext } from 'edge-core-js'
+import { EdgeAccount } from 'edge-core-js'
 import React from 'react'
 
 import { Alert, Button, Form, FormGroup } from '../components'
 import { fakeUser } from '../Edge'
 import { useLoginWithKey, useLoginWithPassword } from '../hooks'
 
-export const PasswordLogin: React.FC<{ context: EdgeContext; onLogin: (account: EdgeAccount) => any }> = ({
-  onLogin,
-  context,
-}) => {
+export const PasswordLogin: React.FC<{ onLogin: (account: EdgeAccount) => any }> = ({ onLogin }) => {
   const [username, setUsername] = React.useState('')
   const [password, setPassword] = React.useState('')
   const {
@@ -16,13 +13,13 @@ export const PasswordLogin: React.FC<{ context: EdgeContext; onLogin: (account: 
     error: passwordError,
     status: passwordStatus,
     reset: resetPassword,
-  } = useLoginWithPassword(context, { onSuccess: onLogin })
+  } = useLoginWithPassword({ onSuccess: onLogin })
   const {
     mutate: loginWithKey,
     error: keyError,
     status: keyStatus,
     reset: resetKey,
-  } = useLoginWithKey(context, { onSuccess: onLogin })
+  } = useLoginWithKey({ onSuccess: onLogin })
   const error = passwordError || keyError
   const status = passwordStatus === 'loading' || keyStatus === 'loading' ? 'loading' : passwordStatus
   const reset = () => {

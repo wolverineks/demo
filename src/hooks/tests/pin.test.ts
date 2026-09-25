@@ -1,23 +1,19 @@
 import { act } from '@testing-library/react-hooks'
 import { closeEdge } from 'edge-core-js'
 
+import { useEdgeContext } from '../../Edge/useEdgeContext'
 import { usePin } from '../pin'
 import { fakeUser } from './fake-user'
-import { accountCache, makeFakeEdgeContext, render } from './utils'
-
-const setup = async () => {
-  const context = await makeFakeEdgeContext({ bitcoin: true })
-  const account = await context.loginWithPassword(fakeUser.username, fakeUser.password)
-
-  return { context, account }
-}
+import { accountCache, render } from './utils'
 
 describe('usePin', () => {
   afterAll(closeEdge)
 
   it('usePin', async () => {
-    const { context, account } = await setup()
-    const { result, waitFor, waitForValueToChange } = render(() => usePin(context), {
+    const { result: contextResult, waitFor: waitForContext } = render(() => useEdgeContext())
+    await waitForContext(() => contextResult.current != null)
+    const account = await contextResult.current.loginWithPassword(fakeUser.username, fakeUser.password)
+    const { result, waitFor, waitForValueToChange } = render(() => usePin(), {
       wrapper: accountCache(account),
     })
     await waitFor(() => !!result.current.checkPin)

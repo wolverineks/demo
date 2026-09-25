@@ -1,6 +1,7 @@
 import { EdgeAccount, EdgeContext, EdgeLoginMessage } from 'edge-core-js'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'react-query'
 
+import { useEdgeContext } from '../Edge/useEdgeContext'
 import { useWatch } from './watch'
 import { getDefaultFiatCurrencyCode } from '.'
 
@@ -8,17 +9,16 @@ export const getAccountsWithPinLogin = (context: EdgeContext) => {
   return context.localUsers.filter(({ pinLoginEnabled }) => pinLoginEnabled)
 }
 
-export const useAccountsWithPinLogin = (context: EdgeContext) => {
+export const useAccountsWithPinLogin = () => {
+  const context = useEdgeContext()
   useWatch(context, 'localUsers')
 
   return getAccountsWithPinLogin(context)
 }
 
-export const useLoginMessages = (
-  context: EdgeContext,
-  username: string,
-  queryOptions?: UseQueryOptions<EdgeLoginMessage[]>,
-) => {
+export const useLoginMessages = (username: string, queryOptions?: UseQueryOptions<EdgeLoginMessage[]>) => {
+  const context = useEdgeContext()
+
   return (
     useQuery({
       queryKey: ['loginMessages'],
@@ -35,13 +35,14 @@ export const useLoginMessages = (
 }
 
 export const useCreateAccount = (
-  context: EdgeContext,
   mutationOptions?: UseMutationOptions<
     EdgeAccount,
     unknown,
     { username: string; password?: string; pin?: string; otp?: string }
   >,
 ) => {
+  const context = useEdgeContext()
+
   return useMutation(
     ({ username, password, pin, otp }) => context.createAccount({ username, password, pin, otp }),
     {
@@ -52,9 +53,10 @@ export const useCreateAccount = (
 }
 
 export const useLoginWithPin = (
-  context: EdgeContext,
   mutationOptions?: UseMutationOptions<EdgeAccount, unknown, { username: string; pin: string }>,
 ) => {
+  const context = useEdgeContext()
+
   return useMutation(({ username, pin }) => context.loginWithPIN(username, pin), {
     onSuccess: bootstrap,
     ...mutationOptions,
@@ -62,9 +64,10 @@ export const useLoginWithPin = (
 }
 
 export const useLoginWithPassword = (
-  context: EdgeContext,
   mutationOptions?: UseMutationOptions<EdgeAccount, unknown, { username: string; password: string }>,
 ) => {
+  const context = useEdgeContext()
+
   return useMutation(
     ({ username, password }) => context.loginWithPassword(username, password),
     {
@@ -75,9 +78,10 @@ export const useLoginWithPassword = (
 }
 
 export const useLoginWithKey = (
-  context: EdgeContext,
   mutationOptions?: UseMutationOptions<EdgeAccount, unknown, { username: string; loginKey: string }>,
 ) => {
+  const context = useEdgeContext()
+
   return useMutation(
     ({ username, loginKey }) => context.loginWithKey(username, loginKey),
     {

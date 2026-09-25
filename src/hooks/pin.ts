@@ -1,10 +1,11 @@
-import { EdgeContext } from 'edge-core-js'
 import { UseMutationOptions, UseQueryOptions, useMutation, useQuery, useQueryClient } from 'react-query'
 
 import { useEdgeAccount } from '../auth'
+import { useEdgeContext } from '../Edge/useEdgeContext'
 import { useInvalidateQueries } from '.'
 
-export const usePinExists = (context: EdgeContext, queryOptions?: UseQueryOptions<boolean>) => {
+export const usePinExists = (queryOptions?: UseQueryOptions<boolean>) => {
+  const context = useEdgeContext()
   const account = useEdgeAccount()
   const queryKey = [account.username, 'pinExists']
   const queryFn = async () => {
@@ -20,7 +21,8 @@ export const usePinExists = (context: EdgeContext, queryOptions?: UseQueryOption
   })
 }
 
-export const usePinLoginEnabled = (context: EdgeContext, queryOptions?: UseQueryOptions<boolean>) => {
+export const usePinLoginEnabled = (queryOptions?: UseQueryOptions<boolean>) => {
+  const context = useEdgeContext()
   const account = useEdgeAccount()
   const queryKey = [account.username, 'pinLoginEnabled']
   const queryFn = () => {
@@ -81,10 +83,10 @@ export const useDeletePin = (mutationOptions?: UseMutationOptions<void>) => {
   })
 }
 
-export const usePin = (context: EdgeContext) => {
+export const usePin = () => {
   return {
-    pinExists: usePinExists(context).data!,
-    pinLoginEnabled: usePinLoginEnabled(context).data!,
+    pinExists: usePinExists().data!,
+    pinLoginEnabled: usePinLoginEnabled().data!,
     changePinLogin: useChangePinLogin(),
     changePin: useChangePin(),
     deletePin: useDeletePin(),
