@@ -76,7 +76,7 @@ export const useTokenChoices = (): TokenChoice[] => {
       key: tokenChoiceKey(walletId, null),
       walletId,
       tokenId: null as EdgeTokenId,
-      label: walletLabel,
+      label: `${walletLabel} · ${meta.currencyCode}`,
     }
     if (!wallet) return [native]
 
