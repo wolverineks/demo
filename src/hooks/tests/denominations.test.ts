@@ -1,10 +1,20 @@
 import { act } from '@testing-library/react-hooks'
-import { closeEdge } from 'edge-core-js'
+import { EdgeAccount, closeEdge } from 'edge-core-js'
+import React from 'react'
 
+import { EdgeAccountContext } from '../../auth'
+import { EdgeCache } from '../../Edge'
 import { useDenominations } from '../denominations'
 import { useCryptoInfo } from '../useInfo'
 import { fakeUser } from './fake-user'
 import { makeFakeEdgeContext, render } from './utils'
+
+const AccountCache: React.FC<{ account: EdgeAccount }> = ({ account, children }) =>
+  React.createElement(
+    EdgeCache,
+    null,
+    React.createElement(EdgeAccountContext.Provider, { value: account }, children),
+  )
 
 const setup = async () => {
   const context = await makeFakeEdgeContext({ bitcoin: true })
@@ -18,11 +28,14 @@ describe('denominations', () => {
 
   it('useDenominations', async () => {
     const account = await setup()
-    const { result: denominations, waitFor, waitForValueToChange } = render(() => {
-      const info = useCryptoInfo(account, 'bitcoin', null)
+    const { result: denominations, waitFor, waitForValueToChange } = render(
+      () => {
+        const info = useCryptoInfo('bitcoin', null)
 
-      return useDenominations(account, info)
-    })
+        return useDenominations(info)
+      },
+      { wrapper: ({ children }) => React.createElement(AccountCache, { account }, children) },
+    )
 
     await waitFor(() => !!denominations.current.all)
     {

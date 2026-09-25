@@ -93,8 +93,7 @@ const TokenMatcher: React.FC<{
   wallet: EdgeCurrencyWallet
   tokenId: EdgeTokenId
 }> = ({ query, wallet, tokenId, children }) => {
-  const account = useEdgeAccount()
-  const info = useCryptoInfo(account, wallet.currencyInfo.pluginId, tokenId)
+  const info = useCryptoInfo(wallet.currencyInfo.pluginId, tokenId)
 
   return <>{matches(query)(info) ? children : null}</>
 }
@@ -116,8 +115,7 @@ const FiatSetting: React.FC<{ currencyCode: string }> = ({ currencyCode }) => {
 }
 
 const TokenSetting: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId }> = ({ wallet, tokenId }) => {
-  const account = useEdgeAccount()
-  const info = useCryptoInfo(account, wallet.currencyInfo.pluginId, tokenId)
+  const info = useCryptoInfo(wallet.currencyInfo.pluginId, tokenId)
 
   return (
     <ListGroup style={{ paddingTop: 4, paddingBottom: 4 }}>
@@ -126,30 +124,21 @@ const TokenSetting: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId 
         {isToken(info) ? info.currencyName : info.displayName} - {info.currencyCode}
       </ListGroupItem>
       <Boundary>
-        <TokenDenominations wallet={wallet} tokenId={tokenId} account={account} />
+        <TokenDenominations wallet={wallet} tokenId={tokenId} />
       </Boundary>
     </ListGroup>
   )
 }
 
 const FiatDenominations = ({ currencyCode }: { currencyCode: string }) => {
-  const account = useEdgeAccount()
   const info = getFiatInfo(currencyCode)
-  const denominations = useDenominations(account, info)
+  const denominations = useDenominations(info)
 
   return <DenominationList denominations={denominations} />
 }
 
-const TokenDenominations = ({
-  account,
-  wallet,
-  tokenId,
-}: {
-  account: EdgeAccount
-  wallet: EdgeCurrencyWallet
-  tokenId: EdgeTokenId
-}) => {
-  const denominations = useCryptoDenominations(account, wallet.currencyInfo.pluginId, tokenId)
+const TokenDenominations = ({ wallet, tokenId }: { wallet: EdgeCurrencyWallet; tokenId: EdgeTokenId }) => {
+  const denominations = useCryptoDenominations(wallet.currencyInfo.pluginId, tokenId)
 
   return <DenominationList denominations={denominations} />
 }

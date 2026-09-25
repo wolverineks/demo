@@ -1,5 +1,6 @@
 import { EdgeAccount, EdgeToken, EdgeTokenId } from 'edge-core-js'
 
+import { useEdgeAccount } from '../auth'
 import { FiatInfo, fiatInfos } from '../utils'
 import { metaTokenFromEdgeToken } from './tokens/utils'
 import { useWatch } from './watch'
@@ -40,7 +41,8 @@ export const getCryptoInfo = (account: EdgeAccount, pluginId: string, tokenId: E
 export const getCurrencyCodeFromTokenId = (account: EdgeAccount, pluginId: string, tokenId: EdgeTokenId) =>
   getCryptoInfo(account, pluginId, tokenId).currencyCode
 
-export const useCryptoInfo = (account: EdgeAccount, pluginId: string, tokenId: EdgeTokenId) => {
+export const useCryptoInfo = (pluginId: string, tokenId: EdgeTokenId) => {
+  const account = useEdgeAccount()
   const config = account.currencyConfig[pluginId]
   useWatch(config, 'allTokens')
 

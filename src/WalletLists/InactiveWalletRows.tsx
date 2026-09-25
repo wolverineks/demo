@@ -1,7 +1,6 @@
 import { EdgeAccount, EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 
-import { useEdgeAccount } from '../auth'
 import { Boundary, DisplayAmount, FiatAmount, ListGroup, Logo } from '../components'
 import { InactiveWallet, useCryptoInfo } from '../hooks'
 import { normalize } from '../utils'
@@ -65,7 +64,7 @@ export const InactiveWalletRows: React.FC<{
 }
 
 const TokenName = ({ pluginId, tokenId }: { pluginId: string; tokenId: EdgeTokenId }) => {
-  const info = useCryptoInfo(useEdgeAccount(), pluginId, tokenId)
+  const info = useCryptoInfo(pluginId, tokenId)
 
   return <div className="token-row__name">{info.currencyCode}</div>
 }

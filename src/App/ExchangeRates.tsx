@@ -53,8 +53,7 @@ const ExchangeRate: React.FC<{ pluginId: string; tokenId: EdgeTokenId; fiatCurre
   tokenId,
   fiatCurrencyCode,
 }) => {
-  const account = useEdgeAccount()
-  const info = useCryptoInfo(account, pluginId, tokenId)
+  const info = useCryptoInfo(pluginId, tokenId)
   const nativeAmount = exchangeToNative({ info, exchangeAmount: '1' })
 
   return (

@@ -1,7 +1,6 @@
 import { EdgeTransaction } from 'edge-core-js'
 import React from 'react'
 
-import { useEdgeAccount } from '../../auth'
 import { Boundary } from '../../components'
 import { exchangeToNative, getFiatInfo, nativeToDenominated, useDisplayDenomination } from '../../hooks'
 
@@ -37,9 +36,8 @@ const ExchangeAmount: React.FC<{ currencyCode: string; exchangeAmount: number | 
   currencyCode,
   exchangeAmount,
 }) => {
-  const account = useEdgeAccount()
   const fiatInfo = getFiatInfo(currencyCode)
-  const displayDenomination = useDisplayDenomination(account, fiatInfo)[0]
+  const displayDenomination = useDisplayDenomination(fiatInfo)[0]
   const displayAmount = nativeToDenominated({
     nativeAmount: exchangeToNative({ info: fiatInfo, exchangeAmount: String(exchangeAmount) }),
     denomination: displayDenomination,

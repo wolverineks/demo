@@ -23,9 +23,9 @@ export const FlipInput = React.forwardRef<FlipInputRef, FlipInputProps>(function
 ) {
   const account = useEdgeAccount()
   const currencyCode = getCurrencyCodeFromTokenId(account, wallet.currencyInfo.pluginId, tokenId)
-  const topDenominations = useCryptoDenominations(account, wallet.currencyInfo.pluginId, tokenId)
+  const topDenominations = useCryptoDenominations(wallet.currencyInfo.pluginId, tokenId)
   const fiatInfo = getFiatInfo(fiatCurrencyCode)
-  const bottomDenominations = useDenominations(account, fiatInfo)
+  const bottomDenominations = useDenominations(fiatInfo)
 
   const { top, bottom } = useFlipInput({
     onChange,

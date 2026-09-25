@@ -17,7 +17,7 @@ export const Request: React.FC<{ wallet: EdgeCurrencyWallet; tokenId: EdgeTokenI
   const account = useEdgeAccount()
   const [nativeAmount, setNativeAmount] = React.useState('0')
   const [fiatCurrencyCode] = useFiatCurrencyCode(wallet)
-  const [displayDenomination] = useCryptoDisplayDenomination(account, wallet.currencyInfo.pluginId, tokenId)
+  const [displayDenomination] = useCryptoDisplayDenomination(wallet.currencyInfo.pluginId, tokenId)
   const { data, error } = useReceiveAddressAndEncodeUri({ wallet, nativeAmount, options: { tokenId } })
   const currencyCode = getCurrencyCodeFromTokenId(account, wallet.currencyInfo.pluginId, tokenId)
 

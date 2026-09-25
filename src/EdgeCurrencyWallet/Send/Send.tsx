@@ -203,9 +203,8 @@ const CustomFeeForm = ({
   customFee: CustomFee
   setCustomFee: (customFee: CustomFee) => any
 }) => {
-  const account = useEdgeAccount()
   const [{ wallet, tokenId }] = useSelectedWallet()
-  const { display } = useCryptoDenominations(account, wallet.currencyInfo.pluginId, tokenId)
+  const { display } = useCryptoDenominations(wallet.currencyInfo.pluginId, tokenId)
 
   return (
     <div>

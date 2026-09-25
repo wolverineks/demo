@@ -1,7 +1,6 @@
 import { EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 
-import { useEdgeAccount } from '../auth'
 import { getFiatInfo, useCryptoInfo, useDisplayAmount, useTickerFiatAmount } from '../hooks'
 
 export const FiatAmount = ({
@@ -15,12 +14,10 @@ export const FiatAmount = ({
   tokenId?: EdgeTokenId
   fiatCurrencyCode: string
 }) => {
-  const account = useEdgeAccount()
-  const fromInfo = useCryptoInfo(account, pluginId, tokenId)
+  const fromInfo = useCryptoInfo(pluginId, tokenId)
   const fiatInfo = getFiatInfo(fiatCurrencyCode)
-  const fiatAmount = useTickerFiatAmount({ account, nativeAmount, fromInfo, fiatCurrencyCode })
+  const fiatAmount = useTickerFiatAmount({ nativeAmount, fromInfo, fiatCurrencyCode })
   const { name, symbol, amount } = useDisplayAmount({
-    account,
     info: fiatInfo,
     nativeAmount: String(fiatAmount),
   })

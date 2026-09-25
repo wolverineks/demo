@@ -22,7 +22,7 @@ export const ExportTransactions = ({
   isActive: boolean
 }) => {
   const account = useEdgeAccount()
-  const { display, all } = useCryptoDenominations(account, wallet.currencyInfo.pluginId, tokenId)
+  const { display, all } = useCryptoDenominations(wallet.currencyInfo.pluginId, tokenId)
 
   const [options, setOptions] = React.useState<
     EdgeGetTransactionsOptions & {
