@@ -12,6 +12,7 @@ import { UseMutationOptions, UseQueryOptions, useMutation, useQuery } from 'reac
 
 import { useEdgeAccount } from '../auth'
 import { getNativeBalance, getPublicAddress } from '../utils'
+import { ExportTransactionsOptions, formatTransactionExport } from './exportTransactions'
 import { getCurrencyCodeFromTokenId } from './useInfo'
 import { useInvalidateQueries } from './useInvalidateQueries'
 import { useWatch } from './watch'
@@ -74,11 +75,8 @@ export const useName = (wallet: EdgeCurrencyWallet) => {
   return [wallet.name, useRenameWallet(wallet).mutate] as const
 }
 
-export const receiveAddressQueryKey = (
-  walletId: string,
-  nativeAmount: string,
-  options?: { tokenId?: EdgeTokenId },
-) => [walletId, 'receiveAddressAndEncodeUri', nativeAmount, options] as const
+export const receiveAddressQueryKey = (walletId: string, nativeAmount: string, options?: { tokenId?: EdgeTokenId }) =>
+  [walletId, 'receiveAddressAndEncodeUri', nativeAmount, options] as const
 
 export const fetchReceiveAddressAndUri = async ({
   wallet,
@@ -301,21 +299,21 @@ export const useSignBroadcastAndSaveTx = (
   )
 }
 
-export const useExportTransactions = (wallet: EdgeCurrencyWallet, options: EdgeGetTransactionsOptions) => {
+export const useExportTransactions = (wallet: EdgeCurrencyWallet, options: ExportTransactionsOptions) => {
   const account = useEdgeAccount()
+  const { denomination, startIndex, startEntries, ...query } = options
 
   return useQuery({
     queryKey: [wallet.id, 'export-transaction', options],
     queryFn: async () => {
-      const transactions = await wallet.getTransactions(options)
-      const header = 'txid,date,currencyCode,nativeAmount'
-      const rows = transactions.map((tx) => {
-        const currencyCode = getCurrencyCodeFromTokenId(account, wallet.currencyInfo.pluginId, tx.tokenId)
+      const transactions = await wallet.getTransactions(query)
 
-        return `${tx.txid},${tx.date},${currencyCode},${tx.nativeAmount}`
+      return formatTransactionExport(transactions, {
+        denomination,
+        startIndex,
+        startEntries,
+        currencyCode: (tokenId) => getCurrencyCodeFromTokenId(account, wallet.currencyInfo.pluginId, tokenId),
       })
-
-      return [header, ...rows].join('\n')
     },
   })
 }

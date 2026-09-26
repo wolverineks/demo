@@ -1,10 +1,18 @@
-import { EdgeCurrencyWallet, EdgeGetTransactionsOptions, EdgeTokenId } from 'edge-core-js'
+import { EdgeCurrencyWallet, EdgeTokenId } from 'edge-core-js'
 import React from 'react'
 import DatePicker from 'react-date-picker'
 import JSONPretty from 'react-json-pretty'
 
 import { Accordion, Button, Col, Debug, Form, FormControl, Row } from '../../components'
-import { useCryptoDenominations, useExportTransactions } from '../../hooks'
+import { ExportTransactionsOptions, useCryptoDenominations, useExportTransactions } from '../../hooks'
+
+const readCount = (value: string) => {
+  if (value.trim() === '') return undefined
+
+  const parsed = Number(value)
+
+  return Number.isFinite(parsed) ? Math.max(0, Math.floor(parsed)) : undefined
+}
 
 export const ExportTransactions = ({
   wallet,
@@ -17,25 +25,18 @@ export const ExportTransactions = ({
 }) => {
   const { display, all } = useCryptoDenominations(wallet.currencyInfo.pluginId, tokenId)
 
-  const [options, setOptions] = React.useState<
-    EdgeGetTransactionsOptions & {
-      denomination?: string
-      startIndex?: number
-      returnIndex?: number
-      startEntries?: number
-      returnEntries?: number
-    }
-  >({
+  const [options, setOptions] = React.useState<ExportTransactionsOptions>({
     tokenId,
     denomination: display.multiplier,
   })
-  const { data, isLoading } = useExportTransactions(wallet, {
-    tokenId: options.tokenId,
-    startDate: options.startDate,
-    endDate: options.endDate,
-    searchString: options.searchString,
-    spamThreshold: options.spamThreshold,
-  })
+
+  React.useEffect(() => {
+    setOptions((current) =>
+      current.tokenId === tokenId ? current : { ...current, tokenId, denomination: display.multiplier },
+    )
+  }, [tokenId, display.multiplier])
+
+  const { data, isLoading } = useExportTransactions(wallet, options)
   const href = React.useMemo(() => window.URL.createObjectURL(new Blob([data || ''], { type: 'text/csv' })), [data])
 
   return (
@@ -55,6 +56,7 @@ export const ExportTransactions = ({
                 <Form.Label>Denomination</Form.Label>
                 <Form.Control
                   as="select"
+                  value={options.denomination}
                   onChange={(event) => setOptions({ ...options, denomination: event.currentTarget.value })}
                 >
                   {all.map((denomination) => (
@@ -72,32 +74,20 @@ export const ExportTransactions = ({
               <Col>
                 <Form.Label>Start Index</Form.Label>
                 <FormControl
-                  onChange={(event) => setOptions({ ...options, startIndex: Number(event.currentTarget.value) })}
+                  type="number"
+                  min={0}
+                  value={options.startIndex ?? ''}
+                  onChange={(event) => setOptions({ ...options, startIndex: readCount(event.currentTarget.value) })}
                 />
               </Col>
 
-              <Col>
-                <Form.Label>Return Index</Form.Label>
-                <FormControl
-                  onChange={(event) => setOptions({ ...options, returnIndex: Number(event.currentTarget.value) })}
-                />
-              </Col>
-            </Row>
-          </Form.Group>
-
-          <Form.Group>
-            <Row>
               <Col>
                 <Form.Label>Start Entries</Form.Label>
                 <FormControl
-                  onChange={(event) => setOptions({ ...options, startEntries: Number(event.currentTarget.value) })}
-                />
-              </Col>
-
-              <Col>
-                <Form.Label>Return Entries</Form.Label>
-                <FormControl
-                  onChange={(event) => setOptions({ ...options, returnEntries: Number(event.currentTarget.value) })}
+                  type="number"
+                  min={0}
+                  value={options.startEntries ?? ''}
+                  onChange={(event) => setOptions({ ...options, startEntries: readCount(event.currentTarget.value) })}
                 />
               </Col>
             </Row>
